@@ -1,9 +1,15 @@
 # The Prayer Palace
 
 A five-chapter walk into a Toronto church, rendered live in Three.js and layered
-with editorial typography: across the forecourt at blue hour, up the steps and
-through the portal, down the hall to the screen wall, and out through the oculus
-of the dome into the light.
+with editorial typography: across the car park at blue hour, in through the doors
+under the canopy, down the fan of the auditorium to the screen wall, and out
+through the rooflight at the middle of the roof into the morning.
+
+The building is modelled on the real one. The Prayer Palace is round: a single very
+large storey of split-face concrete block with two dark banding courses and a
+ribbed metal fascia, under a shallow faceted cone of a roof, with a plain white
+cross above the main doors, Canadian flags on the grass island in front of them,
+and concentric radial parking all the way round.
 
 The Prayer Palace is at 1111 Arrow Road, Toronto. It is Canada's first established
 multicultural, non-denominational church, founded by the late Reverend Paul
@@ -14,20 +20,25 @@ more than fifty nationalities in the congregation.
 
 ## What it does
 
-- Walks a live WebGL camera through a procedural palace as the page scrolls,
-  outside and in: a limestone mass, a portico of six columns over a flight of
-  steps, twin towers with lead domes, and a ribbed dome on a windowed drum.
-- Takes the camera inside, into the room the church actually meets in: a broad
-  auditorium with a raked floor of chairs, a platform with planters, framed panels
-  down both side walls, and a screen wall that is the brightest thing in the
-  building.
-- Leaves through the oculus. The drum is articulated with twelve lit windows and
-  twelve pilasters, the dome carries eight meridian ribs and three rings, and the
-  camera passes through the 2.4m hole at the top of it into open sky.
+- Walks a live WebGL camera through the building as the page scrolls, outside and
+  in: the block drum of the walls, the punched dark glazing, four projecting
+  entrance canopies, the twenty-four ridges of the roof, the rooflights and plant
+  scattered over it, and the cross.
+- Takes the camera inside, into the room the church actually meets in. A round
+  building gives you a fan rather than a nave: concentric tiers of seating swung
+  round a platform on one side, under the underside of the same cone that is the
+  roof, with a curved screen wall that is the brightest thing in the building.
+- Leaves through the rooflight. The ceiling carries the same twenty-four seams,
+  converging on a five-metre opening at the middle that the camera climbs out
+  through, past the cross, and up until the whole round of the site is in frame.
 - Runs one continuous look from blue hour to full daylight. Sky, fog, four lights,
   the moon, exposure, the bloom and the page scrim are all held in one config per
   state and interpolated, so the world moves from night to glory without anything
   being rebuilt.
+- Lays the car park out the way it actually is: a ring road hard against the
+  building, a kerbed grass island, then four bands of stalls in concentric arcs
+  with drive aisles cut through them, light standards, and the industrial yards
+  that surround the site as a low horizon.
 - Carries the whole church: service times, what to expect on a first visit, the
   founding family, the prayer of salvation, the memorial to Pastor Paul, and the
   Clarendon rebuild in Jamaica.
@@ -87,38 +98,49 @@ composite with a filmic shoulder, vignette, grain and gamma. Nothing comes from
 the veil that covers the two world swaps.
 
 **Two worlds and two doors.** The exterior and the interior are separate groups and
-only one is ever drawn. Which one is a box test. How much to hide is the distance
-to the surface the lens actually crosses, and there are only two of those: the
-portal on the way in and the oculus on the way out.
+only one is ever drawn. Which one is a radius test against the wall and the roof.
+How much to hide is the distance to the surface the lens actually crosses, and
+there are only two of those: the doors on the way in and the rooflight on the way
+out.
 
 ## Things that cost the most time
 
-**The sky was painting over the palace.** For several passes the building simply
-was not there: clean blue sky where forty-eight metres of limestone should have
-been. Every check said it was fine. It was in the frustum, it was visible, a
-raycast down the middle of the screen hit the pediment at forty-eight metres. The
-sky dome is a 620m sphere with `depthWrite: false`, which should make it harmless,
-but left to the ordinary opaque sort it was drawing *after* the building and
-passing the depth test anyway. A sky is a background, not a distant object: give it
-`renderOrder = -1000` and `depthTest = false` so it paints first and everything
-lands on top of it.
+**Nothing in the scene was ever depth tested.** The single worst bug here, and the
+cause of several others. The scene renders into a half-float target for the bloom
+chain, and that target was created with `depthBuffer: false` along with the mip
+targets, which genuinely do not need one. So the whole world was drawn in
+submission order: the ground plane painted over the car park laid on top of it,
+and the sky painted over the building standing in front of it. It cost hours
+across two different symptoms, and every check pointed the wrong way. A raycast
+said the asphalt was the topmost surface at that point, because a raycast tests
+geometry and the renderer was testing nothing. Tinting the two surfaces red and
+green and rendering one frame is what finally showed it.
 
-**Looking up from the nave, you are inside the drum, not under the dome.** Three
-passes went into making the dome ribs read, adding rings, adding a lamp, changing
-the gilding. None of it did anything, because the flat disc filling the frame was
-the drum wall eight metres below the dome. Tinting each candidate surface a
-different flat colour and rendering one frame answered in seconds what an hour of
-reasoning had not.
+**The first symptom of that bug looked like a sky problem.** For several passes the
+building simply was not there: clean blue sky where the whole facade should have
+been. It was in the frustum, it was visible, a raycast down the middle of the
+screen hit it. Forcing the sky to `renderOrder = -1000` with `depthTest = false`
+made the building appear, which is correct practice for a skybox and is still in
+the code, but it was treating a symptom. The depth buffer was the disease.
 
-**A metal with no environment map has almost no diffuse term.** The gold ribs read
-beautifully outdoors, where a directional key gives them a specular to catch, and
-rendered as nothing at all indoors under point light. The interior uses a matte
-gilt at `metalness: 0.18` with a little emissive, so it reads as gilding at any
-hour instead of disappearing whenever the lamps come down.
+**The building was wrong, and only photographs could say so.** The first version of
+this scene was a domed limestone palace with a portico and twin towers, built off
+the name. The real Prayer Palace is a round single-storey building in split-face
+block with a shallow cone for a roof. Nothing about the modelled version survived
+the photographs: not the geometry, not the material, not the approach, not the
+plan of the room inside it. A generic silhouette read as wrong from every angle,
+in exactly the way a five-bay porch invented for a building that has none does.
 
-**Half the drum windows were facing the wrong way.** They were built from the same
-loop as the exterior set and rotated by an extra `Math.PI`, so the room saw their
-back faces and the renderer culled them. Twelve light sources, silently absent.
+**The screen wall was facing the wrong way round its own cylinder.**
+`CylinderGeometry` measures theta from +Z, so an arc from -0.46 to +0.46 bulges
+toward the camera. The screen was standing in the middle of the room with its back
+to the platform.
+
+**Four thousand chairs alias into a flat grey field.** At the distance this room is
+seen from, a chair is about five pixels wide, and with antialiasing off that many
+bright edges read as one light mass rather than as seating. The rows are modelled
+as continuous curved arcs instead. Detail below the threshold is not detail, it is
+noise.
 
 **At blue hour a building is darker than the sky.** Pale limestone lit at nearly
 full key came out at exactly the value of the sky behind it. The same mistake
@@ -129,6 +151,9 @@ building sat below the sky rather than beside it.
 **A 1px gap over a coloured container is a lovely way to draw a grid** right up
 until a row is not full, and then the container shows through as a grey block.
 Borders on the cells give the same single-pixel rules with nothing left over.
+
+**A sky sphere sitting exactly on the far plane gets clipped into a visible dome.**
+This site is three hundred metres across, so both numbers had to grow.
 
 **A vertical field of view crops sideways as the viewport narrows,** which on a
 phone put the lens inside the building. The shots are composed at 16:9 and anything
@@ -161,7 +186,7 @@ unmodified.
 
 The idiom owes a debt to MengTo's Kage, which publishes a build prompt for exactly
 this purpose. No code and no artwork from it is used here: the geometry, the
-palette, the palace and the post chain are original to this project.
+palette, the modelled building and the post chain are original to this project.
 
 ## Open items
 
@@ -171,6 +196,10 @@ palette, the palace and the post chain are original to this project.
 - The prayer request form composes a message in the sender's own mail client, which
   is the honest behaviour for a site with no backend. A real endpoint would be
   better.
-- Photography is limited to what the old site published. Proper exterior
-  photographs of 1111 Arrow Road would improve the editorial layer, and would let
-  the modelled palace be checked against the real building.
+- The modelled building is worked up from aerial and street photographs. The
+  proportions, the banding, the entrance canopies and the roof are right; the exact
+  bay spacing, the wing layout behind the auditorium and the interior finishes are
+  informed guesses. Measured drawings, or a walk round with a camera, would settle
+  them.
+- Photography in the editorial layer is still limited to what the old site
+  published.
