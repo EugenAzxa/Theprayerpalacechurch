@@ -1,0 +1,1626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Prayer Palace | Toronto</title>
+<meta name="description" content="The Prayer Palace, 1111 Arrow Road, Toronto. Canada's first established multicultural, non-denominational church. Sundays 10:30am, Fridays 7:30pm, Saturday prayer 7:30pm.">
+<meta name="theme-color" content="#060A13">
+<link rel="icon" href="assets/mark.webp" type="image/webp">
+<meta property="og:title" content="The Prayer Palace | Toronto">
+<meta property="og:description" content="Sixty years of ministry, fifty nations, one house. Sundays 10:30am at 1111 Arrow Road.">
+<meta property="og:image" content="assets/sanctuary-wall.webp">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<div id="loader">
+  <img class="mark" src="assets/mark.webp" alt="">
+  <div class="cap" id="loadCap">Preparing the house</div>
+  <div class="bar"><i id="loadBar"></i></div>
+</div>
+
+<canvas id="world" aria-hidden="true"></canvas>
+<div id="veil" aria-hidden="true"></div>
+
+<!-- foreground silhouettes, pinned at the foot of the active chapter -->
+<div class="fg" id="fg-court" aria-hidden="true">
+  <svg viewBox="0 0 1600 200" preserveAspectRatio="none">
+    <path fill="#05080F" d="M0 200V150c60-6 120-14 180-12s110 16 168 14 104-20 160-18 106 22 162 20 100-24 156-22 104 26 158 24 96-18 152-16 110 20 164 18 100-12 100-12v54z"/>
+    <g fill="#070C16">
+      <rect x="196" y="96" width="7" height="60"/><circle cx="199.5" cy="92" r="9"/>
+      <rect x="1396" y="96" width="7" height="60"/><circle cx="1399.5" cy="92" r="9"/>
+    </g>
+  </svg>
+</div>
+<div class="fg" id="fg-steps" aria-hidden="true">
+  <svg viewBox="0 0 1600 180" preserveAspectRatio="none">
+    <path fill="#05080F" d="M0 180v-28h1600v28z"/>
+    <path fill="#070C16" d="M120 152v-22h1360v22z"/>
+    <path fill="#090F1B" d="M240 130v-22h1120v22z"/>
+    <path fill="#0B1220" d="M360 108v-22H1240v22z"/>
+  </svg>
+</div>
+<div class="fg" id="fg-pews" aria-hidden="true">
+  <svg viewBox="0 0 1600 190" preserveAspectRatio="none">
+    <path fill="#04070D" d="M0 190v-56h1600v56z"/>
+    <g fill="#060B14">
+      <rect x="40" y="86" width="150" height="50" rx="4"/><rect x="230" y="86" width="150" height="50" rx="4"/>
+      <rect x="420" y="86" width="150" height="50" rx="4"/><rect x="610" y="86" width="150" height="50" rx="4"/>
+      <rect x="840" y="86" width="150" height="50" rx="4"/><rect x="1030" y="86" width="150" height="50" rx="4"/>
+      <rect x="1220" y="86" width="150" height="50" rx="4"/><rect x="1410" y="86" width="150" height="50" rx="4"/>
+    </g>
+  </svg>
+</div>
+
+<nav id="nav" aria-label="Primary">
+  <a class="brand" href="/" aria-label="The Prayer Palace, home">
+    <img class="chrome" src="assets/logo.webp" alt="The Prayer Palace">
+    <img class="ink" src="assets/logo-ink.webp" alt="" aria-hidden="true">
+  </a>
+  <div class="spacer"></div>
+  <div class="links">
+    <a href="#threshold">New here</a>
+    <a href="#sanctuary">About</a>
+    <a href="events.html">Events</a>
+    <a href="connect.html">Connect &amp; Serve</a>
+    <a href="contact.html">Visit</a>
+  </div>
+  <div class="nav-cta"><a class="btn btn-gold" href="give.html">Give</a></div>
+  <button id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+</nav>
+
+<div id="drawer" aria-label="Menu" role="dialog" aria-modal="true">
+  <button class="close" aria-label="Close menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <a href="#threshold">New here</a>
+  <a href="#sanctuary">Who we are</a>
+  <a href="#word">Prayer</a>
+  <a href="#ascent">Heaven is real</a>
+  <a href="events.html">Events</a>
+  <a href="connect.html">Connect &amp; Serve</a>
+  <a href="contact.html">Visit us</a>
+  <div class="drawer-cta">
+    <a class="btn btn-gold" href="give.html">Give</a>
+    <a class="btn" href="contact.html">Plan a visit</a>
+  </div>
+</div>
+
+<div id="rail" aria-label="Chapters">
+  <button data-go="forecourt" aria-current="true"><span class="n">01</span><span class="t"></span></button>
+  <button data-go="threshold"><span class="n">02</span><span class="t"></span></button>
+  <button data-go="sanctuary"><span class="n">03</span><span class="t"></span></button>
+  <button data-go="word"><span class="n">04</span><span class="t"></span></button>
+  <button data-go="ascent"><span class="n">05</span><span class="t"></span></button>
+</div>
+
+<main>
+
+<!-- ================= CHAPTER 01 - THE FORECOURT ================= -->
+<section class="chapter tall" id="forecourt" data-chapter="0" data-fg="fg-court">
+  <div class="wrap"><div class="col wide">
+    <div class="mark-line up"><span class="num">01</span><span class="rule"></span><span class="lbl">The forecourt</span></div>
+    <h1 data-split>All are welcome<br>in the house<br><span class="h-em">of God</span></h1>
+    <p class="lede up">Canada's first established multicultural, non-denominational church. Sixty years of ministry on Arrow Road, and a door that has never asked where you came from.</p>
+    <div class="chips">
+      <div class="chip up"><b>Sundays</b><span>10:30 am</span><em>Worship &amp; Word</em></div>
+      <div class="chip up"><b>Fridays</b><span>7:30 pm</span><em>Bible study &amp; prayer</em></div>
+      <div class="chip up"><b>Saturdays</b><span>7:30 pm</span><em>Prayer</em></div>
+    </div>
+    <div class="cta-row up">
+      <a class="btn btn-solid" href="#threshold">Plan your first visit</a>
+      <a class="btn" href="contact.html">1111 Arrow Road, Toronto</a>
+    </div>
+  </div></div>
+</section>
+
+<!-- ================= CHAPTER 02 - THE THRESHOLD ================= -->
+<section class="chapter" id="threshold" data-chapter="1" data-fg="fg-steps">
+  <div class="wrap"><div class="col">
+    <div class="mark-line up"><span class="num">02</span><span class="rule"></span><span class="lbl">The threshold</span></div>
+    <h2 data-split>Come as<br>you are</h2>
+    <p class="body up">There is no dress code and no form to fill in at the door. Parking is free, security is on the premises, and someone is watching for you. If you are new, meet us at the Welcome Reception in the Connect Cafe straight after the Sunday service, between the north main entrance and the gymnasium.</p>
+    <p class="body up">Nursery care runs from birth to three years in Wing 2. Palace Kidz takes ages four to twelve during the 10:30 service. Youth meet Friday nights at 7:30 in the Wing 1 Chapel. Real-time translation is offered every Sunday, at no cost, in your language.</p>
+    <ul class="values">
+      <li class="up"><span>09:45</span><p>Connect Class, Wing 2 Chapel. Thirty minutes on who we are and what happens next.</p></li>
+      <li class="up"><span>10:15</span><p>Palace Kidz check-in opens, Wing 1. Ages nought to twelve.</p></li>
+      <li class="up"><span>10:30</span><p>Worship and Word in the main sanctuary. Expect to be there until about 12:30.</p></li>
+      <li class="up"><span>12:30</span><p>Welcome Reception, Connect Cafe. Light refreshments and a welcome package to take home.</p></li>
+    </ul>
+    <div class="cta-row up"><a class="btn btn-solid" href="contact.html">Tell us you are coming</a></div>
+  </div></div>
+</section>
+
+<!-- ================= CHAPTER 03 - THE SANCTUARY ================= -->
+<section class="chapter tall" id="sanctuary" data-chapter="2" data-fg="fg-pews">
+  <div class="wrap"><div class="col wide">
+    <div class="mark-line up"><span class="num">03</span><span class="rule"></span><span class="lbl">The sanctuary</span></div>
+    <h2 data-split>Sixty years.<br>Fifty nations.<br><span class="h-em">One house.</span></h2>
+    <p class="lede up">We are a church in the city of Toronto where you and your family can experience an encounter with God and His message of hope and grace. Over fifty nationalities gather in this room as one body.</p>
+    <div class="stats">
+      <div class="up"><b>60+</b><span>Years in ministry</span></div>
+      <div class="up"><b>50+</b><span>Nationalities in the room</span></div>
+      <div class="up"><b>3</b><span>Gatherings every week</span></div>
+    </div>
+    <div class="duo">
+      <figure class="plate up">
+        <img src="assets/sanctuary-wall.webp" alt="The main sanctuary during a Sunday service, the screen wall lit behind the platform" loading="lazy" width="1400" height="532">
+        <figcaption><b>The main sanctuary</b><span>Sundays 10:30</span></figcaption>
+      </figure>
+      <figure class="plate up">
+        <img src="assets/pastor-tom.webp" alt="Pastor Tom Melnichuk" loading="lazy" width="760" height="760">
+        <figcaption><b>Pastor Tom Melnichuk</b><span>Senior pastor</span></figcaption>
+      </figure>
+    </div>
+    <p class="body up">Pastor Tom Melnichuk is a part of the founding family. For over forty years he ministered alongside his father, the late Reverend Paul Melnichuk, helping to build, strengthen and preserve the foundation of this church's mission. He is also a certified airline transport pilot, which is how our humanitarian relief reaches places that are otherwise hard to get to.</p>
+    <ul class="values">
+      <li class="up"><span>I</span><p>Live life together in unity for Jesus.</p></li>
+      <li class="up"><span>II</span><p>Honour yesterday and inspire tomorrow.</p></li>
+      <li class="up"><span>III</span><p>Aspire greatness in one another.</p></li>
+      <li class="up"><span>IV</span><p>Everyone is called for a purpose.</p></li>
+      <li class="up"><span>V</span><p>Kingdom model mindset is about serving and multiplying.</p></li>
+    </ul>
+  </div></div>
+</section>
+
+<!-- ================= CHAPTER 04 - THE WORD ================= -->
+<section class="chapter tall" id="word" data-chapter="3">
+  <div class="wrap"><div class="col right">
+    <div class="mark-line up"><span class="num">04</span><span class="rule"></span><span class="lbl">The word</span></div>
+    <h2 data-split>Pray this<br>prayer today</h2>
+    <div class="prayer up">
+      <p>Lord Jesus, I repent of my sins. I ask You to come into my heart; wash me with Your blood. I confess with my mouth and believe in my heart that You are my Lord and Saviour. You're now more than my God; You're my Heavenly Father and I'm going to serve You all the days of my life. I declare now and forever, Jesus is my Lord. Amen.</p>
+      <cite>The prayer of salvation</cite>
+    </div>
+    <p class="body up">If you prayed that, tell someone. Then take the next step: water baptism is an outward expression of an inward change, practised here by immersion. Baptism does not save a person; it is the celebration of a salvation already received.</p>
+    <p class="body up">We also believe in standing with you in prayer. Send us a prayer request or a praise report and we will lift it with the full expectation that the thing you are believing for will come to pass.</p>
+    <div class="cta-row up">
+      <a class="btn btn-solid" href="contact.html#prayer">Send a prayer request</a>
+      <a class="btn" href="contact.html#baptism">Register for baptism</a>
+    </div>
+    <figure class="plate up" style="margin-top:44px">
+      <img src="assets/sanctuary-light.webp" alt="A shaft of light across the sanctuary during a service" loading="lazy" width="980" height="800">
+      <figcaption><b>You sent your word and healed my disease</b><span>Psalm 107:20</span></figcaption>
+    </figure>
+  </div></div>
+</section>
+
+<!-- ================= CHAPTER 05 - THE ASCENT ================= -->
+<section class="chapter tall" id="ascent" data-chapter="4">
+  <div class="wrap"><div class="col center">
+    <div class="mark-line up" style="justify-content:center"><span class="num">05</span><span class="rule"></span><span class="lbl">The ascent</span></div>
+    <h2 data-split class="h-caps">Heaven is real.<br>There is eternal life.</h2>
+    <p class="lede up" style="margin-left:auto;margin-right:auto">No eye has seen, no ear has heard, and no mind has imagined what God has prepared for those who love him.<br><span class="label" style="display:block;margin-top:14px">1 Corinthians 2:9</span></p>
+  </div>
+  <div class="col wide" style="margin:66px auto 0">
+    <div class="duo">
+      <figure class="plate up">
+        <img src="assets/pastor-paul.webp" alt="Reverend Paul Melnichuk" loading="lazy" width="480" height="660">
+        <figcaption><b>Rev. Paul Melnichuk</b><span>1934 - 2024</span></figcaption>
+      </figure>
+      <div class="up">
+        <h3>A general in the faith</h3>
+        <p class="body">On 31 October 2024 our founder and senior pastor, Paul David Melnichuk, was promoted to glory at the age of ninety, after seventy years in the service of his Lord and Saviour. We mourn, but not as those who have no hope.</p>
+        <p class="body">He was an unparalleled teacher, a father, and a shepherd to the people. The work of the Lord continues, as Pastor Paul would desire.</p>
+        <p class="small" style="margin-top:20px;font-style:italic">"I am the resurrection and the life. He who believes in me will live, even though he dies." John 11:25</p>
+      </div>
+    </div>
+    <div class="duo" style="margin-top:20px">
+      <div class="up">
+        <h3>Mission: raise the roof</h3>
+        <p class="body">Hurricane Melissa struck Jamaica on 28 October 2025 as a category five storm. In Clarendon it tore the roof clean off a local church, leaving the sanctuary open to the sky. We have committed to rebuilding it, and to reinforcing it against the next one.</p>
+        <div class="cta-row"><a class="btn btn-gold" href="give.html#missions">Stand with Clarendon</a></div>
+      </div>
+      <figure class="plate up">
+        <img src="assets/jamaica.webp" alt="The damaged roof of the church in Clarendon, Jamaica" loading="lazy" width="900" height="620">
+        <figcaption><b>Clarendon, Jamaica</b><span>Global missions</span></figcaption>
+      </figure>
+    </div>
+  </div></div>
+</section>
+
+</main>
+
+<!-- ================= THE PRACTICAL ZONE ================= -->
+<div class="paper-zone">
+
+  <section id="visit">
+    <div class="wrap">
+      <div class="visit">
+        <div>
+          <div class="mark-line"><span class="num">06</span><span class="rule"></span><span class="lbl">Visit us</span></div>
+          <h2>We would love<br>to meet you</h2>
+          <p class="lede">Come for a service, or come by the office during the week. Either way, you are expected.</p>
+          <ul class="times">
+            <li><b>Sunday</b><span>10:30 am<br>Worship &amp; Word</span></li>
+            <li><b>Friday</b><span>7:30 pm<br>Bible study &amp; prayer</span></li>
+            <li><b>Saturday</b><span>7:30 pm<br>Prayer</span></li>
+            <li><b>Office hours</b><span>Tue to Fri, 9 am - 5 pm<br>Closed Sat to Mon</span></li>
+          </ul>
+        </div>
+        <div>
+          <span class="label">The house</span>
+          <address>
+            The Prayer Palace<br>
+            1111 Arrow Road<br>
+            Toronto, Ontario<br>
+            M9M 3B3, Canada<br><br>
+            <a href="tel:+14162411100">416 241 1100</a><br>
+            <a href="mailto:info@theprayerpalace.com">info@theprayerpalace.com</a>
+          </address>
+          <div class="cta-row">
+            <a class="btn btn-solid" href="https://maps.google.com/?q=1111+Arrow+Road,+Toronto,+ON+M9M+3B3" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              Directions
+            </a>
+            <a class="btn" href="contact.html">Contact us</a>
+          </div>
+          <p class="small" style="margin-top:26px">Parking is free. Security personnel are on the premises at all times. Friends and family are all welcome.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="next" style="padding-top:0">
+    <div class="wrap">
+      <div class="mark-line"><span class="num">07</span><span class="rule"></span><span class="lbl">Take a next step</span></div>
+      <h2>Where to go from here</h2>
+      <div class="cards">
+        <a class="card" href="give.html">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/></svg></span>
+          <h3>Give</h3>
+          <p>Tithes, offerings and missions. Online, by e-transfer, by text, in person or by mail.</p>
+          <span class="go">Giving options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+        <a class="card" href="events.html">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+          <h3>Events</h3>
+          <p>Sunrise prayer, youth nights, couples date night, the young adults praise cruise and more.</p>
+          <span class="go">What is coming up <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+        <a class="card" href="connect.html">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6.5a3 3 0 0 1 0 5.6M17.5 20a5.6 5.6 0 0 0-2-4.2"/></svg></span>
+          <h3>Connect &amp; Serve</h3>
+          <p>Palace Kidz, youth, young adults, women's, men's and seniors. Plus every serve team in the house.</p>
+          <span class="go">Find your people <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+        <a class="card" href="contact.html#prayer">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 3v18M12 3c-1.6 2.4-2.4 4.4-2.4 6.2 0 1.5.8 2.6 2.4 3.4 1.6-.8 2.4-1.9 2.4-3.4C14.4 7.4 13.6 5.4 12 3Z"/><path d="M8 21h8"/></svg></span>
+          <h3>Prayer requests</h3>
+          <p>Send us your request or your praise report. We will stand in agreement with you.</p>
+          <span class="go">Send a request <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+        <a class="card" href="contact.html#baptism">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 3v9M8.5 6.5h7"/><path d="M3 16c1.6 0 1.6 1.6 3.2 1.6S7.8 16 9.4 16s1.6 1.6 3.2 1.6S14.2 16 15.8 16s1.6 1.6 3.2 1.6S20.6 16 21 16"/><path d="M3 20c1.6 0 1.6 1.6 3.2 1.6S7.8 20 9.4 20"/></svg></span>
+          <h3>Water baptism</h3>
+          <p>An outward expression of an inward change, practised here by immersion. Register any time.</p>
+          <span class="go">Register <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+        <a class="card" href="give.html#missions">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg></span>
+          <h3>Global missions</h3>
+          <p>Humanitarian relief, the Clarendon rebuild in Jamaica, and the food and clothing hub at home.</p>
+          <span class="go">See the work <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="fwrap">
+    <div>
+      <img class="flogo" src="assets/logo.webp" alt="The Prayer Palace">
+      <p class="small" style="max-width:36ch">A non-profit Christian organization blanketing the world with the Gospel of Jesus Christ to meet the needs of mankind.</p>
+      <p class="small" style="margin-top:18px">Licensed and recognized by The Evangelical Association in Canada.</p>
+    </div>
+    <div>
+      <h4>The house</h4>
+      <ul>
+        <li><a href="#threshold">New here</a></li>
+        <li><a href="#sanctuary">Who we are</a></li>
+        <li><a href="#word">Prayer</a></li>
+        <li><a href="#ascent">Heaven is real</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="connect.html">Connect &amp; Serve</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Get in touch</h4>
+      <ul>
+        <li><a href="contact.html">1111 Arrow Road, Toronto</a></li>
+        <li><a href="tel:+14162411100">416 241 1100</a></li>
+        <li><a href="mailto:info@theprayerpalace.com">info@theprayerpalace.com</a></li>
+        <li><a href="give.html">Give</a></li>
+        <li><a href="contact.html#prayer">Prayer requests</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="base">
+    <span>Sundays 10:30 am &nbsp;|&nbsp; Fridays 7:30 pm &nbsp;|&nbsp; Saturday prayer 7:30 pm</span>
+    <span>&copy; 2026 The Prayer Palace</span>
+  </div>
+</footer>
+
+<script src="vendor/three.min.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* ============================================================
+   0. SHARED HELPERS
+   ============================================================ */
+var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var clamp = function (v, a, b) { return v < a ? a : v > b ? b : v; };
+var lerp = function (a, b, t) { return a + (b - a) * t; };
+var smooth = function (t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+/* A ramp that holds a plateau at full before easing away. The veil has to reach
+   one, or a fifth of the swap shows through and the two worlds trade places in
+   plain sight. */
+var plateau = function (d, hold, fade) {
+  if (d <= hold) return 1;
+  if (d >= hold + fade) return 0;
+  return 1 - smooth((d - hold) / fade);
+};
+
+/* ============================================================
+   1. THE EDITORIAL LAYER
+   Built first and independently of WebGL, so the page is a complete
+   document whether or not the scene ever starts.
+   ============================================================ */
+var CHAPTERS = ['forecourt', 'threshold', 'sanctuary', 'word', 'ascent'];
+var sections = CHAPTERS.map(function (id) { return document.getElementById(id); });
+var railBtns = Array.prototype.slice.call(document.querySelectorAll('#rail button'));
+
+/* Headings reveal word by word, so a line assembles rather than fading in. */
+(function splitHeadings() {
+  document.querySelectorAll('[data-split]').forEach(function (h) {
+    var out = [];
+    Array.prototype.forEach.call(h.childNodes, function (node) {
+      if (node.nodeType === 3) {
+        node.textContent.split(/(\s+)/).forEach(function (tok) {
+          if (!tok.trim()) { out.push(document.createTextNode(tok)); return; }
+          var s = document.createElement('span');
+          s.className = 'rv';
+          var i = document.createElement('i');
+          i.textContent = tok;
+          s.appendChild(i);
+          out.push(s);
+        });
+      } else if (node.nodeName === 'BR') {
+        out.push(node.cloneNode());
+      } else {
+        // keep inline spans (the italic clause) but split their words too
+        var wrapper = node.cloneNode(false);
+        node.textContent.split(/(\s+)/).forEach(function (tok) {
+          if (!tok.trim()) { wrapper.appendChild(document.createTextNode(tok)); return; }
+          var s = document.createElement('span');
+          s.className = 'rv';
+          var i = document.createElement('i');
+          i.textContent = tok;
+          s.appendChild(i);
+          wrapper.appendChild(s);
+        });
+        out.push(wrapper);
+      }
+    });
+    h.textContent = '';
+    out.forEach(function (n) { h.appendChild(n); });
+  });
+  /* Stagger every revealing element inside a chapter. */
+  document.querySelectorAll('.chapter, .paper-zone section, footer').forEach(function (sec) {
+    var bits = sec.querySelectorAll('.rv > i, .up');
+    Array.prototype.forEach.call(bits, function (el, i) {
+      el.style.transitionDelay = Math.min(i * 46, 620) + 'ms';
+    });
+  });
+})();
+
+(function reveals() {
+  var targets = document.querySelectorAll('.chapter, .paper-zone section, footer');
+  if (RM || !('IntersectionObserver' in window)) {
+    Array.prototype.forEach.call(targets, function (t) { t.classList.add('is-live'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-live'); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+  Array.prototype.forEach.call(targets, function (t) { io.observe(t); });
+})();
+
+/* Navigation, drawer, chapter rail. */
+(function chrome() {
+  var burger = document.getElementById('burger');
+  var drawer = document.getElementById('drawer');
+  var closeBtn = drawer.querySelector('.close');
+  function setDrawer(open) {
+    drawer.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.style.overflow = open ? 'hidden' : '';
+    if (open) closeBtn.focus(); else burger.focus();
+  }
+  burger.addEventListener('click', function () { setDrawer(!drawer.classList.contains('open')); });
+  closeBtn.addEventListener('click', function () { setDrawer(false); });
+  drawer.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { setDrawer(false); }); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && drawer.classList.contains('open')) setDrawer(false); });
+
+  railBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.getElementById(b.getAttribute('data-go'));
+      if (el) el.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+  document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var el = document.querySelector(a.getAttribute('href'));
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+})();
+
+/* Below the ascent the ground turns to paper, and a chrome wordmark on paper is
+   invisible. The bar reads which ground is under it and swaps to ink. */
+var navEl = document.getElementById('nav');
+var paperZone = document.querySelector('.paper-zone');
+var footEl = document.querySelector('footer');
+function navGround() {
+  if (!paperZone || !footEl) return;
+  var onPaper = paperZone.getBoundingClientRect().top < 64 && footEl.getBoundingClientRect().top > 64;
+  navEl.classList.toggle('on-paper', onPaper);
+}
+
+/* One shared source of truth for which chapter is active. The rail, the
+   foreground layers and the scene all read from this. */
+var activeChapter = 0;
+var fgLayers = {};
+document.querySelectorAll('.fg').forEach(function (el) { fgLayers[el.id] = el; });
+
+function setActiveChapter(i) {
+  if (i === activeChapter) return;
+  activeChapter = i;
+  railBtns.forEach(function (b, n) { b.setAttribute('aria-current', n === i ? 'true' : 'false'); });
+  var want = sections[i] ? sections[i].getAttribute('data-fg') : null;
+  Object.keys(fgLayers).forEach(function (id) {
+    var el = fgLayers[id];
+    if (id === want) { el.classList.add('on'); el.classList.remove('off'); }
+    else if (el.classList.contains('on')) { el.classList.remove('on'); el.classList.add('off'); }
+  });
+}
+
+/* ============================================================
+   2. SCROLL POSITION -> ONE NUMBER
+   Chapters have very different heights, so equal slices of scroll are
+   nowhere near equal chapters. Progress is measured per section and
+   then eased, which is what puts camera velocity at zero on a waypoint.
+   ============================================================ */
+var scrollDrive = { c: 0, f: 0, raw: 0 };
+function measureScroll() {
+  var mid = window.scrollY + window.innerHeight * 0.5;
+  var last = sections.length - 1;
+  for (var i = 0; i <= last; i++) {
+    var s = sections[i];
+    var top = s.offsetTop, h = s.offsetHeight;
+    if (mid < top) { scrollDrive.c = i; scrollDrive.f = 0; break; }
+    if (mid < top + h || i === last) {
+      scrollDrive.c = i;
+      scrollDrive.f = clamp((mid - top) / h, 0, 1);
+      break;
+    }
+  }
+  scrollDrive.raw = (scrollDrive.c + scrollDrive.f) / sections.length;
+  setActiveChapter(scrollDrive.c);
+  navGround();
+}
+measureScroll();
+window.addEventListener('scroll', measureScroll, { passive: true });
+window.addEventListener('resize', measureScroll);
+
+/* ============================================================
+   3. THE WORLD
+   ============================================================ */
+var canvas = document.getElementById('world');
+var renderer, scene, camera;
+
+/* Ask a throwaway canvas first. Handing a dead canvas to the renderer works,
+   but it logs its own error on the way out, and a machine with no WebGL should
+   get a quiet document rather than a console full of red. */
+function webglAvailable() {
+  try {
+    var t = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext &&
+      (t.getContext('webgl2') || t.getContext('webgl') || t.getContext('experimental-webgl')));
+  } catch (e) { return false; }
+}
+
+if (webglAvailable()) {
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
+  } catch (err) { renderer = null; }
+}
+
+if (!renderer || !renderer.getContext()) {
+  /* Survive a WebGL failure: the page stays readable as a flat document. */
+  document.documentElement.classList.add('no-webgl');
+  document.getElementById('loader').classList.add('done');
+  canvas.remove();
+  return;
+}
+
+/* Author every scene colour in sRGB and let three linearise on the way in,
+   because the composite pass at the end applies its own gamma. Skipping this
+   renders the night as an overcast afternoon. */
+THREE.ColorManagement.enabled = true;
+renderer.outputEncoding = THREE.LinearEncoding;   /* the composite writes sRGB itself */
+renderer.setClearColor(0x05080f, 1);
+/* Every clear on this page is explicit. The additive upsample renders a quad
+   into a target that already holds the level above it, and three's automatic
+   clear would wipe that out before the blend ever happened. */
+renderer.autoClear = false;
+/* Watch fill rate, not triangle count. */
+var DPR_CAP = 1.75;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, DPR_CAP));
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+scene = new THREE.Scene();
+/* A vertical field of view crops the world sideways as the viewport gets
+   narrower, and on a phone that puts the lens inside the building. The shots
+   are composed at 16:9, so anything narrower widens the angle to hold the same
+   horizontal field, up to a limit past which the perspective goes strange. */
+var BASE_FOV = 52, BASE_ASPECT = 16 / 9, MAX_FOV = 82;
+function fovFor(aspect) {
+  if (aspect >= BASE_ASPECT) return BASE_FOV;
+  var halfH = Math.tan(BASE_FOV * Math.PI / 360) * BASE_ASPECT;
+  return Math.min(MAX_FOV, 2 * Math.atan(halfH / aspect) * 180 / Math.PI);
+}
+camera = new THREE.PerspectiveCamera(BASE_FOV, window.innerWidth / window.innerHeight, 0.35, 900);
+camera.fov = fovFor(camera.aspect);
+camera.updateProjectionMatrix();
+
+var skyGroup = new THREE.Group();
+var shellGroup = new THREE.Group();
+var roomGroup = new THREE.Group();
+scene.add(skyGroup, shellGroup, roomGroup);
+/* Groups swapped on a change must be built in their starting state, because a
+   handler that only acts on a change never runs at boot. */
+roomGroup.visible = false;
+
+/* ---------- canvas textures -------------------------------------------
+   A material colour multiplies its map, so every one of these is painted
+   light and tinted light. Cell variation randomises one value against a
+   fixed hue: randomising R, G and B independently randomises hue, and gives
+   a wall of pink and green blocks. */
+function cvs(w, h) {
+  var c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  return c;
+}
+function tex(c, rx, ry) {
+  var t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(rx || 1, ry || 1);
+  t.encoding = THREE.sRGBEncoding;
+  t.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+  return t;
+}
+
+function limestoneTex() {
+  var c = cvs(512, 512), x = c.getContext('2d');
+  x.fillStyle = '#cfc7b8'; x.fillRect(0, 0, 512, 512);
+  for (var i = 0; i < 2600; i++) {
+    var v = 188 + Math.random() * 46;                    /* one value, fixed hue */
+    x.fillStyle = 'rgba(' + (v + 14) + ',' + (v + 8) + ',' + (v - 8) + ',.5)';
+    x.fillRect(Math.random() * 512, Math.random() * 512, 2 + Math.random() * 4, 1 + Math.random() * 3);
+  }
+  var rows = 8, rh = 512 / rows;
+  x.strokeStyle = 'rgba(120,112,100,.34)'; x.lineWidth = 1.4;
+  for (var r = 0; r <= rows; r++) {
+    x.beginPath(); x.moveTo(0, r * rh); x.lineTo(512, r * rh); x.stroke();
+    var off = (r % 2) * 64;
+    for (var b = 0; b < 4; b++) {
+      var bx = off + b * 128;
+      x.beginPath(); x.moveTo(bx, r * rh); x.lineTo(bx, r * rh + rh); x.stroke();
+    }
+  }
+  return c;
+}
+
+function paveTex() {
+  var c = cvs(512, 512), x = c.getContext('2d');
+  x.fillStyle = '#6d7482'; x.fillRect(0, 0, 512, 512);
+  var n = 8, s = 512 / n;
+  for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) {
+    var v = 96 + Math.random() * 30;
+    x.fillStyle = 'rgb(' + v + ',' + (v + 5) + ',' + (v + 14) + ')';
+    x.fillRect(i * s + 1, j * s + 1, s - 2, s - 2);
+  }
+  x.strokeStyle = 'rgba(24,30,42,.55)'; x.lineWidth = 2;
+  for (var k = 0; k <= n; k++) {
+    x.beginPath(); x.moveTo(k * s, 0); x.lineTo(k * s, 512); x.stroke();
+    x.beginPath(); x.moveTo(0, k * s); x.lineTo(512, k * s); x.stroke();
+  }
+  return c;
+}
+
+function carpetTex() {
+  var c = cvs(256, 256), x = c.getContext('2d');
+  x.fillStyle = '#2a3346'; x.fillRect(0, 0, 256, 256);
+  for (var i = 0; i < 5200; i++) {
+    var v = 40 + Math.random() * 34;
+    x.fillStyle = 'rgba(' + v + ',' + (v + 8) + ',' + (v + 22) + ',.55)';
+    x.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+  }
+  return c;
+}
+
+/* A window at night is not a lit panel, it is a hole with a room behind it:
+   dark at the head where the vault is, warm low down where the people are,
+   shadowed down both reveals. */
+function glassTex() {
+  var c = cvs(128, 256), x = c.getContext('2d');
+  var g = x.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#241d10'); g.addColorStop(.34, '#6a5124');
+  g.addColorStop(.72, '#c79a48'); g.addColorStop(1, '#e8c98a');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 256);
+  var s = x.createLinearGradient(0, 0, 128, 0);
+  s.addColorStop(0, 'rgba(10,8,4,.72)'); s.addColorStop(.22, 'rgba(10,8,4,0)');
+  s.addColorStop(.78, 'rgba(10,8,4,0)'); s.addColorStop(1, 'rgba(10,8,4,.72)');
+  x.fillStyle = s; x.fillRect(0, 0, 128, 256);
+  x.fillStyle = 'rgba(255,232,186,.5)';
+  x.beginPath(); x.arc(64, 186, 15, 0, 6.3); x.fill();
+  x.strokeStyle = 'rgba(18,14,8,.5)'; x.lineWidth = 2.5;
+  for (var i = 1; i < 5; i++) { x.beginPath(); x.moveTo(0, i * 51); x.lineTo(128, i * 51); x.stroke(); }
+  x.beginPath(); x.moveTo(64, 0); x.lineTo(64, 256); x.stroke();
+  return c;
+}
+
+var TX = {
+  stone: tex(limestoneTex(), 1, 1),
+  pave: tex(paveTex(), 26, 26),
+  carpet: tex(carpetTex(), 18, 18),
+  glass: tex(glassTex(), 1, 1)
+};
+
+/* ---------- materials ---------- */
+var M = {
+  stone: new THREE.MeshStandardMaterial({ color: 0xf0ece2, map: TX.stone, roughness: .93, metalness: 0 }),
+  stoneWarm: new THREE.MeshStandardMaterial({ color: 0xe6dccb, map: TX.stone, roughness: .9, metalness: 0 }),
+  pave: new THREE.MeshStandardMaterial({ color: 0xc6ccd6, map: TX.pave, roughness: .9, metalness: 0 }),
+  earth: new THREE.MeshStandardMaterial({ color: 0x1b2434, roughness: 1, metalness: 0 }),
+  lead: new THREE.MeshStandardMaterial({ color: 0x5d6a7c, roughness: .5, metalness: .55 }),
+  gold: new THREE.MeshStandardMaterial({ color: 0xc9a35c, roughness: .32, metalness: .8 }),
+  goldMatte: new THREE.MeshStandardMaterial({ color: 0xd8b878, emissive: 0x3a2a0c, roughness: .46, metalness: .18 }),
+  glass: new THREE.MeshBasicMaterial({ map: TX.glass, toneMapped: false }),
+  glassCool: new THREE.MeshBasicMaterial({ map: TX.glass, color: 0xc8d6ee, side: THREE.DoubleSide, toneMapped: false }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x161d29, roughness: .86, metalness: .05 }),
+  carpet: new THREE.MeshStandardMaterial({ color: 0x212736, map: TX.carpet, roughness: 1, metalness: 0 }),
+  seat: new THREE.MeshStandardMaterial({ color: 0x2b3243, roughness: .84, metalness: .04 }),
+  bark: new THREE.MeshStandardMaterial({ color: 0x3b3a38, roughness: 1, metalness: 0 }),
+  leaf: new THREE.MeshStandardMaterial({ color: 0x3e4a3a, roughness: 1, metalness: 0 })
+};
+
+function box(w, h, d, mat, x, y, z, parent) {
+  var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  (parent || shellGroup).add(m);
+  return m;
+}
+function cyl(rt, rb, h, seg, mat, x, y, z, parent) {
+  var m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+  m.position.set(x, y, z);
+  (parent || shellGroup).add(m);
+  return m;
+}
+
+/* ---------- the sky ----------------------------------------------------
+   One gradient dome whose two colours are lerped by the look state, so the
+   blue hour becomes the glory without anything being rebuilt. */
+var skyUni = {
+  top: { value: new THREE.Color(0x0a1226) },
+  bot: { value: new THREE.Color(0x22406b) },
+  glow: { value: new THREE.Color(0x36598c) },
+  glowY: { value: 0.06 },
+  glowAmt: { value: 0.55 }
+};
+var skyDome = new THREE.Mesh(
+  new THREE.SphereGeometry(620, 32, 20),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyUni,
+    vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: [
+      'uniform vec3 top; uniform vec3 bot; uniform vec3 glow;',
+      'uniform float glowY; uniform float glowAmt; varying vec3 vP;',
+      'void main(){',
+      '  float h = normalize(vP).y;',
+      '  vec3 c = mix(bot, top, smoothstep(-0.06, 0.62, h));',
+      '  float g = exp(-abs(h - glowY) * 9.0) * glowAmt;',
+      '  c += glow * g;',
+      '  gl_FragColor = vec4(c, 1.0);',
+      '}'
+    ].join('\n')
+  })
+);
+skyDome.frustumCulled = false;
+skyDome.renderOrder = -1000;
+skyDome.material.depthTest = false;
+skyGroup.add(skyDome);
+
+/* Stars fade out as the world brightens. */
+var starMat = new THREE.PointsMaterial({ color: 0xdce6f6, size: 1.5, sizeAttenuation: false, transparent: true, opacity: .9, depthWrite: false });
+(function stars() {
+  var n = 700, pos = new Float32Array(n * 3);
+  for (var i = 0; i < n; i++) {
+    var u = Math.random() * Math.PI * 2, v = Math.acos(1 - Math.random() * 0.92), r = 560;
+    pos[i * 3] = r * Math.sin(v) * Math.cos(u);
+    pos[i * 3 + 1] = Math.abs(r * Math.cos(v)) + 30;
+    pos[i * 3 + 2] = r * Math.sin(v) * Math.sin(u);
+  }
+  var g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  var p = new THREE.Points(g, starMat);
+  p.frustumCulled = false;
+  p.renderOrder = -900;
+  skyGroup.add(p);
+})();
+
+/* A high pale moon that becomes the sun of the last chapter. */
+var moon = new THREE.Mesh(
+  new THREE.SphereGeometry(9, 24, 16),
+  new THREE.MeshBasicMaterial({ color: 0xf2f0e4, toneMapped: false })
+);
+moon.position.set(-186, 148, -96);
+moon.renderOrder = -900;
+skyGroup.add(moon);
+var halo = new THREE.Mesh(
+  new THREE.SphereGeometry(26, 20, 14),
+  new THREE.MeshBasicMaterial({ color: 0x9fc0e8, transparent: true, opacity: .16, depthWrite: false, toneMapped: false })
+);
+halo.position.copy(moon.position);
+halo.renderOrder = -899;
+skyGroup.add(halo);
+
+/* ---------- ground and forecourt ---------- */
+(function ground() {
+  var g = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), M.earth);
+  g.rotation.x = -Math.PI / 2;
+  g.position.y = -0.04;
+  shellGroup.add(g);
+
+  var court = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), M.pave);
+  court.rotation.x = -Math.PI / 2;
+  court.position.set(0, 0, 62);
+  shellGroup.add(court);
+
+  /* The reflecting pool. Rather than a mirror it carries a painted sky, which
+     is what it is: at this hour the water is the brightest thing on the ground. */
+  var pc = cvs(64, 256), px = pc.getContext('2d');
+  var pg = px.createLinearGradient(0, 0, 0, 256);
+  pg.addColorStop(0, '#20395e'); pg.addColorStop(.45, '#16294a'); pg.addColorStop(1, '#0c1830');
+  px.fillStyle = pg; px.fillRect(0, 0, 64, 256);
+  for (var i = 0; i < 60; i++) {
+    px.fillStyle = 'rgba(190,214,246,' + (.03 + Math.random() * .07) + ')';
+    px.fillRect(0, Math.random() * 256, 64, 1);
+  }
+  var pool = new THREE.Mesh(new THREE.PlaneGeometry(13, 46), new THREE.MeshBasicMaterial({
+    map: tex(pc, 1, 1), toneMapped: false
+  }));
+  pool.rotation.x = -Math.PI / 2;
+  pool.position.set(0, 0.06, 40);
+  shellGroup.add(pool);
+  /* A kerb around the water, not a slab under it: a solid block centred on the
+     pool sits proud of the surface and hides the thing it is framing. */
+  box(15.4, .34, 1.0, M.stoneWarm, 0, .08, 16.6);
+  box(15.4, .34, 1.0, M.stoneWarm, 0, .08, 63.4);
+  box(1.0, .34, 48, M.stoneWarm, -7.2, .08, 40);
+  box(1.0, .34, 48, M.stoneWarm, 7.2, .08, 40);
+})();
+
+/* ---------- the palace -------------------------------------------------
+   A prayer palace, so it is built as one: a broad limestone mass, a portico
+   of six columns over a flight of steps, twin towers at the front corners,
+   and a ribbed dome on a windowed drum over the middle of the hall. The
+   dome carries an oculus, because chapter 05 leaves through it. */
+var FRONT_Z = 2, FLOOR_Y = 1.2, DOME_X = 0, DOME_Z = -18;
+/* The dome is a sphere of R=8.2 centred at y=20.3 and stretched 1.34 in y. The
+   oculus is cut at 0.30 radians off the pole, which makes the rim 2.42m across
+   and the top of the shell 30.80m up. The camera leaves through that hole, so
+   both numbers are derived here rather than guessed twice. */
+var DOME_R = 8.2, DOME_Y = 20.3, DOME_SY = 1.34, OCU = 0.30;
+var OCULUS_R = DOME_R * Math.sin(OCU);
+var OCULUS_Y = DOME_Y + DOME_R * Math.cos(OCU) * DOME_SY;
+
+(function palace() {
+  /* main mass */
+  box(48, 13, 42, M.stone, 0, 6.5, -19);
+  box(50, 1.1, 44, M.stoneWarm, 0, 13.4, -19);          /* cornice */
+  box(49, .8, 43, M.stoneWarm, 0, .4, -19);             /* plinth */
+
+  /* portico */
+  box(24, 1.2, 8, M.stoneWarm, 0, .6, 6);               /* porch floor */
+  var COLX = [-10, -6, -2, 2, 6, 10];
+  COLX.forEach(function (x) {
+    cyl(.72, .82, 11.4, 18, M.stone, x, FLOOR_Y + 5.7, 8.6);
+    box(2.1, .5, 2.1, M.stoneWarm, x, FLOOR_Y + 11.6, 8.6);   /* capital */
+    box(2.3, .45, 2.3, M.stoneWarm, x, FLOOR_Y + .2, 8.6);    /* base */
+  });
+  box(25, 2.2, 3.2, M.stoneWarm, 0, 14.1, 8.4);         /* entablature */
+  /* pediment */
+  var ped = new THREE.Shape();
+  ped.moveTo(-12.5, 0); ped.lineTo(12.5, 0); ped.lineTo(0, 5.2); ped.lineTo(-12.5, 0);
+  var pedM = new THREE.Mesh(new THREE.ExtrudeGeometry(ped, { depth: 3.2, bevelEnabled: false }), M.stoneWarm);
+  pedM.position.set(0, 15.2, 6.8);
+  shellGroup.add(pedM);
+
+  /* steps */
+  for (var s = 0; s < 6; s++) {
+    box(26 + s * 1.6, .22, 1.15, M.stoneWarm, 0, 1.09 - s * .2, 10.6 + s * 1.15);
+  }
+
+  /* twin towers at the front corners */
+  [-20, 20].forEach(function (x) {
+    box(7, 22, 7, M.stone, x, 11, 0);
+    box(7.8, .8, 7.8, M.stoneWarm, x, 22.4, 0);
+    box(6, 3.4, 6, M.stone, x, 24.5, 0);
+    var cap = new THREE.Mesh(new THREE.SphereGeometry(3.3, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.lead);
+    cap.position.set(x, 26.2, 0); cap.scale.y = 1.25;
+    shellGroup.add(cap);
+    cyl(.12, .12, 2.4, 6, M.gold, x, 30.4, 0);
+    /* tower openings, lit */
+    [[0, 0, 3.55], [0, 0, -3.55]].forEach(function (o) {
+      var w = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 4.4), M.glass);
+      w.position.set(x + o[0], 18.6, o[2]);
+      if (o[2] < 0) w.rotation.y = Math.PI;
+      shellGroup.add(w);
+    });
+  });
+
+  /* the drum and the dome, built at unit scale inside a group that is then
+     stretched, so the ribs stretch with the shell instead of sliding off it */
+  var drum = cyl(8.6, 8.6, 6.6, 32, M.stone, DOME_X, 16.4, DOME_Z);
+  box(19, .9, 19, M.stoneWarm, DOME_X, 13.6, DOME_Z);
+  cyl(9.1, 9.1, .9, 32, M.stoneWarm, DOME_X, 19.9, DOME_Z);
+
+  /* drum windows */
+  for (var i = 0; i < 12; i++) {
+    var a = (i / 12) * Math.PI * 2 + Math.PI / 12;
+    var w = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 4.3), M.glass);
+    w.position.set(DOME_X + Math.sin(a) * 8.68, 16.6, DOME_Z + Math.cos(a) * 8.68);
+    w.rotation.y = a;
+    shellGroup.add(w);
+  }
+
+  var domeG = new THREE.Group();
+  domeG.position.set(DOME_X, DOME_Y, DOME_Z);
+  domeG.scale.y = DOME_SY;
+  shellGroup.add(domeG);
+  var shellDome = new THREE.Mesh(
+    new THREE.SphereGeometry(DOME_R, 40, 22, 0, Math.PI * 2, OCU, Math.PI / 2 - OCU),
+    M.lead
+  );
+  domeG.add(shellDome);
+  /* eight ribs, each a true meridian rather than a box bent to look like one */
+  for (var r = 0; r < 8; r++) {
+    var rib = new THREE.Mesh(
+      new THREE.TorusGeometry(DOME_R + .08, .17, 6, 26, Math.PI / 2 - OCU),
+      M.gold
+    );
+    rib.rotation.y = (r / 8) * Math.PI * 2;
+    domeG.add(rib);
+  }
+
+  /* the lantern over the oculus, open so the sky reads through it */
+  cyl(OCULUS_R + .5, OCULUS_R + .7, .7, 16, M.stoneWarm, DOME_X, OCULUS_Y + .3, DOME_Z);
+  for (var L = 0; L < 8; L++) {
+    var la = (L / 8) * Math.PI * 2;
+    cyl(.24, .24, 3.3, 8, M.stone, DOME_X + Math.sin(la) * (OCULUS_R + .35), OCULUS_Y + 2.3, DOME_Z + Math.cos(la) * (OCULUS_R + .35));
+  }
+  cyl(OCULUS_R + .2, OCULUS_R + .4, .55, 16, M.stoneWarm, DOME_X, OCULUS_Y + 4.2, DOME_Z);
+  var lcap = new THREE.Mesh(new THREE.SphereGeometry(OCULUS_R + .1, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.gold);
+  lcap.position.set(DOME_X, OCULUS_Y + 4.4, DOME_Z);
+  lcap.scale.y = 1.1;
+  shellGroup.add(lcap);
+  /* the cross on top */
+  cyl(.13, .13, 4.6, 8, M.gold, DOME_X, OCULUS_Y + 9.1, DOME_Z);
+  box(2.0, .3, .3, M.gold, DOME_X, OCULUS_Y + 9.9, DOME_Z);
+
+  /* front wall openings: three portals under the portico, warm from within */
+  [-5.2, 0, 5.2].forEach(function (x, i) {
+    var w = i === 1 ? 3.6 : 2.9, h = i === 1 ? 6.4 : 5.4;
+    var jamb = box(w + 1.1, h + 1.0, .5, M.stoneWarm, x, FLOOR_Y + (h + 1) / 2, FRONT_Z + .18);
+    var lit = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: 0xffcf87, toneMapped: false }));
+    lit.position.set(x, FLOOR_Y + h / 2, FRONT_Z + .46);
+    shellGroup.add(lit);
+    var arch = new THREE.Mesh(new THREE.CircleGeometry(w / 2, 18, 0, Math.PI), new THREE.MeshBasicMaterial({ color: 0xffcf87, toneMapped: false }));
+    arch.position.set(x, FLOOR_Y + h, FRONT_Z + .46);
+    shellGroup.add(arch);
+  });
+
+  /* tall lit windows down both flanks */
+  for (var f = 0; f < 7; f++) {
+    var z = -6 - f * 4.6;
+    [-24.1, 24.1].forEach(function (x) {
+      var w2 = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 6.2), M.glass);
+      w2.position.set(x, 6.4, z);
+      w2.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2;
+      shellGroup.add(w2);
+      var sur = box(.4, 7.4, 3.4, M.stoneWarm, x + (x < 0 ? .15 : -.15), 6.4, z);
+      sur.renderOrder = -1;
+    });
+  }
+})();
+
+/* ---------- lamps and trees along the forecourt ---------- */
+(function forecourtDressing() {
+  var lampGlass = new THREE.MeshBasicMaterial({ color: 0xffd9a0, toneMapped: false });
+  for (var i = 0; i < 6; i++) {
+    var z = 22 + i * 11;
+    [-19, 19].forEach(function (x) {
+      cyl(.13, .18, 4.2, 8, M.dark, x, 2.1, z);
+      var gl = new THREE.Mesh(new THREE.SphereGeometry(.42, 12, 8), lampGlass);
+      gl.position.set(x, 4.5, z);
+      shellGroup.add(gl);
+    });
+  }
+
+  /* Trees are grown, not assembled: a trunk forks, forks again, and carries
+     clusters on the outer level. Every branch goes into one instanced mesh and
+     every cluster into another, so a whole avenue is two draw calls. */
+  var branches = [], clusters = [];
+  var m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+  function limb(from, dir, len, rad, depth) {
+    var to = from.clone().addScaledVector(dir, len);
+    var mid = from.clone().lerp(to, .5);
+    q.setFromUnitVectors(up, dir.clone().normalize());
+    branches.push(new THREE.Matrix4().compose(mid, q, new THREE.Vector3(rad, len, rad)));
+    if (depth === 0) {
+      clusters.push(new THREE.Matrix4().compose(
+        to, new THREE.Quaternion(),
+        new THREE.Vector3(1.5 + Math.random() * .8, 1.1 + Math.random() * .5, 1.5 + Math.random() * .8)));
+      return;
+    }
+    var n = depth > 1 ? 3 : 2;
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2 + Math.random();
+      var d = new THREE.Vector3(Math.cos(a) * .55, 1, Math.sin(a) * .55).normalize();
+      d.lerp(dir, .35).normalize();
+      limb(to, d, len * .68, rad * .62, depth - 1);
+    }
+  }
+  var TREE_SPOTS = [];
+  for (var t = 0; t < 7; t++) {
+    TREE_SPOTS.push([-40 - Math.random() * 9, 26 + t * 13]);
+    TREE_SPOTS.push([40 + Math.random() * 9, 26 + t * 13]);
+  }
+  TREE_SPOTS.forEach(function (s) {
+    limb(new THREE.Vector3(s[0], 0, s[1]), new THREE.Vector3((Math.random() - .5) * .12, 1, (Math.random() - .5) * .12), 4.2 + Math.random() * 1.4, .34, 2);
+  });
+  var bi = new THREE.InstancedMesh(new THREE.CylinderGeometry(.7, 1, 1, 6), M.bark, branches.length);
+  branches.forEach(function (m, i) { bi.setMatrixAt(i, m); });
+  bi.instanceMatrix.needsUpdate = true;
+  shellGroup.add(bi);
+  var ci = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), M.leaf, clusters.length);
+  clusters.forEach(function (m, i) { ci.setMatrixAt(i, m); });
+  ci.instanceMatrix.needsUpdate = true;
+  shellGroup.add(ci);
+})();
+
+/* ---------- the sanctuary ---------------------------------------------
+   Modelled from photographs of the room rather than from a generic nave: a
+   broad auditorium, a raked floor of chairs rather than pews, a platform
+   with planters, and a screen wall that is the brightest thing in the
+   building. The ceiling is built around the opening under the drum, or the
+   dome is capped from below and chapter 05 has nowhere to go. */
+var SCREEN_Z = -37.3, STAGE_Y = 2.8, CEIL_Y = 12, ROOM_HALF = 19;
+
+var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, amt: { value: 1 } };
+
+(function sanctuary() {
+  /* floor, walls, ceiling */
+  var fl = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_HALF * 2, 40), M.carpet);
+  fl.rotation.x = -Math.PI / 2;
+  fl.position.set(0, FLOOR_Y, -18);
+  roomGroup.add(fl);
+
+  var wall = new THREE.MeshStandardMaterial({ color: 0x272d38, roughness: .95, metalness: 0 });
+  box(.5, 12, 40, wall, -ROOM_HALF, FLOOR_Y + 5.4, -18, roomGroup);
+  box(.5, 12, 40, wall, ROOM_HALF, FLOOR_Y + 5.4, -18, roomGroup);
+  box(ROOM_HALF * 2, 12, .5, wall, 0, FLOOR_Y + 5.4, -38, roomGroup);
+  /* the front wall stands just inside the leaves, so the world changes hands
+     in the doorway where the architecture covers the swap */
+  box(ROOM_HALF * 2, 12, .5, wall, 0, FLOOR_Y + 5.4, FRONT_Z - .1, roomGroup);
+
+  var ceilShape = new THREE.Shape();
+  ceilShape.moveTo(-ROOM_HALF, -FRONT_Z);
+  ceilShape.lineTo(ROOM_HALF, -FRONT_Z);
+  ceilShape.lineTo(ROOM_HALF, 38);
+  ceilShape.lineTo(-ROOM_HALF, 38);
+  ceilShape.lineTo(-ROOM_HALF, -FRONT_Z);
+  var hole = new THREE.Path();
+  hole.absarc(0, -DOME_Z, 6, 0, Math.PI * 2, true);
+  ceilShape.holes.push(hole);
+  var ceil = new THREE.Mesh(new THREE.ShapeGeometry(ceilShape, 48),
+    new THREE.MeshStandardMaterial({ color: 0x1e222b, roughness: .96, metalness: 0, side: THREE.DoubleSide }));
+  ceil.rotation.x = -Math.PI / 2;
+  ceil.position.y = CEIL_Y;
+  roomGroup.add(ceil);
+  cyl(6.1, 6.1, .5, 36, M.goldMatte, DOME_X, CEIL_Y, DOME_Z, roomGroup);   /* the ring under the drum */
+
+  /* the drum and dome seen from inside */
+  var inner = new THREE.MeshStandardMaterial({ color: 0x33301f, emissive: 0x050301, emissiveIntensity: 1, roughness: .92, metalness: 0, side: THREE.BackSide });
+  cyl(8.3, 8.3, 8, 32, inner, DOME_X, 16.1, DOME_Z, roomGroup);
+  /* a cornice at each end of the drum, and a pilaster between every window, so
+     the ring above the nave has a scale and a rhythm rather than a blank face */
+  var pier = new THREE.MeshStandardMaterial({ color: 0x5d5645, roughness: .88, metalness: 0 });
+  cyl(8.15, 8.15, .55, 32, M.goldMatte, DOME_X, 12.5, DOME_Z, roomGroup);
+  cyl(8.15, 8.15, .55, 32, M.goldMatte, DOME_X, 19.7, DOME_Z, roomGroup);
+  for (var pi = 0; pi < 12; pi++) {
+    var pa = (pi / 12) * Math.PI * 2;
+    var col = box(1.15, 6.2, .5, pier,
+      DOME_X + Math.sin(pa) * 7.95, 16.4, DOME_Z + Math.cos(pa) * 7.95, roomGroup);
+    col.rotation.y = pa;
+  }
+  var dIn = new THREE.Group();
+  dIn.position.set(DOME_X, DOME_Y, DOME_Z);
+  dIn.scale.y = DOME_SY;
+  roomGroup.add(dIn);
+  dIn.add(new THREE.Mesh(
+    new THREE.SphereGeometry(DOME_R - .12, 56, 32, 0, Math.PI * 2, OCU, Math.PI / 2 - OCU),
+    new THREE.MeshStandardMaterial({ color: 0x3c372a, emissive: 0x050301, roughness: .9, metalness: 0, side: THREE.BackSide })));
+  for (var dr = 0; dr < 8; dr++) {
+    var rb = new THREE.Mesh(new THREE.TorusGeometry(DOME_R - .55, .26, 7, 30, Math.PI / 2 - OCU), M.goldMatte);
+    rb.rotation.y = (dr / 8) * Math.PI * 2;
+    dIn.add(rb);
+  }
+  /* three rings across the meridians, so the sweep has a scale to be read at */
+  [0.30, 0.62, 0.95].forEach(function (th) {
+    var r = (DOME_R - .55) * Math.sin(th);
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(r, .17, 7, 44), M.goldMatte);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = (DOME_R - .55) * Math.cos(th);
+    dIn.add(ring);
+  });
+  /* the oculus rim, lit from the sky above it */
+  var rim = new THREE.Mesh(new THREE.TorusGeometry(OCULUS_R, .18, 8, 32),
+    new THREE.MeshBasicMaterial({ color: 0xe8d9ae, toneMapped: false }));
+  rim.rotation.x = Math.PI / 2;
+  rim.position.set(DOME_X, OCULUS_Y - .3, DOME_Z);
+  roomGroup.add(rim);
+  /* the drum windows, from within */
+  for (var i = 0; i < 12; i++) {
+    var a = (i / 12) * Math.PI * 2 + Math.PI / 12;
+    var w = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 4.3), M.glassCool);
+    w.position.set(DOME_X + Math.sin(a) * 8.2, 16.4, DOME_Z + Math.cos(a) * 8.2);
+    w.rotation.y = a;
+    roomGroup.add(w);
+  }
+
+  /* the platform */
+  box(34, 1.6, 8.4, new THREE.MeshStandardMaterial({ color: 0x35302a, roughness: .9 }), 0, FLOOR_Y + .8, -34, roomGroup);
+  for (var st = 0; st < 3; st++) {
+    box(14 - st * 1.2, .34, .9, M.dark, 0, FLOOR_Y + .3 + st * .42, -29.6 + st * .9, roomGroup);
+  }
+
+  /* the screen wall. Not a lit panel but a field of moving light, which is
+     what the room actually reads as from the back. */
+  var screen = new THREE.Mesh(new THREE.PlaneGeometry(28, 7.8, 1, 1), new THREE.ShaderMaterial({
+    uniforms: screenUni, depthWrite: true, toneMapped: false, fog: false,
+    vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: [
+      'uniform float t; uniform vec3 tint; uniform float amt; varying vec2 vU;',
+      'float h(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }',
+      'void main(){',
+      '  vec2 p = vU - 0.5;',
+      '  float core = exp(-dot(p, p) * 3.2);',
+      '  float band = 0.5 + 0.5 * sin(vU.x * 7.0 + t * 0.35 + sin(vU.y * 4.0 + t * 0.22) * 1.6);',
+      '  float glint = 0.0;',
+      '  for (int i = 0; i < 5; i++) {',
+      '    float fi = float(i);',
+      '    vec2 c = vec2(fract(h(vec2(fi, 3.0)) + t * (0.012 + fi * 0.004)), h(vec2(fi, 9.0)));',
+      '    glint += 0.055 / (distance(vU, c) + 0.055);',
+      '  }',
+      '  vec3 col = tint * (0.34 + core * 0.78 + band * 0.30) + vec3(0.55, 0.72, 1.0) * glint * 0.12;',
+      '  col += vec3(0.72, 0.85, 1.0) * pow(core, 3.0) * 0.22;',
+      '  gl_FragColor = vec4(col * amt, 1.0);',
+      '}'
+    ].join('\n')
+  }));
+  screen.position.set(0, STAGE_Y + 4.2, SCREEN_Z);
+  roomGroup.add(screen);
+  box(30.5, 9.2, .4, M.dark, 0, STAGE_Y + 4.2, SCREEN_Z - .32, roomGroup);
+
+  /* the podium, with the house mark on its front */
+  box(1.5, 1.35, .8, new THREE.MeshStandardMaterial({ color: 0x6d5c3c, roughness: .5, metalness: .2 }), 0, STAGE_Y + .68, -31.4, roomGroup);
+  box(1.8, .1, 1.0, M.goldMatte, 0, STAGE_Y + 1.38, -31.4, roomGroup);
+
+  /* planters either side of the platform, as in the room */
+  [-9, -5.5, 5.5, 9].forEach(function (x) {
+    box(3.2, 1.0, 1.6, new THREE.MeshStandardMaterial({ color: 0x2f3d2c, roughness: 1 }), x, STAGE_Y + .5, -30.2, roomGroup);
+  });
+
+  /* the long run of framed panels down both side walls, and the acoustic
+     soffit that carries the house lights */
+  var panelMat = new THREE.MeshStandardMaterial({ color: 0x3a3226, roughness: .8, metalness: .12 });
+  var panelLit = new THREE.MeshBasicMaterial({ color: 0x6d5a37, toneMapped: false });
+  for (var pz = 0; pz < 9; pz++) {
+    var z2 = -32 + pz * 3.4;
+    [-1, 1].forEach(function (sgn) {
+      var fr = box(.3, 1.9, 1.25, panelMat, sgn * (ROOM_HALF - .35), FLOOR_Y + 3.4, z2, roomGroup);
+      var pl = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.55), panelLit);
+      pl.position.set(sgn * (ROOM_HALF - .52), FLOOR_Y + 3.4, z2);
+      pl.rotation.y = sgn > 0 ? -Math.PI / 2 : Math.PI / 2;
+      roomGroup.add(pl);
+    });
+  }
+  [-1, 1].forEach(function (sgn) {
+    box(2.6, 1.1, 40, new THREE.MeshStandardMaterial({ color: 0x22262f, roughness: .9 }),
+      sgn * (ROOM_HALF - 1.3), CEIL_Y - .55, -18, roomGroup);
+    box(.5, 2.6, 40, new THREE.MeshStandardMaterial({ color: 0x1d212a, roughness: .95 }),
+      sgn * (ROOM_HALF - .3), FLOOR_Y + 1.3, -18, roomGroup);   /* dado */
+  });
+
+  /* chairs, instanced. A raked fan of them is most of what the eye reads as
+     the room, so they are worth the one draw call they cost. */
+  var seats = [];
+  for (var row = 0; row < 15; row++) {
+    var z = -27.5 + row * 1.62;
+    var lift = row * 0.075;
+    var span = 15 + row * .55;
+    var n = Math.floor(span / 0.62);
+    for (var s2 = 0; s2 < n; s2++) {
+      var x = -span + (s2 / (n - 1)) * span * 2;
+      if (Math.abs(x) < 1.7) continue;                    /* the centre aisle */
+      seats.push(new THREE.Matrix4().compose(
+        new THREE.Vector3(x, FLOOR_Y + lift + .45, z),
+        new THREE.Quaternion(),
+        new THREE.Vector3(1, 1, 1)));
+    }
+  }
+  var seatGeo = new THREE.BoxGeometry(.5, .9, .52);
+  var si = new THREE.InstancedMesh(seatGeo, M.seat, seats.length);
+  seats.forEach(function (m, i) { si.setMatrixAt(i, m); });
+  si.instanceMatrix.needsUpdate = true;
+  roomGroup.add(si);
+
+  /* the house lights: a truss of small warm sources under the ceiling */
+  var bulb = new THREE.MeshBasicMaterial({ color: 0xffe6bd, toneMapped: false });
+  for (var b = 0; b < 7; b++) {
+    [-11, 0, 11].forEach(function (x) {
+      var l = new THREE.Mesh(new THREE.SphereGeometry(.26, 10, 8), bulb);
+      l.position.set(x, CEIL_Y - .7, -32 + b * 4.4);
+      if (Math.abs(x) < 1 && Math.abs(-32 + b * 4.4 - DOME_Z) < 6) return;  /* not under the opening */
+      roomGroup.add(l);
+    });
+  }
+  /* the portal, seen from inside: the night behind you as you come in */
+  [-5.2, 0, 5.2].forEach(function (x, i) {
+    var w3 = i === 1 ? 3.6 : 2.9, h3 = i === 1 ? 6.4 : 5.4;
+    var op = new THREE.Mesh(new THREE.PlaneGeometry(w3, h3),
+      new THREE.MeshBasicMaterial({ color: 0x14203a, toneMapped: false }));
+    op.position.set(x, FLOOR_Y + h3 / 2, FRONT_Z - .34);
+    op.rotation.y = Math.PI;
+    roomGroup.add(op);
+  });
+})();
+
+/* ---------- lights ----------
+   Few, and none of them casting shadows: what costs on this page is pixels,
+   not triangles, and a shadow map is a second pass over all of them. */
+var hemi = new THREE.HemisphereLight(0x334b73, 0x0b1220, 0.55);
+scene.add(hemi);
+var key = new THREE.DirectionalLight(0xa8c4ec, 0.85);
+key.position.set(-60, 80, -40);
+scene.add(key);
+var fill = new THREE.DirectionalLight(0xffd7a2, 0.28);
+fill.position.set(30, 24, 60);
+scene.add(fill);
+var roomLamp = new THREE.PointLight(0xffd9a8, 1.5, 46, 1.6);
+roomLamp.position.set(0, 9, -22);
+scene.add(roomLamp);
+var stageLamp = new THREE.PointLight(0x8fc2ee, 2.0, 40, 1.7);
+stageLamp.position.set(0, 7, -33);
+scene.add(stageLamp);
+/* inside the drum, so the dome falls off from its own windows rather than
+   sitting at one flat value all the way to the oculus */
+var drumLamp = new THREE.PointLight(0xffdca8, 1.5, 30, 1.6);
+drumLamp.position.set(DOME_X, 16.2, DOME_Z);
+scene.add(drumLamp);
+
+scene.fog = new THREE.FogExp2(0x0e1a31, 0.0072);
+
+/* ============================================================
+   4. POST
+   Hand-rolled on core three: bright pass, a mip chain, separable blur,
+   additive upsample, one filmic composite that also carries the veil.
+   Nothing here comes from examples/jsm, so the site stays at one
+   vendored file.
+   ============================================================ */
+var MIPS = 5;
+var rtScene, down = [], tmp = [];
+var quadScene = new THREE.Scene();
+var quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+var quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), null);
+quad.frustumCulled = false;
+quadScene.add(quad);
+
+function rt(w, h) {
+  return new THREE.WebGLRenderTarget(Math.max(2, w | 0), Math.max(2, h | 0), {
+    type: THREE.HalfFloatType, format: THREE.RGBAFormat,
+    minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+    depthBuffer: false, stencilBuffer: false
+  });
+}
+
+var matBright = new THREE.ShaderMaterial({
+  uniforms: { src: { value: null }, thr: { value: .72 }, knee: { value: .38 } },
+  vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: [
+    'uniform sampler2D src; uniform float thr; uniform float knee; varying vec2 vU;',
+    'void main(){',
+    '  vec3 c = texture2D(src, vU).rgb;',
+    '  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));',
+    '  float s = clamp((l - thr + knee) / (2.0 * knee), 0.0, 1.0);',
+    '  s = max(s * s * (l - thr + knee) / max(l, 1e-4), max(l - thr, 0.0) / max(l, 1e-4));',
+    '  gl_FragColor = vec4(c * s, 1.0);',
+    '}'
+  ].join('\n')
+});
+
+var matBlur = new THREE.ShaderMaterial({
+  uniforms: { src: { value: null }, dir: { value: new THREE.Vector2(1, 0) }, texel: { value: new THREE.Vector2() } },
+  vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: [
+    'uniform sampler2D src; uniform vec2 dir; uniform vec2 texel; varying vec2 vU;',
+    'void main(){',
+    '  vec2 o = dir * texel;',
+    '  vec3 c = texture2D(src, vU).rgb * 0.227027;',
+    '  c += texture2D(src, vU + o * 1.3846).rgb * 0.316216;',
+    '  c += texture2D(src, vU - o * 1.3846).rgb * 0.316216;',
+    '  c += texture2D(src, vU + o * 3.2308).rgb * 0.070270;',
+    '  c += texture2D(src, vU - o * 3.2308).rgb * 0.070270;',
+    '  gl_FragColor = vec4(c, 1.0);',
+    '}'
+  ].join('\n')
+});
+
+var matUp = new THREE.ShaderMaterial({
+  uniforms: { src: { value: null }, amt: { value: .82 } },
+  blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, transparent: true,
+  vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: 'uniform sampler2D src; uniform float amt; varying vec2 vU; void main(){ gl_FragColor = vec4(texture2D(src, vU).rgb * amt, 1.0); }'
+});
+
+var matComp = new THREE.ShaderMaterial({
+  uniforms: {
+    src: { value: null }, blm: { value: null },
+    bloomI: { value: .62 }, exposure: { value: 1.05 },
+    veil: { value: 0 }, grain: { value: .026 }, vig: { value: .42 }, t: { value: 0 }
+  },
+  vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: [
+    'uniform sampler2D src; uniform sampler2D blm;',
+    'uniform float bloomI; uniform float exposure; uniform float veil;',
+    'uniform float grain; uniform float vig; uniform float t;',
+    'varying vec2 vU;',
+    /* a filmic shoulder, so the highlights on the screen wall and the glory
+       roll off instead of clipping to a flat white */
+    'vec3 filmic(vec3 x){',
+    '  const float a = 2.51, b = 0.03, c = 2.43, d = 0.59, e = 0.14;',
+    '  return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);',
+    '}',
+    'void main(){',
+    '  vec3 c = texture2D(src, vU).rgb + texture2D(blm, vU).rgb * bloomI;',
+    '  c *= exposure;',
+    '  c = filmic(c);',
+    '  float d = distance(vU, vec2(0.5));',
+    '  c *= 1.0 - smoothstep(0.42, 0.95, d) * vig;',
+    '  float n = fract(sin(dot(vU * 1024.0 + t, vec2(12.9898, 78.233))) * 43758.5453) - 0.5;',
+    '  c += n * grain;',
+    '  c *= (1.0 - veil);',
+    '  gl_FragColor = vec4(pow(max(c, 0.0), vec3(1.0 / 2.2)), 1.0);',
+    '}'
+  ].join('\n')
+});
+
+function allocTargets() {
+  var pr = renderer.getPixelRatio();
+  var w = Math.max(2, Math.floor(window.innerWidth * pr));
+  var h = Math.max(2, Math.floor(window.innerHeight * pr));
+  if (rtScene) { rtScene.dispose(); down.forEach(function (t) { t.dispose(); }); tmp.forEach(function (t) { t.dispose(); }); }
+  rtScene = rt(w, h);
+  down = []; tmp = [];
+  /* Start the chain low: the bloom is the most expensive thing on the page and
+     nobody can tell where it was sampled from. */
+  var cw = w >> 1, ch = h >> 1;
+  for (var i = 0; i < MIPS; i++) {
+    down.push(rt(cw, ch));
+    tmp.push(rt(cw, ch));
+    cw = Math.max(2, cw >> 1); ch = Math.max(2, ch >> 1);
+  }
+}
+allocTargets();
+
+function blit(mat, target, clear) {
+  quad.material = mat;
+  renderer.setRenderTarget(target || null);
+  if (clear) renderer.clear(true, false, false);
+  renderer.render(quadScene, quadCam);
+}
+
+function post() {
+  matBright.uniforms.src.value = rtScene.texture;
+  blit(matBright, down[0], true);
+  for (var i = 1; i < MIPS; i++) {
+    var s = down[i - 1], d = down[i], tp = tmp[i];
+    matBlur.uniforms.src.value = s.texture;
+    matBlur.uniforms.texel.value.set(1 / s.width, 1 / s.height);
+    matBlur.uniforms.dir.value.set(1, 0);
+    blit(matBlur, tp, true);
+    matBlur.uniforms.src.value = tp.texture;
+    matBlur.uniforms.texel.value.set(1 / tp.width, 1 / tp.height);
+    matBlur.uniforms.dir.value.set(0, 1);
+    blit(matBlur, d, true);
+  }
+  for (var j = MIPS - 1; j > 0; j--) {
+    matUp.uniforms.src.value = down[j].texture;
+    blit(matUp, down[j - 1], false);          /* additive, so no clear */
+  }
+  matComp.uniforms.src.value = rtScene.texture;
+  matComp.uniforms.blm.value = down[0].texture;
+  blit(matComp, null, true);
+}
+
+/* ============================================================
+   5. THE LOOK
+   Every value that varies is held here and interpolated. Nothing differs
+   structurally between the states, so a change is a lerp rather than a
+   rebuild, and the world can move continuously from the blue hour to the
+   glory without anything popping.
+   ============================================================ */
+function L(p, o) { o.p = p; return o; }
+var LOOKS = [
+  L(0.00, { skyTop: 0x070c1a, skyBot: 0x1b3760, glow: 0x2d5182, glowY: .04, glowAmt: .62,
+    fog: 0x0e1a31, fogD: .0072, hemiS: 0x50719e, hemiG: 0x121b2c, hemiI: .34,
+    keyC: 0x8fb0dc, keyI: .34, fillC: 0xffd7a2, fillI: .12, lampI: 1.4, stageI: 1.2,
+    exposure: 1.06, bloomT: .70, bloomI: .66, scrim: 0, star: .9, moonC: 0xf2f0e4, screenA: .8 }),
+  L(0.32, { skyTop: 0x081025, skyBot: 0x21406c, glow: 0x38608f, glowY: .05, glowAmt: .70,
+    fog: 0x101d36, fogD: .0080, hemiS: 0x5878a4, hemiG: 0x141d30, hemiI: .38,
+    keyC: 0x9dbce6, keyI: .40, fillC: 0xffd39a, fillI: .20, lampI: 1.7, stageI: 1.4,
+    exposure: 1.06, bloomT: .70, bloomI: .70, scrim: 0, star: .8, moonC: 0xf2f0e4, screenA: .9 }),
+  L(0.45, { skyTop: 0x050a14, skyBot: 0x0d1a2e, glow: 0x1b3350, glowY: .02, glowAmt: .30,
+    fog: 0x090f1c, fogD: .0130, hemiS: 0x24354f, hemiG: 0x090d16, hemiI: .30,
+    keyC: 0x7e9cc6, keyI: .10, fillC: 0xffcf92, fillI: .12, lampI: 1.0, stageI: 1.25,
+    exposure: .92, bloomT: .88, bloomI: .48, scrim: .24, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
+  L(0.84, { skyTop: 0x050a14, skyBot: 0x0d1a2e, glow: 0x1b3350, glowY: .02, glowAmt: .30,
+    fog: 0x090f1c, fogD: .0125, hemiS: 0x24354f, hemiG: 0x090d16, hemiI: .32,
+    keyC: 0x7e9cc6, keyI: .12, fillC: 0xffcf92, fillI: .14, lampI: 1.1, stageI: 1.35,
+    exposure: .92, bloomT: .86, bloomI: .50, scrim: .24, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
+  L(0.95, { skyTop: 0x6f9bd0, skyBot: 0xefdcb4, glow: 0xffe9b4, glowY: .16, glowAmt: 1.25,
+    fog: 0xc9d6e4, fogD: .0034, hemiS: 0xa8c4e4, hemiG: 0x8b8f92, hemiI: .78,
+    keyC: 0xfff0cc, keyI: 1.25, fillC: 0xd8e4f2, fillI: .34, lampI: .6, stageI: .5,
+    exposure: .98, bloomT: .74, bloomI: .70, scrim: .62, star: 0, moonC: 0xfff6df, screenA: 1 }),
+  L(1.00, { skyTop: 0x7fa9da, skyBot: 0xf8ead0, glow: 0xfff2cf, glowY: .20, glowAmt: 1.5,
+    fog: 0xd6e2ee, fogD: .0026, hemiS: 0xb8d2ee, hemiG: 0x94989c, hemiI: .88,
+    keyC: 0xfff6dd, keyI: 1.45, fillC: 0xe2ecf8, fillI: .38, lampI: .4, stageI: .4,
+    exposure: 1.0, bloomT: .72, bloomI: .78, scrim: .70, star: 0, moonC: 0xfffbe8, screenA: 1 })
+];
+
+var cA = new THREE.Color(), cB = new THREE.Color(), cT = new THREE.Color();
+function mixColor(target, a, b, t) {
+  cA.setHex(a); cB.setHex(b);
+  target.copy(cA).lerp(cB, t);
+}
+function applyLook(p) {
+  var i = 0;
+  while (i < LOOKS.length - 2 && p > LOOKS[i + 1].p) i++;
+  var a = LOOKS[i], b = LOOKS[i + 1];
+  var t = smooth((p - a.p) / Math.max(1e-5, b.p - a.p));
+
+  mixColor(skyUni.top.value, a.skyTop, b.skyTop, t);
+  mixColor(skyUni.bot.value, a.skyBot, b.skyBot, t);
+  mixColor(skyUni.glow.value, a.glow, b.glow, t);
+  skyUni.glowY.value = lerp(a.glowY, b.glowY, t);
+  skyUni.glowAmt.value = lerp(a.glowAmt, b.glowAmt, t);
+
+  mixColor(scene.fog.color, a.fog, b.fog, t);
+  scene.fog.density = lerp(a.fogD, b.fogD, t);
+  renderer.setClearColor(scene.fog.color, 1);
+
+  mixColor(hemi.color, a.hemiS, b.hemiS, t);
+  mixColor(hemi.groundColor, a.hemiG, b.hemiG, t);
+  hemi.intensity = lerp(a.hemiI, b.hemiI, t);
+  mixColor(key.color, a.keyC, b.keyC, t);
+  key.intensity = lerp(a.keyI, b.keyI, t);
+  mixColor(fill.color, a.fillC, b.fillC, t);
+  fill.intensity = lerp(a.fillI, b.fillI, t);
+  roomLamp.intensity = lerp(a.lampI, b.lampI, t);
+  stageLamp.intensity = lerp(a.stageI, b.stageI, t);
+
+  matComp.uniforms.exposure.value = lerp(a.exposure, b.exposure, t);
+  matBright.uniforms.thr.value = lerp(a.bloomT, b.bloomT, t);
+  matComp.uniforms.bloomI.value = lerp(a.bloomI, b.bloomI, t);
+  starMat.opacity = lerp(a.star, b.star, t);
+  screenUni.amt.value = lerp(a.screenA, b.screenA, t);
+  mixColor(cT, a.moonC, b.moonC, t);
+  moon.material.color.copy(cT);
+  halo.material.opacity = lerp(.16, .5, t * (i >= 3 ? 1 : 0));
+
+  var scrim = lerp(a.scrim, b.scrim, t);
+  document.documentElement.style.setProperty('--scrim', scrim.toFixed(3));
+}
+
+/* ============================================================
+   6. THE CAMERA
+   One continuous path from the forecourt, up the steps, through the
+   portal, down the hall and out through the oculus. Each chapter owns a
+   stretch of it, and the fraction within a chapter is smoothed, which
+   puts velocity at zero on every anchor instead of snapping from a
+   forty-metre stride outdoors to a two-metre one indoors.
+   ============================================================ */
+var V = function (x, y, z) { return new THREE.Vector3(x, y, z); };
+var PATH = [
+  { p: V(2, 4.0, 76),      l: V(0, 13, 14),   ch: 0 },
+  { p: V(-3.5, 3.4, 48),   l: V(0, 11, 2),    ch: 0 },
+  { p: V(0, 2.9, 24),      l: V(0, 11, 4),    ch: 1 },
+  { p: V(0, 2.6, 7.5),     l: V(0, 5.5, -8),  ch: 1 },
+  { p: V(0, 5.4, -3),      l: V(0, 6.5, -32), ch: 2 },
+  { p: V(-4.5, 4.6, -13),  l: V(2, 6.2, -34), ch: 2 },
+  { p: V(2.6, 5.8, -20),   l: V(0, 4.6, -34), ch: 3 },
+  { p: V(0, 4.6, -11.5),   l: V(0, 24, -19),   ch: 4 },
+  { p: V(0, 19, -17.2),    l: V(0, 40, -18.6), ch: 4 },
+  { p: V(0, 33, -18),      l: V(0, 58, -17),   ch: 4 },
+  /* Turn outward before turning back. Swinging straight from up to down put
+     the lens against the flank of the lead dome for a whole beat, which is a
+     smooth grey wall and nothing else. */
+  { p: V(6, 46, -2),       l: V(16, 72, 34),   ch: 4 },
+  { p: V(0, 44, 48),       l: V(0, 15, -12),   ch: 4 }
+];
+var posCurve = new THREE.CatmullRomCurve3(PATH.map(function (w) { return w.p; }), false, 'catmullrom', .5);
+var lookCurve = new THREE.CatmullRomCurve3(PATH.map(function (w) { return w.l; }), false, 'catmullrom', .5);
+/* getPoint spaces waypoints evenly in the parameter, so waypoint i sits at
+   i/(N-1). The chapter anchors are read from that rather than measured. */
+var ANCHOR = [];
+for (var c = 0; c < CHAPTERS.length; c++) {
+  var idx = 0;
+  for (var w = 0; w < PATH.length; w++) { if (PATH[w].ch === c) { idx = w; break; } }
+  ANCHOR.push(idx / (PATH.length - 1));
+}
+ANCHOR.push(1);
+
+function pathParam() {
+  var c2 = clamp(scrollDrive.c, 0, CHAPTERS.length - 1);
+  return lerp(ANCHOR[c2], ANCHOR[c2 + 1], smooth(scrollDrive.f));
+}
+
+var uCur = pathParam();
+var camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
+
+/* ---------- world swap and veil ----------
+   Which world to draw is a box test. How much to hide is the distance to the
+   surface the lens actually crosses, and there are only two of those: the
+   portal on the way in and the oculus on the way out. Taking both from the
+   same box would hold a veil up for the whole length of the hall. */
+var insideNow = false, blink = 0;
+function surfaces(pos) {
+  var v = 0;
+  if (Math.abs(pos.x) < 14 && pos.y < 15) v = Math.max(v, plateau(Math.abs(pos.z - FRONT_Z), .3, 2.2));
+  if (Math.abs(pos.x) < 6 && Math.abs(pos.z - DOME_Z) < 6) v = Math.max(v, plateau(Math.abs(pos.y - OCULUS_Y), .5, 3.4));
+  return v;
+}
+function updateWorld(pos) {
+  var inside = pos.z < FRONT_Z && pos.y < OCULUS_Y && Math.abs(pos.x) < ROOM_HALF + 3;
+  if (inside !== insideNow) {
+    insideNow = inside;
+    roomGroup.visible = inside;
+    shellGroup.visible = !inside;
+    blink = 1;                    /* the backstop for a scroll faster than the ramp */
+  }
+  blink *= 0.80;
+  return Math.max(surfaces(pos), blink > .02 ? blink : 0);
+}
+
+/* ============================================================
+   7. THE LOOP
+   ============================================================ */
+var clock = new THREE.Clock();
+var started = false;
+var loader = document.getElementById('loader');
+var loadBar = document.getElementById('loadBar');
+var loadCap = document.getElementById('loadCap');
+
+function resize() {
+  var w = window.innerWidth, h = window.innerHeight;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, DPR_CAP));
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.fov = fovFor(camera.aspect);
+  camera.updateProjectionMatrix();
+  allocTargets();
+  measureScroll();
+}
+var resizeTimer;
+window.addEventListener('resize', function () {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(resize, 120);
+});
+
+function frame() {
+  requestAnimationFrame(frame);
+  var dt = Math.min(clock.getDelta(), .05);
+  var el = clock.getElapsedTime();
+
+  /* The camera lags the scrollbar on purpose. Scroll is a step function, and
+     the lag is what turns it into a walk. */
+  var target = pathParam();
+  if (RM) uCur = target;
+  else uCur += (target - uCur) * (1 - Math.exp(-dt * 3.4));
+
+  posCurve.getPoint(clamp(uCur, 0, 1), camPos);
+  lookCurve.getPoint(clamp(uCur, 0, 1), camLook);
+
+  /* Clamp above the floor while indoors. A Catmull-Rom heading for a waypoint
+     high above the roof will otherwise dip through the flagstones on the way. */
+  if (camPos.z < FRONT_Z && camPos.y < CEIL_Y) camPos.y = Math.max(camPos.y, FLOOR_Y + 1.35);
+
+  camera.position.copy(camPos);
+  camera.lookAt(camLook);
+
+  var veil = updateWorld(camPos);
+  matComp.uniforms.veil.value = veil;
+  matComp.uniforms.t.value = el;
+  screenUni.t.value = el;
+
+  applyLook(clamp(scrollDrive.raw, 0, 1));
+
+  renderer.setRenderTarget(rtScene);
+  renderer.clear();
+  renderer.render(scene, camera);
+  post();
+
+  if (!started) {
+    started = true;
+    loadBar.style.width = '100%';
+    loadCap.textContent = 'Welcome';
+    setTimeout(function () { loader.classList.add('done'); }, 420);
+  }
+}
+
+/* A short determinate bar rather than a spinner, so the wait has a shape. */
+(function warm() {
+  var pct = 0;
+  var tick = setInterval(function () {
+    pct = Math.min(pct + 12 + Math.random() * 16, 92);
+    loadBar.style.width = pct + '%';
+    if (pct >= 92) clearInterval(tick);
+  }, 90);
+})();
+
+measureScroll();
+uCur = pathParam();
+frame();
+
+/* A flag that freezes the camera, so the scene can be inspected by hand while
+   the rig keeps running. */
+if (/[?&]freeze/.test(location.search)) {
+  var frozen = pathParam();
+  Object.defineProperty(scrollDrive, 'c', { get: function () { return 0; } });
+  pathParam = function () { return frozen; };
+}
+window.__scene = { scene: scene, camera: camera, renderer: renderer, path: PATH, look: applyLook };
+
+})();
+</script>
+</body>
+</html>
