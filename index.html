@@ -1785,6 +1785,16 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
    ============================================================ */
 var STAGE_Z = -30, STAGE_Y = FLOOR_Y + 1.5, SCREEN_Z = -38.5;
 var SEAT_ORIGIN = new THREE.Vector3(0, 0, STAGE_Z + 1);
+/* The rake, in one place. Thirty-four rows at 1.42m rise 3.5m in total, which
+   is about what a hall this size actually does; the quadratic keeps the front
+   flat and steepens toward the back the way a real rake is set out. */
+var SEAT_R0 = 8.6, SEAT_DR = 1.42, SEAT_ROWS = 34, RAKE_K = 0.0030;
+function rakeAt(radius) {
+  var ring = (radius - SEAT_R0) / SEAT_DR;
+  if (ring < 0) ring = 0;
+  if (ring > SEAT_ROWS) ring = SEAT_ROWS;
+  return FLOOR_Y + ring * ring * RAKE_K;
+}
 
 /* Nobody at the back of a room this size sees a face; they see the screens. So
    the one person on this page rendered as a photograph rather than as geometry
@@ -1902,9 +1912,9 @@ var screenUni = {
   var seatGrp = new THREE.Group();
   seatGrp.position.copy(SEAT_ORIGIN);
   roomGroup.add(seatGrp);
-  for (var ring = 0; ring < 34; ring++) {
-    var rr = 8.6 + ring * 1.42;
-    var lift = FLOOR_Y + ring * ring * 0.0055;
+  for (var ring = 0; ring < SEAT_ROWS; ring++) {
+    var rr = SEAT_R0 + ring * SEAT_DR;
+    var lift = FLOOR_Y + ring * ring * RAKE_K;
     blocksFor(rr).forEach(function (bk) {
       var t0 = bk[0], len = bk[1] - bk[0];
       var seg = Math.max(3, Math.round(len * rr / 1.6));
@@ -2018,9 +2028,9 @@ var screenUni = {
       c: col });
   }
 
-  for (var pr = 0; pr < 34; pr++) {
-    var prr = 8.6 + pr * 1.42 - .16;                /* a little forward on the seat */
-    var plift = FLOOR_Y + pr * pr * 0.0055;
+  for (var pr = 0; pr < SEAT_ROWS; pr++) {
+    var prr = SEAT_R0 + pr * SEAT_DR - .16;         /* a little forward on the seat */
+    var plift = FLOOR_Y + pr * pr * RAKE_K;
     /* fuller in the middle of the room, thinner at the front and the back, and
        never solid: gaps are what stop a crowd reading as a pattern */
     var occ = .92 - Math.abs(pr - 15) * 0.013;
@@ -2059,7 +2069,7 @@ var screenUni = {
      at the head of the rake and people standing behind both, and without them
      the last twenty metres before the wall is a floor with nothing on it. */
   (function backOfHouse() {
-    var deskTop = FLOOR_Y + 34 * 34 * 0.0055;
+    var deskTop = FLOOR_Y + SEAT_ROWS * SEAT_ROWS * RAKE_K;
     var console_ = new THREE.MeshStandardMaterial({ color: SC(0x232833), roughness: .8 });
     var deskZ = SEAT_ORIGIN.z + 52;
     box(9.5, 1.05, 2.6, console_, 0, deskTop + .55, deskZ, roomGroup);
@@ -2074,7 +2084,7 @@ var screenUni = {
       0, deskTop + 1.05, deskZ - 3.2, roomGroup);
 
     /* a rail at the head of the rake, right round the back of the fan */
-    var railR = 8.6 + 34 * 1.42;
+    var railR = SEAT_R0 + SEAT_ROWS * SEAT_DR;
     var rail = new THREE.Mesh(
       new THREE.CylinderGeometry(railR, railR, .08, 40, 1, true, -1.30, 2.60),
       new THREE.MeshStandardMaterial({ color: SC(0x3c4553), roughness: .5, metalness: .4 }));
@@ -2388,10 +2398,10 @@ var PATH = [
   { p: V(0, 2.7, 72),      l: V(0, 5.4, 54),   ch: 1 },
   { p: V(0, 1.95, 60),     l: V(0, 2.4, 42),   ch: 1 },
   /* through in one move, and into the back of the fan */
-  { p: V(0, 5.6, 19),      l: V(0, 6.6, -14),  ch: 2 },
-  { p: V(0, 5.8, 3),       l: V(0, 5.6, -24),  ch: 2 },
+  { p: V(0, 6.4, 19),      l: V(0, 6.6, -14),  ch: 2 },
+  { p: V(0, 5.9, 3),       l: V(0, 5.4, -24),  ch: 2 },
   /* down among the seats */
-  { p: V(0, 5.0, -9),      l: V(0, 4.6, -30),  ch: 3 },
+  { p: V(0, 4.8, -9),      l: V(0, 4.4, -30),  ch: 3 },
   /* settle under the rooflight and look up it */
   { p: V(0, 4.8, 5),       l: V(0, 15.6, 0),   ch: 4 },
   { p: V(0, 11, 1),        l: V(0, 22, 0),     ch: 4 },
@@ -2499,8 +2509,16 @@ function frame() {
 
   /* Clamp above the floor while indoors. A Catmull-Rom heading for a waypoint
      high above the roof will otherwise dip through the flagstones on the way. */
-  if ((camPos.x * camPos.x + camPos.z * camPos.z) < R_IN * R_IN && camPos.y < APEX_Y)
+  if ((camPos.x * camPos.x + camPos.z * camPos.z) < R_IN * R_IN && camPos.y < APEX_Y) {
     camPos.y = Math.max(camPos.y, FLOOR_Y + 1.5);
+    /* and above whatever the seating is doing underneath it right here: the
+       floor rises three and a half metres across the room, so a fixed clamp
+       leaves the lens inside the back rows */
+    var dx = camPos.x - SEAT_ORIGIN.x, dz = camPos.z - SEAT_ORIGIN.z;
+    var dSeat = Math.sqrt(dx * dx + dz * dz);
+    if (dSeat < SEAT_R0 + SEAT_ROWS * SEAT_DR + 6)
+      camPos.y = Math.max(camPos.y, rakeAt(dSeat) + 2.1);
+  }
 
   camera.position.copy(camPos);
   camera.lookAt(camLook);

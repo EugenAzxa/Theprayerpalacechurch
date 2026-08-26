@@ -243,6 +243,16 @@ appeared again at the other end of the journey, where the glory blew both sky an
 stone to the same white. Both ends needed the lights pulled down until the
 building sat below the sky rather than beside it.
 
+**Clamp the camera against the floor it is actually over.** The rake rises three
+and a half metres from the platform to the back wall, so a clamp that only keeps
+the lens above `FLOOR_Y` leaves it inside the back rows: a waypoint set by eye at
+5.6m sat half a metre below the heads of the row it was flying over, and the shot
+was the inside of the crowd. The clamp now reads the rake at the camera's own
+distance from the platform, which makes it impossible to set a waypoint that
+buries the lens. The rake itself was also written out in three places at a
+coefficient that lifted the back row six and a half metres, which is a stadium
+rather than a church; it is one function now.
+
 **A room is only as full as its worst frame.** The seating fan stopped
 twenty-eight metres short of the back wall, so entering the sanctuary put the
 lens behind an empty plain and two whole frames of the walk were bare floor with

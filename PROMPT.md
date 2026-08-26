@@ -135,7 +135,10 @@ aerial and street photographs before writing any geometry. This one is round.
   camera is rather than to scroll position, and cover the cut with a veil that
   reaches full black. Take the veil from the two surfaces the lens genuinely
   crosses, the doors and the rooflight, and from nothing else.
-- Clamp the camera above the floor while indoors.
+- Clamp the camera above the floor while indoors, and if the floor rakes, clamp it
+  against the rake at the camera's own position rather than against the lowest
+  point. A waypoint set by eye will otherwise sit below the heads of the row it is
+  passing over, and the shot becomes the inside of the crowd.
 - A metal with no environment map has almost no diffuse term. Anything that reads
   outdoors under a directional key will render as nothing indoors under point light.
 - `CylinderGeometry` measures theta from +Z. An arc meant to stand behind the
