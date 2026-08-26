@@ -243,6 +243,15 @@ appeared again at the other end of the journey, where the glory blew both sky an
 stone to the same white. Both ends needed the lights pulled down until the
 building sat below the sky rather than beside it.
 
+**A room is only as full as its worst frame.** The seating fan stopped
+twenty-eight metres short of the back wall, so entering the sanctuary put the
+lens behind an empty plain and two whole frames of the walk were bare floor with
+the room squeezed into a strip at the top. The fan runs further back now, the
+round plan clips its own corners, and the circulation behind it has the
+production desk, the rail and the people standing at both that a hall this size
+actually has. Worth walking the whole flight frame by frame rather than checking
+the shots you designed: the weak ones are always the handovers nobody composed.
+
 **A 1px gap over a coloured container is a lovely way to draw a grid** right up
 until a row is not full, and then the container shows through as a grey block.
 Borders on the cells give the same single-pixel rules with nothing left over.

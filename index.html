@@ -1902,7 +1902,7 @@ var screenUni = {
   var seatGrp = new THREE.Group();
   seatGrp.position.copy(SEAT_ORIGIN);
   roomGroup.add(seatGrp);
-  for (var ring = 0; ring < 28; ring++) {
+  for (var ring = 0; ring < 34; ring++) {
     var rr = 8.6 + ring * 1.42;
     var lift = FLOOR_Y + ring * ring * 0.0055;
     blocksFor(rr).forEach(function (bk) {
@@ -2018,12 +2018,12 @@ var screenUni = {
       c: col });
   }
 
-  for (var pr = 0; pr < 28; pr++) {
+  for (var pr = 0; pr < 34; pr++) {
     var prr = 8.6 + pr * 1.42 - .16;                /* a little forward on the seat */
     var plift = FLOOR_Y + pr * pr * 0.0055;
     /* fuller in the middle of the room, thinner at the front and the back, and
        never solid: gaps are what stop a crowd reading as a pattern */
-    var occ = .93 - Math.abs(pr - 13) * 0.016;
+    var occ = .92 - Math.abs(pr - 15) * 0.013;
     blocksFor(prr).forEach(function (bk) {
       var step = 0.62 / prr;
       for (var pa = bk[0] + step * .5; pa < bk[1]; pa += step) {
@@ -2054,6 +2054,44 @@ var screenUni = {
     if (im.instanceColor) im.instanceColor.needsUpdate = true;
     roomGroup.add(im);
   });
+
+  /* The back of the room. A hall this size has a production desk in it, a rail
+     at the head of the rake and people standing behind both, and without them
+     the last twenty metres before the wall is a floor with nothing on it. */
+  (function backOfHouse() {
+    var deskTop = FLOOR_Y + 34 * 34 * 0.0055;
+    var console_ = new THREE.MeshStandardMaterial({ color: SC(0x232833), roughness: .8 });
+    var deskZ = SEAT_ORIGIN.z + 52;
+    box(9.5, 1.05, 2.6, console_, 0, deskTop + .55, deskZ, roomGroup);
+    box(9.5, .12, 2.2, new THREE.MeshBasicMaterial({ color: SC(0x2c3a52), toneMapped: false }),
+      0, deskTop + 1.12, deskZ - .1, roomGroup);
+    [-3.4, 0, 3.4].forEach(function (mx) {
+      var m = box(1.5, .9, .12, new THREE.MeshBasicMaterial({ color: SC(0x39506f), toneMapped: false }),
+        mx, deskTop + 1.7, deskZ + .5, roomGroup);
+      m.rotation.x = -0.22;
+    });
+    box(12, .1, .1, new THREE.MeshStandardMaterial({ color: SC(0x3c4553), roughness: .5, metalness: .4 }),
+      0, deskTop + 1.05, deskZ - 3.2, roomGroup);
+
+    /* a rail at the head of the rake, right round the back of the fan */
+    var railR = 8.6 + 34 * 1.42;
+    var rail = new THREE.Mesh(
+      new THREE.CylinderGeometry(railR, railR, .08, 40, 1, true, -1.30, 2.60),
+      new THREE.MeshStandardMaterial({ color: SC(0x3c4553), roughness: .5, metalness: .4 }));
+    rail.position.set(SEAT_ORIGIN.x, deskTop + 1.02, SEAT_ORIGIN.z);
+    roomGroup.add(rail);
+
+    /* and the people who are always standing at the back */
+    for (var i = 0; i < 34; i++) {
+      var a = -1.22 + (i / 33) * 2.44;
+      var r = railR + 1.5 + Math.random() * 3.2;
+      var px = SEAT_ORIGIN.x + Math.sin(a) * r;
+      var pz = SEAT_ORIGIN.z + Math.cos(a) * r;
+      if (px * px + pz * pz > (R_IN - 4) * (R_IN - 4)) continue;
+      if (Math.random() > .55) continue;
+      seatPerson(px, pz, deskTop, a + Math.PI + (Math.random() - .5) * .4, true, .95 + Math.random() * .16);
+    }
+  })();
 
   /* the house lights, in rings under the cone */
   var bulb = new THREE.MeshBasicMaterial({ color: SC(0xffe6bd), toneMapped: false });
@@ -2350,16 +2388,16 @@ var PATH = [
   { p: V(0, 2.7, 72),      l: V(0, 5.4, 54),   ch: 1 },
   { p: V(0, 1.95, 60),     l: V(0, 2.4, 42),   ch: 1 },
   /* through in one move, and into the back of the fan */
-  { p: V(0, 6.0, 34),      l: V(0, 4.6, -16),  ch: 2 },
-  { p: V(0, 6.4, 15),      l: V(0, 4.4, -25),  ch: 2 },
+  { p: V(0, 5.6, 19),      l: V(0, 6.6, -14),  ch: 2 },
+  { p: V(0, 5.8, 3),       l: V(0, 5.6, -24),  ch: 2 },
   /* down among the seats */
-  { p: V(0, 5.4, -6),      l: V(0, 3.8, -30),  ch: 3 },
+  { p: V(0, 5.0, -9),      l: V(0, 4.6, -30),  ch: 3 },
   /* settle under the rooflight and look up it */
-  { p: V(0, 5.4, 2),       l: V(0, 14, -2),    ch: 4 },
-  { p: V(0, 11, .5),       l: V(0, 24, 0),     ch: 4 },
-  { p: V(0, 19, 0),        l: V(0, 32, 1),     ch: 4 },
+  { p: V(0, 4.8, 5),       l: V(0, 15.6, 0),   ch: 4 },
+  { p: V(0, 11, 1),        l: V(0, 22, 0),     ch: 4 },
+  { p: V(0, 19.5, 0),      l: V(0, 21, 15),    ch: 4 },
   /* out, turning back on the roof */
-  { p: V(11, 38, 24),      l: V(0, 16, 8),     ch: 4 },
+  { p: V(9, 33, 21),       l: V(0, 15, 11),    ch: 4 },
   { p: V(5, 74, 88),       l: V(0, 10, -2),    ch: 4 },
   { p: V(0, 128, 176),     l: V(0, 4, -8),     ch: 4 }
 ];

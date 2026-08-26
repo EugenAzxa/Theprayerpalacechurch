@@ -31,6 +31,10 @@ aerial and street photographs before writing any geometry. This one is round.
   taken from. That view is the one people recognise, so give it the first chapter
   and keep the approach clear: no lamp post on the axis of the entrance, and the
   trees flanking the doors rather than standing in front of them.
+- Walk the finished flight frame by frame at a couple of dozen stops and fix what
+  you find. The shots you composed will be fine; the empty ones are always the
+  handovers between them, where the lens is pointed at a floor, a ceiling or a
+  rectangle of sky that nobody chose.
 - Drive one continuous camera path from page scroll. Each section should feel like
   a new composed shot rather than a hard scene replacement.
 - Take the camera inside. A round building gives you a fan, not a nave: concentric
