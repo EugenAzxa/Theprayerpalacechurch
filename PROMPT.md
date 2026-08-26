@@ -31,6 +31,12 @@ aerial and street photographs before writing any geometry. This one is round.
   taken from. That view is the one people recognise, so give it the first chapter
   and keep the approach clear: no lamp post on the axis of the entrance, and the
   trees flanking the doors rather than standing in front of them.
+- Use a lens of about forty degrees. A wide one in a large room fills a third of
+  every frame with ceiling and floor, and everything it puts in shot has to be
+  worth looking at.
+- Point the camera at the subject rather than at the exit. A climb that looks
+  straight up at the way out spends its whole length on a blank ceiling; craning up
+  while looking back down keeps the room in frame and arrives at the same place.
 - Walk the finished flight frame by frame at a couple of dozen stops and fix what
   you find. The shots you composed will be fine; the empty ones are always the
   handovers between them, where the lens is pointed at a floor, a ceiling or a

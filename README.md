@@ -268,6 +268,20 @@ buries the lens. The rake itself was also written out in three places at a
 coefficient that lifted the back row six and a half metres, which is a stadium
 rather than a church; it is one function now.
 
+**A fifty-two degree lens in a ninety metre room spends a third of every frame on
+ceiling.** Measured rather than argued: at the wide interior shot the ceiling was
+37% of the frame height, and it was decorated with a radial star of high-contrast
+seams and fifty-two glowing spheres, so the most prominent thing in the middle
+three chapters was a graphic pattern on a surface nobody was looking at. The lens
+is 42 degrees now, which is an ordinary cinematic one, the seams are structure
+rather than decoration, and there are twenty-four lights instead of fifty-two.
+
+**Point the camera at the subject, not at the exit.** The climb out used to look
+straight up, so four of twenty-four frames were a blank cone and a flat disc. It
+cranes up looking back down the room instead: the congregation falls away
+underneath the whole ascent and the roof arrives as something seen from above,
+which is both a better shot and one that never has nothing in it.
+
 **A room is only as full as its worst frame.** The seating fan stopped
 twenty-eight metres short of the back wall, so entering the sanctuary put the
 lens behind an empty plain and two whole frames of the walk were bare floor with

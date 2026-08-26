@@ -913,7 +913,7 @@ scene = new THREE.Scene();
    narrower, and on a phone that puts the lens inside the building. The shots
    are composed at 16:9, so anything narrower widens the angle to hold the same
    horizontal field, up to a limit past which the perspective goes strange. */
-var BASE_FOV = 52, BASE_ASPECT = 16 / 9, MAX_FOV = 82;
+var BASE_FOV = 42, BASE_ASPECT = 16 / 9, MAX_FOV = 68;
 function fovFor(aspect) {
   if (aspect >= BASE_ASPECT) return BASE_FOV;
   var halfH = Math.tan(BASE_FOV * Math.PI / 360) * BASE_ASPECT;
@@ -1825,7 +1825,7 @@ var screenUni = {
   var ceil = new THREE.MeshStandardMaterial({ color: SC(0x242a34), roughness: .95, metalness: 0, side: THREE.BackSide });
   cyl(LIGHT_R, R_IN, APEX_Y - WALL_Y, 48, ceil, 0, (WALL_Y + APEX_Y) / 2, 0, roomGroup, true);
   /* the seams, picked out because they are the only articulation the ceiling has */
-  var seamMat = new THREE.MeshStandardMaterial({ color: SC(0x39404c), roughness: .9 });
+  var seamMat = new THREE.MeshStandardMaterial({ color: SC(0x1f242f), roughness: .95 });
   for (var i = 0; i < 24; i++) {
     var a = (i / 24) * Math.PI * 2;
     strut(new THREE.Vector3(Math.sin(a) * (R_IN - .3), WALL_Y + .1, Math.cos(a) * (R_IN - .3)),
@@ -2104,13 +2104,13 @@ var screenUni = {
   })();
 
   /* the house lights, in rings under the cone */
-  var bulb = new THREE.MeshBasicMaterial({ color: SC(0xffe6bd), toneMapped: false });
-  [[16, 12], [30, 18], [42, 22]].forEach(function (r) {
+  var bulb = new THREE.MeshBasicMaterial({ color: SC(0x6f6248), toneMapped: false });
+  [[22, 10], [38, 14]].forEach(function (r) {
     for (var b = 0; b < r[1]; b++) {
       var ba = (b / r[1]) * Math.PI * 2;
       var t2 = (r[0] - LIGHT_R) / (R_IN - LIGHT_R);
       var by = APEX_Y - (APEX_Y - WALL_Y) * t2 - .6;
-      var l = new THREE.Mesh(new THREE.SphereGeometry(.3, 10, 8), bulb);
+      var l = new THREE.Mesh(new THREE.SphereGeometry(.16, 8, 6), bulb);
       l.position.set(Math.sin(ba) * r[0], by, Math.cos(ba) * r[0]);
       roomGroup.add(l);
     }
@@ -2400,25 +2400,29 @@ function applyLook(p) {
 var V = function (x, y, z) { return new THREE.Vector3(x, y, z); };
 var PATH = [
   /* across the lot, the way anyone arrives */
-  { p: V(14, 2.9, 106),    l: V(1, 8.2, 60),   ch: 0 },
-  { p: V(5, 2.8, 86),      l: V(0, 6.6, 57),   ch: 0 },
+  { p: V(17, 3.2, 132),    l: V(1, 7.5, 58),   ch: 0 },
+  { p: V(6, 3.0, 104),     l: V(0, 6.8, 56),   ch: 0 },
   /* under the canopy, then held just outside the glass. No waypoint rests
      inside the doorway, or the camera comes to a stop in the dark of it. */
-  { p: V(0, 2.7, 72),      l: V(0, 5.4, 54),   ch: 1 },
-  { p: V(0, 1.95, 60),     l: V(0, 2.4, 42),   ch: 1 },
+  { p: V(0, 2.9, 84),      l: V(0, 5.6, 54),   ch: 1 },
+  { p: V(0, 1.95, 62),     l: V(0, 2.3, 42),   ch: 1 },
   /* through in one move, and into the back of the fan */
   { p: V(0, 6.4, 19),      l: V(0, 6.6, -14),  ch: 2 },
   { p: V(0, 5.9, 3),       l: V(0, 5.4, -24),  ch: 2 },
   /* down among the seats */
   { p: V(0, 4.8, -9),      l: V(0, 4.4, -30),  ch: 3 },
-  /* settle under the rooflight and look up it */
-  { p: V(0, 4.8, 5),       l: V(0, 15.6, 0),   ch: 4 },
-  { p: V(0, 11, 1),        l: V(0, 22, 0),     ch: 4 },
-  { p: V(0, 19.5, 0),      l: V(0, 21, 15),    ch: 4 },
-  /* out, turning back on the roof */
-  { p: V(9, 33, 21),       l: V(0, 15, 11),    ch: 4 },
-  { p: V(5, 74, 88),       l: V(0, 10, -2),    ch: 4 },
-  { p: V(0, 128, 176),     l: V(0, 4, -8),     ch: 4 }
+  /* Rise looking down, not up. Pointing the lens at the ceiling on the way out
+     spent four frames on a blank cone and a flat disc; craning up while looking
+     back down the room keeps the congregation falling away underneath the whole
+     climb, and the roof arrives as something seen from above rather than as a
+     hole stared at from below. */
+  { p: V(0, 6.6, 8),       l: V(0, 2.2, -22),  ch: 4 },
+  { p: V(0, 11.5, 3),      l: V(0, 1.6, -17),  ch: 4 },
+  { p: V(0, 18.5, 0.5),    l: V(0, 1.2, -12),  ch: 4 },
+  /* out, and turning onto the roof and the cross */
+  { p: V(13, 34, 17),      l: V(0, 12, -2),    ch: 4 },
+  { p: V(8, 92, 116),      l: V(0, 7, -5),     ch: 4 },
+  { p: V(0, 154, 220),     l: V(0, 2, -10),    ch: 4 }
 ];
 var posCurve = new THREE.CatmullRomCurve3(PATH.map(function (w) { return w.p; }), false, 'catmullrom', .5);
 var lookCurve = new THREE.CatmullRomCurve3(PATH.map(function (w) { return w.l; }), false, 'catmullrom', .5);
