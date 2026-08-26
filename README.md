@@ -63,9 +63,13 @@ more than fifty nationalities in the congregation.
   Clarendon rebuild in Jamaica.
 - Hands over to four flat pages for the things a church site has to actually do:
   Give, Events, Connect &amp; Serve, and Visit.
-- Closes on Saylavy, back on a dark ground. Memory Pages, what one is, how a family
-  starts one, and a plain statement that a page is not what earns remembrance: the
-  name is read here either way. A credit and an invitation, not a sales panel.
+- Closes on Saylavy, back on a dark ground: what this house keeps (sermons,
+  testimonies, the record, the knowledge of the faith), the interactive page with a
+  QR code in the hall, the four things Saylavy keeps for a church, and a working
+  demonstration of the memory wall with filters. Six fictional people, marked as
+  fictional in a notice nobody can miss, because a demonstration that reads as a
+  real congregation is a lie about the dead. No selling language, and a plain
+  statement that a page is not what earns remembrance.
 
 ## How it is made
 
