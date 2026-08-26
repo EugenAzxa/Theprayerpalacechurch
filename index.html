@@ -1840,12 +1840,29 @@ var screenUni = {
     var w = h;                                   /* the cell is square */
     var mid = y + (standing ? 1.62 : 1.24) * scale;
     var idx = Math.floor(Math.random() * atlas.count);
-    /* the raised arms belong to a minority, wherever the dice fall */
     /* hands up are a minority, wherever the dice fall */
     if ((idx === 5 || idx === 6 || idx === 14 || idx === 15) && Math.random() > .3)
       idx = Math.floor(Math.random() * 5);
-    buckets[idx].push({ m: new THREE.Matrix4().compose(
-      new THREE.Vector3(x, mid, z), pq.clone(), new THREE.Vector3(w, h, 1)) });
+
+    /* What everyone is wearing. Most of a congregation is in something dark, a
+       fifth in something mid, and a handful in something pale that catches the
+       stage light and reads right across the room. Warm and cool shift
+       independently of brightness, because a pale coat and a dark one are not
+       the same colour twice over. Without this every person is the same shape
+       in the same tone and the crowd reads as a pattern. */
+    var roll = Math.random(), lvl;
+    if (roll < .11) lvl = 1.35 + Math.random() * .62;       /* pale */
+    else if (roll < .34) lvl = .88 + Math.random() * .42;   /* mid */
+    else lvl = .48 + Math.random() * .44;                   /* dark */
+    var warm = (Math.random() - .5) * 2;
+    var col = new THREE.Color(
+      lvl * (1 + warm * .16),
+      lvl * (1 + warm * .03),
+      lvl * (1 - warm * .15));
+    buckets[idx].push({
+      m: new THREE.Matrix4().compose(
+        new THREE.Vector3(x, mid, z), pq.clone(), new THREE.Vector3(w, h, 1)),
+      c: col });
   }
 
   for (var pr = 0; pr < 24; pr++) {
@@ -1853,7 +1870,7 @@ var screenUni = {
     var plift = FLOOR_Y + pr * pr * 0.0055;
     /* fuller in the middle of the room, thinner at the front and the back, and
        never solid: gaps are what stop a crowd reading as a pattern */
-    var occ = .78 - Math.abs(pr - 11) * 0.022;
+    var occ = .86 - Math.abs(pr - 11) * 0.020;
     blocksFor(prr).forEach(function (bk) {
       var step = 0.62 / prr;
       for (var pa = bk[0] + step * .5; pa < bk[1]; pa += step) {
@@ -1879,8 +1896,9 @@ var screenUni = {
   buckets.forEach(function (list, idx) {
     if (!list.length) return;
     var im = new THREE.InstancedMesh(cellGeo(1, 1, idx), personMat, list.length);
-    list.forEach(function (p, i) { im.setMatrixAt(i, p.m); });
+    list.forEach(function (p, i) { im.setMatrixAt(i, p.m); im.setColorAt(i, p.c); });
     im.instanceMatrix.needsUpdate = true;
+    if (im.instanceColor) im.instanceColor.needsUpdate = true;
     roomGroup.add(im);
   });
 

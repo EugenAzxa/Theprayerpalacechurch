@@ -46,6 +46,10 @@ aerial and street photographs before writing any geometry. This one is round.
   Draw a handful of silhouettes with those three things, alpha test rather than
   blend them so they keep early-z, and fix them facing the platform rather than
   billboarding them at the camera.
+- Tint every one of them separately, and draw the atlas light enough that the tint
+  has somewhere to go. A dozen shapes in one tone is still a pattern: what tells one
+  person from the next across a room is not the outline, it is that they are not
+  wearing the same thing.
 - Check the seat backs against the people. A back that stands a metre above its own
   tier leaves a seated person showing two hundred millimetres of scalp.
 - Model the seating as continuous curved rows. At the distance the room is seen

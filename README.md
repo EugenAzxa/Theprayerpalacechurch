@@ -211,7 +211,12 @@ ratio to the anatomical third helped and was still a skittle, because what is
 missing is the neck, the slope from trapezius to deltoid, and the fact that no two
 people in a room have the same outline. They are drawn silhouettes now, sixteen
 variants in one atlas, with collars, sleeve seams, hair that is not a larger head,
-tilts, leans and a few raised hands, alpha tested rather than blended so they keep early-z, and
+tilts, leans and a few raised hands, and every one of them tinted separately: most
+of a congregation is in something dark, a fifth in something mid, and a handful in
+something pale that reads right across the room. The last of those mattered more
+than all the drawing. Sixteen shapes in one tone is still a pattern, because what
+tells one person from the next at forty metres is not the outline, it is that they
+are not wearing the same thing. alpha tested rather than blended so they keep early-z, and
 fixed facing the platform rather than billboarded at the camera: a congregation
 that swivels to follow the lens is worse than one seen slightly off axis. The seat
 backs came down from 1.13m to 0.87m at the same time, because at the old height a
