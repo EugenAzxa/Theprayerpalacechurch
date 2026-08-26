@@ -74,60 +74,56 @@ def lift_alpha(src, name, size, crop=None, quality=90, ink=True if False else Fa
     print(f"{name:22} {out.size[0]}x{out.size[1]}  {os.path.getsize(dst)//1024:>4} KB   <- {src}")
 
 
-def stage_screen(src, name, size=(1600, 512)):
+def stage_screen(src, name, size=(1920, 380)):
     """Compose what the screen wall is showing: a live camera shot of the pastor.
 
-    In a room this size nobody at the back sees a face; they see the screens. So
-    the one person on this page rendered as a photograph rather than as geometry
-    is the one the room is actually looking at, and he appears where the room
-    actually looks at him.
+    The frame is 5:1 because the wall is: thirty-two metres of arc under a roof
+    that is only about eight and a half metres up at that radius. Build the plate
+    at any other ratio and the face is stretched across it, and size the portrait
+    to the full height and his head is cut off by the top edge.
     """
     from PIL import ImageDraw, ImageFilter, ImageFont
     import math
     W, H = size
-    cx, cy = W * 0.615, H * 0.46
+    cx, cy = W * 0.635, H * 0.47
 
-    # A soft field behind, brightest around the head. Built by hand rather than
-    # with stacked ellipses, which leave visible steps.
+    # a soft field behind, brightest around the head
     field = Image.new("RGB", (W, H))
     fp = field.load()
     for y in range(H):
         for x in range(0, W, 2):
-            d = math.hypot((x - cx) / (W * 0.52), (y - cy) / (H * 0.86))
-            t = max(0.0, 1.0 - d)
-            t = t * t
-            c = (int(9 + 52 * t), int(24 + 86 * t), int(48 + 112 * t))
+            d = math.hypot((x - cx) / (W * 0.42), (y - cy) / (H * 0.92))
+            t = max(0.0, 1.0 - d) ** 2
+            c = (int(8 + 50 * t), int(22 + 84 * t), int(46 + 110 * t))
             fp[x, y] = c
             if x + 1 < W:
                 fp[x + 1, y] = c
-    plate = field.filter(ImageFilter.GaussianBlur(10))
+    plate = field.filter(ImageFilter.GaussianBlur(9))
 
-    # the portrait, feathered to an oval so it sits in the field rather than on it
+    # the portrait, feathered to an oval, with clear air above his head
     por = Image.open(os.path.join(SRC, src)).convert("RGB")
-    ph = int(H * 1.02)
+    ph = int(H * 0.86)
     pw = int(por.size[0] * ph / por.size[1])
     por = por.resize((pw, ph), Image.LANCZOS)
     por = ImageEnhance.Brightness(por).enhance(1.05)
     por = ImageEnhance.Contrast(por).enhance(1.06)
-
     mask = Image.new("L", (pw, ph), 0)
-    ImageDraw.Draw(mask).ellipse(
-        [pw * 0.10, ph * 0.03, pw * 0.90, ph * 0.97], fill=255)
-    mask = mask.filter(ImageFilter.GaussianBlur(ph * 0.075))
+    ImageDraw.Draw(mask).ellipse([pw * 0.09, ph * 0.02, pw * 0.91, ph * 0.98], fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(ph * 0.07))
     plate.paste(por, (int(cx - pw / 2), int(cy - ph / 2)), mask)
 
-    # a lower third, the way a broadcast carries a name
+    # the name, set large on the open left of the frame rather than over him
     d = ImageDraw.Draw(plate, "RGBA")
-    d.rectangle([0, int(H * 0.80), W, H], fill=(6, 18, 38, 165))
-    d.rectangle([0, int(H * 0.80), W, int(H * 0.807)], fill=(150, 198, 245, 210))
     fpath = "/System/Library/Fonts/Supplemental/Futura.ttc"
     try:
-        f1 = ImageFont.truetype(fpath, 52)
-        f2 = ImageFont.truetype(fpath, 26)
+        f1 = ImageFont.truetype(fpath, 62)
+        f2 = ImageFont.truetype(fpath, 28)
     except Exception:
         f1 = f2 = ImageFont.load_default()
-    d.text((int(W * 0.05), int(H * 0.835)), "PASTOR TOM MELNICHUK", font=f1, fill=(238, 246, 255))
-    d.text((int(W * 0.052), int(H * 0.925)), "THE PRAYER PALACE", font=f2, fill=(146, 188, 234))
+    tx = int(W * 0.055)
+    d.text((tx, int(H * 0.34)), "PASTOR TOM MELNICHUK", font=f1, fill=(238, 246, 255))
+    d.rectangle([tx, int(H * 0.56), int(W * 0.40), int(H * 0.575)], fill=(150, 198, 245, 210))
+    d.text((tx + 2, int(H * 0.62)), "THE PRAYER PALACE", font=f2, fill=(150, 192, 238))
 
     dst = os.path.join(OUT, name + ".webp")
     plate.save(dst, "WEBP", quality=88, method=6)

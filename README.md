@@ -171,6 +171,14 @@ colour now goes through one helper that converts explicitly, and the whole rig w
 relit afterwards. The lesson is not about three.js: it is that a flag whose name
 describes an outcome is not evidence the outcome happened.
 
+**A screen nine metres tall does not fit under a roof eight and a half metres up.**
+The wall was built to a size that looked right in isolation, and its top third was
+inside the roof cone, so what showed in the room was a screen cropped through the
+middle of the pastor's face. Worth checking any large flat thing against the
+surface above it rather than against its own proportions. Its plate also has to be
+authored at the aspect the geometry actually is, or the face is stretched across
+the wall.
+
 **Constants declared below the code that reads them are silently undefined.**
 `DOOR_PLANE` and `R_IN` sat with the room, a hundred lines under the entrance that
 measures the lobby off them. `var` hoisting meant no error, just `undefined`, so

@@ -1408,7 +1408,7 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
    that is the roof. The screen wall is the brightest thing in it, which is
    what the photographs of this room show.
    ============================================================ */
-var STAGE_Z = -30, STAGE_Y = FLOOR_Y + 1.5, SCREEN_Z = -41.5;
+var STAGE_Z = -30, STAGE_Y = FLOOR_Y + 1.5, SCREEN_Z = -38.5;
 var SEAT_ORIGIN = new THREE.Vector3(0, 0, STAGE_Z + 1);
 
 /* Nobody at the back of a room this size sees a face; they see the screens. So
@@ -1472,7 +1472,7 @@ var screenUni = {
   /* the screen wall, curved to follow the room. Not a lit panel but a field
      of moving light, which is what the back of the hall actually reads. */
   var screen = new THREE.Mesh(
-    new THREE.CylinderGeometry(34, 34, 9.2, 40, 1, true, Math.PI - 0.5, 1.0),
+    new THREE.CylinderGeometry(34, 34, 6.4, 44, 1, true, Math.PI - 0.475, 0.95),
     new THREE.ShaderMaterial({
       uniforms: screenUni, side: THREE.BackSide, depthWrite: true, toneMapped: false, fog: false,
       vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
@@ -1496,7 +1496,7 @@ var screenUni = {
         '}'
       ].join('\n')
     }));
-  screen.position.set(0, STAGE_Y + 4.6, SCREEN_Z + 34);
+  screen.position.set(0, STAGE_Y + 3.1, SCREEN_Z + 34);
   roomGroup.add(screen);
 
   /* Chairs, in arcs swung round the platform. Modelled as continuous curved
