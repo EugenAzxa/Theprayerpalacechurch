@@ -40,11 +40,14 @@ aerial and street photographs before writing any geometry. This one is round.
 - Put one person on the screen wall and let the room look at him. Nobody at the
   back of a hall this size sees a face; they see the screens. The single figure on
   the platform should be small and distant, which is what it actually is.
-- Put the congregation in it. Heads and shoulders above the seat backs, in near
-  black, seen from behind: no faces, no limbs, nothing asked of the geometry that
-  it cannot do. A dark room facing a bright screen turns everyone in it into a
-  silhouette, and a silhouette is the one form of a person that primitives can
-  carry. Modelling anyone in the round will fail.
+- Put the congregation in it as drawn cut-outs, not as geometry. Primitives cannot
+  carry a person at any proportion: what is missing is the neck, the slope from
+  trapezius to deltoid, and the fact that no two people in a room share an outline.
+  Draw a handful of silhouettes with those three things, alpha test rather than
+  blend them so they keep early-z, and fix them facing the platform rather than
+  billboarding them at the camera.
+- Check the seat backs against the people. A back that stands a metre above its own
+  tier leaves a seated person showing two hundred millimetres of scalp.
 - Model the seating as continuous curved rows. At the distance the room is seen
   from a chair is about five pixels wide, and several thousand of them alias into a
   flat grey field rather than reading as seating.

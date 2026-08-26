@@ -36,8 +36,8 @@ more than fifty nationalities in the congregation.
   building gives you a fan rather than a nave: concentric tiers of seating swung
   round a platform on one side, under the underside of the same cone that is the
   roof, with a curved screen wall that is the brightest thing in the building.
-- Fills it. Around a thousand people in the seats, as heads and shoulders above the
-  seat backs in near black, thinning toward the front and the back and never solid.
+- Fills it. Around a thousand people in the seats, as drawn cut-outs rather than as
+  geometry, thinning toward the front and the back and never solid.
   A room this dark facing a screen this bright turns everyone in it into a
   silhouette, and a silhouette is the one form of a person that simple geometry can
   carry. The camera runs down the centre aisle, above head height, so nobody in the
@@ -201,6 +201,17 @@ The first version sat at zero for the entire wait and then jumped to done, becau
 its own code was behind the 600KB of WebGL library it was supposed to be reporting
 on. It runs from its own script tag directly under its own markup now, and the main
 script checks in against it.
+
+**A congregation cannot be built out of primitives, and proportions do not save
+it.** A capsule with a sphere on top is a skittle. Correcting the head-to-shoulder
+ratio to the anatomical third helped and was still a skittle, because what is
+missing is the neck, the slope from trapezius to deltoid, and the fact that no two
+people in a room have the same outline. They are drawn silhouettes now, eight
+variants in one atlas, alpha tested rather than blended so they keep early-z, and
+fixed facing the platform rather than billboarded at the camera: a congregation
+that swivels to follow the lens is worse than one seen slightly off axis. The seat
+backs came down from 1.13m to 0.87m at the same time, because at the old height a
+seated person showed about two hundred millimetres of scalp.
 
 **Four thousand chairs alias into a flat grey field.** At the distance this room is
 seen from, a chair is about five pixels wide, and with antialiasing off that many

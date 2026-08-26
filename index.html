@@ -794,6 +794,115 @@ function blockTex() {
   return c;
 }
 
+/* An atlas of people, drawn rather than modelled.
+
+   A congregation cannot be built out of primitives. Everyone reads human form
+   too well: a capsule with a sphere on top is a skittle, and no amount of
+   proportion work rescues it, because what is missing is the neck, the slope of
+   the trapezius and the fact that no two people in a room have the same
+   outline. Drawn silhouettes carry all three for nothing, and from behind in a
+   dark hall a silhouette is all there is to see. Eight of them, so a row is
+   never a repeat, and each one carries a thin rim where the light off the
+   screen wall would catch a shoulder. */
+function personAtlas() {
+  var CELL = 256, COLS = 4, ROWS = 2;
+  var c = cvs(CELL * COLS, CELL * ROWS), x = c.getContext('2d');
+  x.clearRect(0, 0, c.width, c.height);
+
+  function body(ox, oy, opt) {
+    var sw = opt.shoulder, hw = opt.head, hy = opt.headY, lean = opt.lean || 0;
+    var hBot = hy + hw * 1.2, neckW = hw * 0.52, shoulderY = 176;
+    x.save();
+    x.translate(ox + CELL / 2, oy);
+    x.rotate(lean);
+
+    var grad = x.createLinearGradient(0, 140, 0, CELL);
+    grad.addColorStop(0, opt.lit);
+    grad.addColorStop(0.5, opt.fill);
+    grad.addColorStop(1, opt.deep);
+
+    /* an arm up, the way a few hands always are. Drawn first so the shoulder
+       reads in front of it. */
+    function arm(dir) {
+      x.beginPath();
+      x.moveTo(dir * sw * 0.52, 232);
+      x.quadraticCurveTo(dir * sw * 0.98, 148, dir * sw * 0.82, 46);
+      x.quadraticCurveTo(dir * sw * 0.70, 34, dir * sw * 0.58, 46);
+      x.quadraticCurveTo(dir * sw * 0.62, 150, dir * sw * 0.24, 234);
+      x.closePath();
+      x.fillStyle = grad; x.fill();
+      x.strokeStyle = opt.rim; x.lineWidth = 2.0; x.stroke();
+    }
+    if (opt.arm) { arm(1); if (opt.arm === 2) arm(-1); }
+
+    /* the neck, so the head is not sitting straight on the shoulders */
+    x.beginPath();
+    x.moveTo(-neckW, hBot - 10);
+    x.lineTo(-neckW * 0.92, shoulderY);
+    x.lineTo(neckW * 0.92, shoulderY);
+    x.lineTo(neckW, hBot - 10);
+    x.closePath();
+    x.fillStyle = opt.fill; x.fill();
+
+    /* the shoulders: the deltoid rounds off, the trapezius slopes up to the
+       neck. A single dome for both is what makes a figure read as a skittle. */
+    x.beginPath();
+    x.moveTo(-sw, CELL);
+    x.lineTo(-sw, 214);
+    x.bezierCurveTo(-sw, 192, -sw * 0.80, 184, -sw * 0.56, shoulderY + 2);
+    x.lineTo(-neckW * 1.05, shoulderY - 14);
+    x.lineTo(neckW * 1.05, shoulderY - 14);
+    x.lineTo(sw * 0.56, shoulderY + 2);
+    x.bezierCurveTo(sw * 0.80, 184, sw, 192, sw, 214);
+    x.lineTo(sw, CELL);
+    x.closePath();
+    x.fillStyle = grad; x.fill();
+    x.strokeStyle = opt.rim; x.lineWidth = 2.2; x.stroke();
+
+    /* the head */
+    x.beginPath();
+    x.ellipse(0, hy, hw, hw * 1.2, 0, 0, 6.284);
+    var hg = x.createLinearGradient(0, hy - hw * 1.2, 0, hy + hw * 1.2);
+    hg.addColorStop(0, opt.lit); hg.addColorStop(1, opt.fill);
+    x.fillStyle = hg; x.fill();
+    x.strokeStyle = opt.rim; x.lineWidth = 2.0; x.stroke();
+
+    if (opt.hair === 'long') {
+      x.beginPath();
+      x.moveTo(-hw * 1.02, hy - 4);
+      x.quadraticCurveTo(-hw * 1.34, hy + 54, -hw * 1.12, shoulderY - 2);
+      x.lineTo(hw * 1.12, shoulderY - 2);
+      x.quadraticCurveTo(hw * 1.34, hy + 54, hw * 1.02, hy - 4);
+      x.quadraticCurveTo(0, hy - hw * 1.54, -hw * 1.02, hy - 4);
+      x.closePath();
+      x.fillStyle = grad; x.fill();
+      x.strokeStyle = opt.rim; x.lineWidth = 2.0; x.stroke();
+    } else if (opt.hair === 'bun') {
+      x.beginPath(); x.arc(0, hy - hw * 1.28, hw * 0.44, 0, 6.284);
+      x.fillStyle = opt.fill; x.fill();
+      x.strokeStyle = opt.rim; x.lineWidth = 1.8; x.stroke();
+    }
+    x.restore();
+  }
+
+  var DARK = '#171d2a', LIT = '#2b3648', DEEP = '#0a0d13';
+  var RIM = 'rgba(132,164,208,.4)';
+  var VARIANTS = [
+    { shoulder: 76, head: 31, headY: 100, hair: 'short', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
+    { shoulder: 60, head: 30, headY: 102, hair: 'bald', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
+    { shoulder: 68, head: 30, headY: 98, hair: 'long', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
+    { shoulder: 73, head: 31, headY: 100, hair: 'bun', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
+    { shoulder: 78, head: 31, headY: 101, hair: 'short', lean: 0.05, fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
+    { shoulder: 75, head: 30, headY: 100, hair: 'short', arm: 1, fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
+    { shoulder: 84, head: 30, headY: 99, hair: 'long', arm: 2, fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
+    { shoulder: 70, head: 27, headY: 114, hair: 'short', fill: DARK, lit: LIT, deep: DEEP, rim: RIM }
+  ];
+  VARIANTS.forEach(function (v, i) {
+    body((i % COLS) * CELL, Math.floor(i / COLS) * CELL, v);
+  });
+  return { canvas: c, cols: COLS, rows: ROWS, count: VARIANTS.length };
+}
+
 /* The checkerboard course of dark blocks near the head of the wall. */
 function checkTex() {
   var c = cvs(128, 32), x = c.getContext('2d');
@@ -1535,15 +1644,15 @@ var screenUni = {
       var seg = Math.max(3, Math.round(len * rr / 1.6));
       /* the backs */
       var back = new THREE.Mesh(
-        new THREE.CylinderGeometry(rr + .22, rr + .22, .58, seg, 1, true, t0, len), rowBack);
-      back.position.y = lift + .84;
+        new THREE.CylinderGeometry(rr + .22, rr + .22, .50, seg, 1, true, t0, len), rowBack);
+      back.position.y = lift + .62;
       seatGrp.add(back);
       /* the pans */
       var pan = new THREE.Mesh(
         new THREE.RingGeometry(rr - .28, rr + .24, seg, 1, t0, len), rowPan);
       pan.rotation.x = -Math.PI / 2;
       pan.rotation.z = -Math.PI / 2;      /* RingGeometry starts on +X, the fan on +Z */
-      pan.position.y = lift + .52;
+      pan.position.y = lift + .45;
       seatGrp.add(pan);
       /* the riser, so the rake reads as steps rather than a smooth ramp */
       var riser = new THREE.Mesh(
@@ -1554,33 +1663,48 @@ var screenUni = {
   }
 
   /* ---- the congregation ----
-     A room this dark facing a screen this bright turns everyone in it into a
-     silhouette, and a silhouette is the one form of a person that simple
-     geometry can carry. Heads and shoulders above the seat backs, in a near
-     black material, seen from behind: no faces, no limbs, nothing asked of the
-     geometry that it cannot do. Modelling anyone in the round here would fail,
-     because a lathe-and-sphere figure never passes as a human being.
+     Cut-outs, not geometry. Alpha tested rather than blended, so they keep
+     early-z and need no sorting, and fixed facing the platform rather than
+     billboarded at the camera: a congregation that swivels to follow the lens
+     is worse than one seen slightly off axis. Eight variants, so no two
+     neighbours are the same person. */
+  var atlas = personAtlas();
+  var atlasTex = tex(atlas.canvas, 1, 1);
+  atlasTex.wrapS = atlasTex.wrapT = THREE.ClampToEdgeWrapping;
+  var personMat = new THREE.MeshBasicMaterial({
+    map: atlasTex, alphaTest: 0.42, transparent: false,
+    side: THREE.DoubleSide, toneMapped: false, depthWrite: true
+  });
 
-     They are instanced, thinned toward the back the way a congregation
-     actually thins, and the aisles are left clear. */
-  var skinDark = new THREE.MeshStandardMaterial({ color: SC(0x0d1017), roughness: .95, metalness: 0 });
-  var coatDark = new THREE.MeshStandardMaterial({ color: SC(0x0a0d13), roughness: .97, metalness: 0 });
-  var heads = [], torsos = [];
+  function cellGeo(w, h, idx) {
+    var g = new THREE.PlaneGeometry(w, h);
+    var uv = g.attributes.uv;
+    var col = idx % atlas.cols, row = Math.floor(idx / atlas.cols);
+    for (var i = 0; i < uv.count; i++) {
+      uv.setXY(i,
+        (col + uv.getX(i)) / atlas.cols,
+        (atlas.rows - 1 - row + uv.getY(i)) / atlas.rows);
+    }
+    uv.needsUpdate = true;
+    return g;
+  }
+
+  var buckets = [];
+  for (var v = 0; v < atlas.count; v++) buckets.push([]);
   var pq = new THREE.Quaternion(), pe = new THREE.Euler();
 
-  /* A head is about a third the width of a pair of shoulders. Built any nearer
-     to equal and a seated figure reads as a skittle, which is what the first
-     pass did across a thousand seats. */
+  /* A seated person shows about three quarters of a metre above the seat back;
+     someone on their feet, about half as much again. */
   function seatPerson(x, z, y, facing, standing, scale) {
     pe.set(0, facing, 0); pq.setFromEuler(pe);
-    var shoulder = standing ? y + 1.26 : y + 0.98;
-    var headY = standing ? y + 1.62 : y + 1.33;
-    torsos.push(new THREE.Matrix4().compose(
-      new THREE.Vector3(x, shoulder, z), pq.clone(),
-      new THREE.Vector3(scale * 1.34, scale * .92, scale * .60)));
-    heads.push(new THREE.Matrix4().compose(
-      new THREE.Vector3(x, headY, z), pq.clone(),
-      new THREE.Vector3(scale, scale * 1.12, scale * .94)));
+    var h = (standing ? 0.98 : 0.80) * scale;
+    var w = h;                                   /* the cell is square */
+    var mid = y + (standing ? 1.62 : 1.24) * scale;
+    var idx = Math.floor(Math.random() * atlas.count);
+    /* the raised arms belong to a minority, wherever the dice fall */
+    if ((idx === 5 || idx === 6) && Math.random() > .34) idx = Math.floor(Math.random() * 5);
+    buckets[idx].push({ m: new THREE.Matrix4().compose(
+      new THREE.Vector3(x, mid, z), pq.clone(), new THREE.Vector3(w, h, 1)) });
   }
 
   for (var pr = 0; pr < 24; pr++) {
@@ -1601,7 +1725,7 @@ var screenUni = {
         seatPerson(px, pz, plift,
           pa + Math.PI + (Math.random() - .5) * .3,
           Math.random() < .05,                       /* a few on their feet */
-          .9 + Math.random() * .2);
+          .92 + Math.random() * .18);
       }
     });
   }
@@ -1609,16 +1733,15 @@ var screenUni = {
   /* The platform carries one person. The room is looking at him and so is the
      page, and a scatter of figures beside him would only invite the comparison
      the screen has already won. */
-  seatPerson(0, STAGE_Z - 3.0, STAGE_Y, Math.PI, true, 1.02);
+  seatPerson(0, STAGE_Z - 3.0, STAGE_Y, Math.PI, true, 1.06);
 
-  var hi = new THREE.InstancedMesh(new THREE.SphereGeometry(.101, 10, 8), skinDark, heads.length);
-  heads.forEach(function (m, i) { hi.setMatrixAt(i, m); });
-  hi.instanceMatrix.needsUpdate = true;
-  roomGroup.add(hi);
-  var ti = new THREE.InstancedMesh(new THREE.CapsuleGeometry(.19, .2, 4, 8), coatDark, torsos.length);
-  torsos.forEach(function (m, i) { ti.setMatrixAt(i, m); });
-  ti.instanceMatrix.needsUpdate = true;
-  roomGroup.add(ti);
+  buckets.forEach(function (list, idx) {
+    if (!list.length) return;
+    var im = new THREE.InstancedMesh(cellGeo(1, 1, idx), personMat, list.length);
+    list.forEach(function (p, i) { im.setMatrixAt(i, p.m); });
+    im.instanceMatrix.needsUpdate = true;
+    roomGroup.add(im);
+  });
 
   /* the house lights, in rings under the cone */
   var bulb = new THREE.MeshBasicMaterial({ color: SC(0xffe6bd), toneMapped: false });
