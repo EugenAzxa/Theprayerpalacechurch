@@ -27,6 +27,10 @@ aerial and street photographs before writing any geometry. This one is round.
 - Lay the car park out the way it is: a ring road hard against the building, a
   kerbed grass island, then bands of stalls in concentric arcs with drive aisles cut
   through them, light standards, and low industrial buildings on the horizon.
+- Open on the main doors, from the point on the drive the street photographs are
+  taken from. That view is the one people recognise, so give it the first chapter
+  and keep the approach clear: no lamp post on the axis of the entrance, and the
+  trees flanking the doors rather than standing in front of them.
 - Drive one continuous camera path from page scroll. Each section should feel like
   a new composed shot rather than a hard scene replacement.
 - Take the camera inside. A round building gives you a fan, not a nave: concentric
@@ -49,6 +53,20 @@ aerial and street photographs before writing any geometry. This one is round.
   world is depth tested and everything draws in submission order: the ground paints
   over the car park, the sky paints over the building, and every symptom points
   somewhere else.
+
+## The loader
+
+- Give it a figure that belongs to this building rather than a spinner. The roof
+  plan works: one ring, twenty-four ridges, the rooflight at the middle, drawing
+  itself in and then opening out to reveal the scene. It is the same figure the
+  last chapter leaves you looking down at.
+- Weight it against work that actually happens, not a timer: fonts resolving,
+  images decoding, the library landing, the scene built, the first frame drawn.
+- Run it from its own script tag under its own markup. Shipped at the bottom with
+  everything else it will not execute until the library it is reporting on has
+  already arrived, and it will sit at zero for the whole wait and then jump to done.
+- Let it creep toward the next milestone between milestones so it keeps moving,
+  and cap that creep short of complete so it never lies.
 
 ## Layout
 

@@ -20,10 +20,14 @@ more than fifty nationalities in the congregation.
 
 ## What it does
 
+- Opens on the main doors, from the point on the drive the street photographs are
+  taken from: the canopy sweeping up over the glazed front, the block piers it
+  stands on, the raised curve of roof behind it, the cross above that, and the
+  flags on the island to the left.
 - Walks a live WebGL camera through the building as the page scrolls, outside and
-  in: the block drum of the walls, the punched dark glazing, four projecting
-  entrance canopies, the twenty-four ridges of the roof, the rooflights and plant
-  scattered over it, and the cross.
+  in: the block drum of the walls, the checkerboard course near the head of it, the
+  punched dark glazing, four projecting entrance canopies, the twenty-four ridges of
+  the roof, the rooflights and plant scattered over it, and the cross.
 - Takes the camera inside, into the room the church actually meets in. A round
   building gives you a fan rather than a nave: concentric tiers of seating swung
   round a platform on one side, under the underside of the same cone that is the
@@ -76,6 +80,14 @@ change to the phone number or the menu cannot land on three pages and miss the
 fourth. `tools/prep_assets.py` regrades the photographs from their sources.
 
 ### The five systems
+
+**A loader that means it.** The plan of the roof, one ring and twenty-four ridges
+around the rooflight, drawing itself as the page loads and then opening out to
+reveal the scene. It is weighted against work that actually happens: the fonts
+resolving, each above-the-fold image decoding, the WebGL library landing, the
+scene finishing construction, and the first frame reaching the screen. Between
+milestones the ring creeps toward the next one without ever arriving at it, so it
+keeps moving without claiming to be finished.
 
 **A fixed canvas.** `position: fixed; inset: 0; z-index: 0`. Everything else floats
 over it. The page scrolls, the canvas never moves.
@@ -135,6 +147,12 @@ in exactly the way a five-bay porch invented for a building that has none does.
 `CylinderGeometry` measures theta from +Z, so an arc from -0.46 to +0.46 bulges
 toward the camera. The screen was standing in the middle of the room with its back
 to the platform.
+
+**A loader shipped at the bottom of the page cannot show you the page loading.**
+The first version sat at zero for the entire wait and then jumped to done, because
+its own code was behind the 600KB of WebGL library it was supposed to be reporting
+on. It runs from its own script tag directly under its own markup now, and the main
+script checks in against it.
 
 **Four thousand chairs alias into a flat grey field.** At the distance this room is
 seen from, a chair is about five pixels wide, and with antialiasing off that many

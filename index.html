@@ -20,10 +20,22 @@
 </head>
 <body>
 
-<div id="loader">
-  <img class="mark" src="assets/mark.webp" alt="">
-  <div class="cap" id="loadCap">Preparing the house</div>
-  <div class="bar"><i id="loadBar"></i></div>
+<div id="loader" role="status" aria-live="polite">
+  <!-- The plan of the roof: one ring, twenty-four ridges and the rooflight at
+       the middle. It draws itself as the page loads, and it is the same figure
+       the last chapter leaves you looking down at. -->
+  <div class="lo-stage">
+    <svg class="lo-plan" viewBox="0 0 260 260" aria-hidden="true">
+      <g class="lo-spokes" id="loSpokes"></g>
+      <circle class="lo-rim" cx="130" cy="130" r="112"/>
+      <circle class="lo-arc" id="loArc" cx="130" cy="130" r="112" transform="rotate(-90 130 130)"/>
+      <circle class="lo-eye" cx="130" cy="130" r="22"/>
+    </svg>
+    <img class="lo-mark" src="assets/mark.webp" alt="">
+  </div>
+  <p class="lo-word">The Prayer Palace</p>
+  <p class="lo-cap" id="loadCap">1111 Arrow Road, Toronto</p>
+  <span class="lo-pct" id="loadPct">0</span>
 </div>
 
 <canvas id="world" aria-hidden="true"></canvas>
@@ -58,6 +70,132 @@
     </g>
   </svg>
 </div>
+
+<script>
+/* The loader has to run before the thing it is waiting for. Shipped at the
+   bottom with everything else it did not execute until the 600KB of WebGL
+   library had already arrived, so the bar sat at zero for the whole wait and
+   then jumped to done. This runs the moment its own markup is parsed, and
+   exposes the counter for the main script to check in against. */
+(function () {
+  var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var arc = document.getElementById('loArc');
+  var spokes = document.getElementById('loSpokes');
+  var cap = document.getElementById('loadCap');
+  var pct = document.getElementById('loadPct');
+  var el = document.getElementById('loader');
+  var LEN = 2 * Math.PI * 112, N = 24;
+
+  var ns = 'http://www.w3.org/2000/svg';
+  for (var i = 0; i < N; i++) {
+    var a = (i / N) * Math.PI * 2 - Math.PI / 2;
+    var ln = document.createElementNS(ns, 'line');
+    ln.setAttribute('x1', (130 + Math.cos(a) * 23).toFixed(1));
+    ln.setAttribute('y1', (130 + Math.sin(a) * 23).toFixed(1));
+    ln.setAttribute('x2', (130 + Math.cos(a) * 111).toFixed(1));
+    ln.setAttribute('y2', (130 + Math.sin(a) * 111).toFixed(1));
+    spokes.appendChild(ln);
+  }
+  arc.style.strokeDasharray = LEN;
+  arc.style.strokeDashoffset = LEN;
+
+  var CAPTIONS = [
+    [0, '1111 Arrow Road, Toronto'],
+    [.34, 'Sixty years on this corner'],
+    [.68, 'Fifty nations, one house'],
+    [.93, 'Opening the doors']
+  ];
+  var target = 0, shown = 0, ended = false, lastStep = 0, lastLit = -1;
+
+  function render(p) {
+    arc.style.strokeDashoffset = LEN * (1 - p);
+    var lit = Math.round(p * N);
+    if (lit !== lastLit) {
+      for (var i = 0; i < spokes.childNodes.length; i++) {
+        spokes.childNodes[i].classList.toggle('on', i < lit);
+      }
+      lastLit = lit;
+    }
+    pct.textContent = Math.round(p * 100);
+    for (var c = CAPTIONS.length - 1; c >= 0; c--) {
+      if (p >= CAPTIONS[c][0]) {
+        if (cap.textContent !== CAPTIONS[c][1]) cap.textContent = CAPTIONS[c][1];
+        break;
+      }
+    }
+  }
+
+  /* The library is the biggest single wait and a plain script tag reports
+     nothing while it downloads, so between real milestones the ring is allowed
+     to creep toward the next one without ever arriving at it. It keeps moving
+     and it never claims to be finished before it is. */
+  function paint(p) {
+    if (p > target) { target = p > 1 ? 1 : p; lastStep = now(); }
+  }
+  function now() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
+
+  if (RM) {
+    paint = function (p) { target = p; shown = p; render(p); };
+  } else {
+    (function loop() {
+      var goal = target;
+      if (!ended && now() - lastStep > 320) goal = Math.min(.93, target + .13);
+      shown += (goal - shown) * (ended ? .16 : .05);
+      if (shown > .999) shown = 1;
+      render(shown);
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  /* Weights, so the bar spends its time roughly where the wait is. The WebGL
+     library is by far the biggest single thing on the page, so it carries the
+     biggest share of the count. */
+  var total = 0, done = 0;
+  function task(w) {
+    total += w;
+    var spent = false;
+    return function () {
+      if (spent) return;
+      spent = true;
+      done += w;
+      paint(done / total);
+    };
+  }
+
+  var api = {
+    vendor: task(7),
+    scene: task(4),
+    frame: task(3),
+    finish: function () {
+      if (ended) return;
+      ended = true;
+      api.vendor(); api.scene(); api.frame();
+      target = 1; lastStep = now();
+      if (RM) { shown = 1; render(1); }
+      cap.textContent = 'Welcome';
+      setTimeout(function () {
+        el.classList.add('done');
+        setTimeout(function () { el.setAttribute('hidden', ''); }, 1100);
+      }, RM ? 60 : 520);
+    }
+  };
+  var fonts = task(2);
+  var imgs = ['assets/mark.webp', 'assets/logo.webp', 'assets/logo-ink.webp'];
+  imgs.forEach(function (src) {
+    var t = task(1), im = new Image();
+    im.onload = im.onerror = t;
+    im.src = src;
+  });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(fonts).catch(fonts);
+    setTimeout(fonts, 2500);                    /* never wait on a font forever */
+  } else { fonts(); }
+
+  /* Whatever else happens, the page is never held behind this. */
+  setTimeout(api.finish, 9000);
+  window.__load = api;
+})();
+</script>
 
 <nav id="nav" aria-label="Primary">
   <a class="brand" href="/" aria-label="The Prayer Palace, home">
@@ -355,6 +493,7 @@
 </footer>
 
 <script src="vendor/three.min.js"></script>
+<script>window.__load.vendor();</script>
 <script>
 (function () {
 'use strict';
@@ -555,8 +694,8 @@ if (webglAvailable()) {
 if (!renderer || !renderer.getContext()) {
   /* Survive a WebGL failure: the page stays readable as a flat document. */
   document.documentElement.classList.add('no-webgl');
-  document.getElementById('loader').classList.add('done');
   canvas.remove();
+  window.__load.finish();
   return;
 }
 
@@ -643,6 +782,19 @@ function blockTex() {
     }
     x.strokeStyle = 'rgba(126,122,114,.5)'; x.lineWidth = 2;
     x.beginPath(); x.moveTo(0, r * rh); x.lineTo(512, r * rh); x.stroke();
+  }
+  return c;
+}
+
+/* The checkerboard course of dark blocks near the head of the wall. */
+function checkTex() {
+  var c = cvs(128, 32), x = c.getContext('2d');
+  x.fillStyle = '#b9b5ac'; x.fillRect(0, 0, 128, 32);
+  for (var i = 0; i < 8; i++) {
+    var v = 62 + Math.random() * 20;
+    x.fillStyle = 'rgb(' + (v + 4) + ',' + (v + 2) + ',' + (v - 4) + ')';
+    x.fillRect(i * 16 + 1, 1, 14, 30);
+    if (i % 2) { x.fillStyle = 'rgba(185,181,172,.92)'; x.fillRect(i * 16 + 5, 1, 6, 30); }
   }
   return c;
 }
@@ -735,6 +887,7 @@ function glassTex() {
 var TX = {
   block: tex(blockTex(), 1, 1),
   band: tex(bandTex(), 1, 1),
+  check: tex(checkTex(), 1, 1),
   rib: tex(ribTex(), 1, 1),
   roof: tex(roofTex(), 1, 1),
   asphalt: tex(asphaltTex(), 60, 60),
@@ -747,6 +900,7 @@ var TX = {
 var M = {
   block: new THREE.MeshStandardMaterial({ color: 0xf2efe8, map: TX.block, roughness: .95, metalness: 0 }),
   band: new THREE.MeshStandardMaterial({ color: 0xe8e4dc, map: TX.band, roughness: .92, metalness: 0 }),
+  check: new THREE.MeshStandardMaterial({ color: 0xece8e0, map: TX.check, roughness: .93, metalness: 0 }),
   rib: new THREE.MeshStandardMaterial({ color: 0xf4f6f8, map: TX.rib, roughness: .48, metalness: .35 }),
   roof: new THREE.MeshStandardMaterial({ color: 0xb7bcc2, map: TX.roof, roughness: .82, metalness: .12 }),
   asphalt: new THREE.MeshStandardMaterial({ color: 0x9aa1ab, map: TX.asphalt, roughness: .97, metalness: 0 }),
@@ -918,7 +1072,9 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
   cyl(R_OUT, R_OUT, WALL_Y, 72, M.block, 0, WALL_Y / 2, 0, shellGroup, true);
   TX.block.repeat.set(46, 3.2);
   cyl(R_OUT + .06, R_OUT + .06, .52, 72, M.band, 0, 4.35, 0, shellGroup, true);
-  cyl(R_OUT + .06, R_OUT + .06, .26, 72, M.band, 0, 5.15, 0, shellGroup, true);
+  cyl(R_OUT + .08, R_OUT + .08, .62, 72, M.check, 0, 5.5, 0, shellGroup, true);
+  TX.check.repeat.set(120, 1);
+  cyl(R_OUT + .06, R_OUT + .06, .22, 72, M.band, 0, 6.05, 0, shellGroup, true);
   cyl(R_OUT + .18, R_OUT + .18, FASCIA_Y - WALL_Y, 72, M.rib, 0, (WALL_Y + FASCIA_Y) / 2, 0, shellGroup, true);
   TX.rib.repeat.set(160, 1);
   /* a plinth course at grade */
@@ -980,45 +1136,88 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
     var g = new THREE.Group();
     g.rotation.y = angle;
     shellGroup.add(g);
-    var z0 = R_OUT - 1.2;                       /* start inside the wall face */
-    var zc = z0 + proj;
-    /* the canopy: a slab with a raised front edge, the way the real one
-       sweeps up over the doors */
-    var cH = main ? 6.5 : 5.8;
-    box(halfWidth * 2, .42, proj + 1.4, M.white, 0, cH, z0 + proj / 2, g);
-    box(halfWidth * 2 + .8, 1.05, .5, M.white, 0, cH + .5, zc + .5, g);
-    box(halfWidth * 2, .3, proj + 1.4, M.rib, 0, cH - .28, z0 + proj / 2, g);
-    /* columns at the outer corners */
-    [-halfWidth + 1.1, halfWidth - 1.1].forEach(function (cx) {
-      box(.62, cH - .2, .62, M.block, cx, (cH - .2) / 2, zc - .2, g);
+    var z0 = R_OUT - 1.4;                       /* start inside the wall face */
+    var zc = z0 + proj;                         /* the front edge of the canopy */
+    var cH = main ? 6.2 : 5.4;                  /* underside of the canopy */
+    var rise = main ? 1.35 : 0.9;               /* how far its fascia lifts at the middle */
+
+    /* The canopy is not a flat slab. Its leading edge sweeps up to a shallow
+       peak over the doors and falls away to either side, which is the line
+       that identifies this entrance from the road. Drawing it as a profile
+       and extruding it back gives the curve on the fascia and leaves the
+       soffit flat, which is what it is. */
+    var prof = new THREE.Shape();
+    var HW = halfWidth;
+    prof.moveTo(-HW, 0);
+    prof.lineTo(HW, 0);
+    prof.lineTo(HW, .34);
+    prof.quadraticCurveTo(0, .34 + rise * 2, -HW, .34);
+    prof.lineTo(-HW, 0);
+    var canopy = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(prof, { depth: proj + 1.6, bevelEnabled: false }), M.white);
+    canopy.position.set(0, cH, z0 - .2);
+    g.add(canopy);
+    /* the ribbed soffit under it */
+    box(HW * 2 - .3, .18, proj + 1.4, M.rib, 0, cH - .1, z0 + proj / 2, g);
+
+    /* Square block piers at the outer front corners, which is what the canopy
+       actually stands on. */
+    [-HW + .9, HW - .9].forEach(function (cx) {
+      box(1.15, cH - .05, 1.15, M.block, cx, (cH - .05) / 2, zc - .5, g);
+      box(1.35, .22, 1.35, M.band, cx, cH - .06, zc - .5, g);
+      box(1.35, .3, 1.35, M.band, cx, .15, zc - .5, g);
     });
-    /* the block cheeks either side of the glass */
-    box(2.4, WALL_Y, proj + 1.2, M.block, -halfWidth + 1.2, WALL_Y / 2, z0 + proj / 2, g);
-    box(2.4, WALL_Y, proj + 1.2, M.block, halfWidth - 1.2, WALL_Y / 2, z0 + proj / 2, g);
-    /* the glass front and the doors, warm from inside */
-    var gw = halfWidth * 2 - 5.6;
-    var wall = new THREE.Mesh(new THREE.PlaneGeometry(gw, 4.4), M.glass);
-    wall.position.set(0, 2.4, zc + .02);
+
+    /* The glazed front, set back under the canopy, in a dark frame. */
+    var gw = HW * 2 - 5.0, gh = 5.5, gz = zc - 2.6;
+    var wall = new THREE.Mesh(new THREE.PlaneGeometry(gw, gh), M.glass);
+    wall.position.set(0, gh / 2, gz);
     g.add(wall);
-    /* the warm strip is only the doors themselves, not the whole front */
+    /* the doors themselves, warm from the lobby behind */
     var lit = new THREE.MeshBasicMaterial({ color: main ? 0x6d5836 : 0x554529, toneMapped: false });
-    var doors = new THREE.Mesh(new THREE.PlaneGeometry(gw * 0.44, 2.5), lit);
-    doors.position.set(0, 1.45, zc + .05);
+    var doors = new THREE.Mesh(new THREE.PlaneGeometry(main ? 5.2 : 3.6, 2.9), lit);
+    doors.position.set(0, 1.5, gz + .04);
     g.add(doors);
-    box(gw + .6, .3, .3, M.dark, 0, 4.7, zc + .07, g);
-    box(gw + .6, .3, .3, M.dark, 0, .2, zc + .07, g);
-    for (var d = -3; d <= 3; d++) {
-      box(.22, 4.4, .22, M.dark, d * (gw / 7.4), 2.4, zc + .09, g);
+    /* frame, transom, mullions */
+    box(gw + .5, .26, .26, M.dark, 0, gh, gz + .06, g);
+    box(gw + .5, .22, .22, M.dark, 0, 3.1, gz + .07, g);
+    box(gw + .5, .3, .3, M.dark, 0, .15, gz + .06, g);
+    var bays = main ? 8 : 6;
+    for (var d = -bays / 2; d <= bays / 2; d++) {
+      box(.2, gh, .2, M.dark, d * (gw / bays), gh / 2, gz + .08, g);
     }
-    box(gw + .6, .26, .26, M.dark, 0, 2.9, zc + .09, g);
-    /* a transom band above the doors */
-    var tr = new THREE.Mesh(new THREE.PlaneGeometry(gw, .9), M.glass);
-    tr.position.set(0, 5.4, zc + .02);
-    g.add(tr);
-    /* the sign, on the block beside the door */
+    /* the returns either side, angled back to the wall the way they are on
+       the building */
+    [-1, 1].forEach(function (sgn) {
+      var ret = new THREE.Mesh(new THREE.PlaneGeometry(2.6, gh), M.glass);
+      ret.position.set(sgn * (gw / 2 + 1.0), gh / 2, gz + 1.15);
+      ret.rotation.y = sgn * 0.9;
+      g.add(ret);
+    });
+
+    /* the block cheeks either side */
+    box(2.0, WALL_Y, proj + 1.0, M.block, -HW - .4, WALL_Y / 2, z0 + proj / 2, g);
+    box(2.0, WALL_Y, proj + 1.0, M.block, HW + .4, WALL_Y / 2, z0 + proj / 2, g);
+
     if (main) {
-      var sign = box(7.2, .9, .16, M.dark, halfWidth + 4.6, 5.4, R_OUT - 1.6, g);
-      sign.rotation.y = -0.12;
+      /* The raised curve of roof that sits behind the canopy over the entrance
+         bay, a little above the run of the eaves. */
+      var barrel = new THREE.Shape();
+      barrel.moveTo(-HW - 1.5, 0);
+      barrel.quadraticCurveTo(0, 3.4, HW + 1.5, 0);
+      barrel.lineTo(HW + 1.5, -.55);
+      barrel.quadraticCurveTo(0, 2.85, -HW - 1.5, -.55);
+      var bm = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(barrel, { depth: 7.5, bevelEnabled: false }), M.white);
+      bm.position.set(0, 9.3, R_OUT - 10.5);
+      g.add(bm);
+
+      /* the louvred plant vent up on the block, and the Welcome Centre sign */
+      box(4.2, 1.5, .2, new THREE.MeshStandardMaterial({
+        color: 0x6e747c, roughness: .6, metalness: .35 }), HW + 7.5, 5.9, R_OUT - .4, g);
+      var wc = box(2.6, .95, .16, new THREE.MeshBasicMaterial({
+        color: 0x9fb6cc, toneMapped: false }), -HW - 6.2, 3.9, R_OUT - .35, g);
+      wc.rotation.y = 0.16;
     }
     return g;
   }
@@ -1031,7 +1230,7 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
      Plain, white, thin, standing on the roof above the main doors. It is the
      only vertical the building has, and on the photographs it is what you
      see first from the road. */
-  var crossR = 17, crossY = APEX_Y - (APEX_Y - FASCIA_Y) * ((crossR - LIGHT_R) / (R_OUT - LIGHT_R));
+  var crossR = 20, crossY = APEX_Y - (APEX_Y - FASCIA_Y) * ((crossR - LIGHT_R) / (R_OUT - LIGHT_R));
   var cross = new THREE.Group();
   cross.position.set(0, crossY, crossR);
   shellGroup.add(cross);
@@ -1052,12 +1251,12 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
   var flagMat = new THREE.MeshStandardMaterial({
     map: tex(flagCanvas, 1, 1), color: 0xffffff, roughness: .9, side: THREE.DoubleSide
   });
-  for (var f = 0; f < 5; f++) {
-    var fxp = -19 - f * 3.4, fzp = R_OUT + 19 + (f % 2) * 1.4;
-    cyl(.11, .13, 10.5, 8, M.white, fxp, 5.25, fzp);
-    var fl = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 1.5, 6, 1), flagMat);
-    fl.position.set(fxp + 1.6, 9.4, fzp);
-    fl.rotation.y = -0.3;
+  for (var f = 0; f < 3; f++) {
+    var fxp = -15.5 - f * 4.2, fzp = R_OUT + 13.5 + (f % 2) * 1.2;
+    cyl(.1, .12, 11.5, 8, M.white, fxp, 5.75, fzp);
+    var fl = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 1.45, 6, 1), flagMat);
+    fl.position.set(fxp + 1.55, 10.4, fzp);
+    fl.rotation.y = -0.26;
     shellGroup.add(fl);
   }
 
@@ -1088,8 +1287,8 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
       limb(to, d, len * .68, rad * .62, depth - 1);
     }
   }
-  [[-8, R_OUT + 18], [7, R_OUT + 17], [-30, R_OUT + 22], [26, R_OUT + 24],
-   [-52, R_OUT + 30], [48, R_OUT + 28]].forEach(function (t) {
+  [[-21, R_OUT + 13], [19, R_OUT + 12], [-36, R_OUT + 20], [33, R_OUT + 21],
+   [-58, R_OUT + 28], [55, R_OUT + 26], [-14, R_OUT + 44], [16, R_OUT + 46]].forEach(function (t) {
     limb(new THREE.Vector3(t[0], 0, t[1]),
       new THREE.Vector3((Math.random() - .5) * .1, 1, (Math.random() - .5) * .1),
       3.6 + Math.random() * 1.2, .3, 2);
@@ -1105,8 +1304,11 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
 
   var headMat = new THREE.MeshBasicMaterial({ color: 0xffe0ab, toneMapped: false });
   for (var L = 0; L < 16; L++) {
-    var la = (L / 16) * Math.PI * 2 + .2, lr = 70 + (L % 3) * 26;
+    var la = (L / 16) * Math.PI * 2 + .38, lr = 82 + (L % 3) * 28;
     var lx = Math.sin(la) * lr, lz = Math.cos(la) * lr;
+    /* nothing stands on the axis of the main doors: the approach looks straight
+       down it and a lamp post there splits the shot in half */
+    if (Math.abs(lx) < 16 && lz > 40) continue;
     cyl(.16, .22, 11, 8, M.dark, lx, 5.5, lz);
     var head = box(1.5, .34, .8, headMat, lx, 11.1, lz, shellGroup);
     head.rotation.y = la;
@@ -1300,6 +1502,7 @@ drumLamp.position.set(0, APEX_Y - 3, 0);
 scene.add(drumLamp);
 
 scene.fog = new THREE.FogExp2(0x0e1a31, 0.0072);
+window.__load.scene();
 
 /* ============================================================
    4. POST
@@ -1538,11 +1741,11 @@ function applyLook(p) {
 var V = function (x, y, z) { return new THREE.Vector3(x, y, z); };
 var PATH = [
   /* across the lot, the way anyone arrives here */
-  { p: V(14, 3.4, 152),    l: V(0, 13, 66),    ch: 0 },
-  { p: V(-6, 3.0, 108),    l: V(0, 11, 58),    ch: 0 },
+  { p: V(13, 2.9, 101),    l: V(0, 8.5, 58),   ch: 0 },
+  { p: V(-4, 2.8, 80),     l: V(0, 7.2, 56),   ch: 0 },
   /* up to the doors under the canopy */
-  { p: V(0, 2.8, 76),      l: V(0, 8, 54),     ch: 1 },
-  { p: V(0, 2.6, 54),      l: V(0, 5, 30),     ch: 1 },
+  { p: V(0, 2.8, 77),      l: V(0, 6.4, 55),   ch: 1 },
+  { p: V(0, 2.5, 53),      l: V(0, 4.6, 28),   ch: 1 },
   /* inside, at the back of the fan */
   { p: V(0, 5.4, 29),      l: V(0, 6, -20),    ch: 2 },
   { p: V(-10, 4.6, 7),     l: V(3, 5.6, -26),  ch: 2 },
@@ -1609,9 +1812,6 @@ function updateWorld(pos) {
    ============================================================ */
 var clock = new THREE.Clock();
 var started = false;
-var loader = document.getElementById('loader');
-var loadBar = document.getElementById('loadBar');
-var loadCap = document.getElementById('loadCap');
 
 function resize() {
   var w = window.innerWidth, h = window.innerHeight;
@@ -1665,21 +1865,10 @@ function frame() {
 
   if (!started) {
     started = true;
-    loadBar.style.width = '100%';
-    loadCap.textContent = 'Welcome';
-    setTimeout(function () { loader.classList.add('done'); }, 420);
+    window.__load.frame();
+    window.__load.finish();
   }
 }
-
-/* A short determinate bar rather than a spinner, so the wait has a shape. */
-(function warm() {
-  var pct = 0;
-  var tick = setInterval(function () {
-    pct = Math.min(pct + 12 + Math.random() * 16, 92);
-    loadBar.style.width = pct + '%';
-    if (pct >= 92) clearInterval(tick);
-  }, 90);
-})();
 
 measureScroll();
 uCur = pathParam();

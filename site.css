@@ -74,15 +74,39 @@ button{font:inherit;color:inherit}
 /* ============================================================
    LOADER
    ============================================================ */
-#loader{position:fixed;inset:0;z-index:90;background:var(--night);display:grid;place-items:center;
-  transition:opacity .9s var(--ease),visibility .9s}
+#loader{position:fixed;inset:0;z-index:90;
+  background:radial-gradient(125% 100% at 50% 38%,#101b31 0%,#070c17 62%,#05080f 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 1s var(--ease),visibility 1s}
 #loader.done{opacity:0;visibility:hidden}
-#loader .mark{width:104px;opacity:.9;animation:breathe 3.4s var(--ease) infinite}
-#loader .bar{position:absolute;bottom:16%;left:50%;transform:translateX(-50%);width:min(220px,50vw);height:1px;background:var(--rule)}
-#loader .bar i{display:block;height:100%;width:0;background:var(--chrome);transition:width .4s linear}
-#loader .cap{position:absolute;bottom:calc(16% + 22px);left:50%;transform:translateX(-50%);
-  font-family:var(--f-mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--steel-dim)}
-@keyframes breathe{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.035)}}
+#loader.done .lo-stage{transform:scale(1.16)}
+#loader.done .lo-word,#loader.done .lo-cap{opacity:0;transform:translateY(-6px)}
+
+.lo-stage{position:relative;width:min(304px,56vw);aspect-ratio:1;display:grid;place-items:center;
+  transition:transform 1.15s var(--ease-out)}
+.lo-plan{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.lo-plan circle,.lo-plan line{fill:none}
+.lo-rim{stroke:rgba(220,227,236,.13);stroke-width:1}
+.lo-eye{stroke:rgba(220,227,236,.26);stroke-width:1}
+.lo-arc{stroke:var(--gold-lift);stroke-width:1.7;stroke-linecap:round}
+.lo-spokes line{stroke:rgba(190,206,228,.2);stroke-width:1;opacity:0;
+  transition:opacity .55s var(--ease)}
+.lo-spokes line.on{opacity:1}
+.lo-mark{width:33%;opacity:.94;filter:drop-shadow(0 2px 22px rgba(96,146,200,.3))}
+
+.lo-word{margin:38px 0 0;font-family:var(--f-sans);font-weight:600;font-size:14px;
+  letter-spacing:.44em;text-indent:.44em;text-transform:uppercase;color:var(--chrome);
+  transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.lo-cap{margin:14px 0 0;font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--steel-dim);min-height:1.3em;text-align:center;
+  padding:0 20px;transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.lo-pct{position:absolute;bottom:8%;left:50%;transform:translateX(-50%);
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;color:rgba(147,166,190,.65)}
+.lo-pct::after{content:"%";margin-left:2px;opacity:.55}
+
+@media (prefers-reduced-motion:reduce){
+  #loader.done .lo-stage{transform:none}
+}
 
 /* ============================================================
    NAVIGATION
