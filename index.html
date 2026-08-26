@@ -1019,6 +1019,12 @@ var APEX_Y = 15.6;         /* the roof where it meets the rooflight */
 var LIGHT_R = 5.2;         /* the rooflight at the middle of the cone */
 var FLOOR_Y = 0.4;         /* finished floor, a step up off the lot */
 var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk starts */
+/* Every dimension the building is measured off belongs above the code that
+   reads it. These two sat with the room, a hundred lines below the entrance
+   that uses them, so the lobby was built out of NaN and never appeared: what
+   showed through the front doors was the far side of the car park. */
+var R_IN = R_OUT - 1.4;    /* the inside face, and the room's own wall */
+var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands */
 
 (function ground() {
   /* grass out to the horizon, then the asphalt apron on top of it */
@@ -1069,7 +1075,26 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
 (function church() {
   /* the blockwork, as one open cylinder, with the two dark banding courses
      that run right round it and the ribbed metal fascia above */
-  cyl(R_OUT, R_OUT, WALL_Y, 72, M.block, 0, WALL_Y / 2, 0, shellGroup, true);
+  /* The wall was one unbroken cylinder, so cutting the glazing only moved the
+     problem back a few metres: the doorway led to solid blockwork. It is built
+     in two bands now. The lower one is four arcs with a gap at each entrance,
+     which is a real opening the camera goes through; the upper one runs
+     continuously over the top of them. */
+  var DOOR_H = 3.4;
+  var GAPS = [[0, .078], [Math.PI / 2, .062], [Math.PI, .062], [Math.PI * 1.5, .062]];
+  GAPS.forEach(function (gp, i) {
+    var from = gp[0] + gp[1];
+    var next = GAPS[(i + 1) % GAPS.length];
+    var to = next[0] - next[1] + (i === GAPS.length - 1 ? Math.PI * 2 : 0);
+    var len = to - from;
+    if (len <= 0) return;
+    var seg = new THREE.Mesh(
+      new THREE.CylinderGeometry(R_OUT, R_OUT, DOOR_H, Math.max(8, Math.round(len * 26)),
+        1, true, from, len), M.block);
+    seg.position.y = DOOR_H / 2;
+    shellGroup.add(seg);
+  });
+  cyl(R_OUT, R_OUT, WALL_Y - DOOR_H, 72, M.block, 0, (WALL_Y + DOOR_H) / 2, 0, shellGroup, true);
   TX.block.repeat.set(46, 3.2);
   cyl(R_OUT + .06, R_OUT + .06, .52, 72, M.band, 0, 4.35, 0, shellGroup, true);
   cyl(R_OUT + .08, R_OUT + .08, .62, 72, M.check, 0, 5.5, 0, shellGroup, true);
@@ -1168,24 +1193,62 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
       box(1.35, .3, 1.35, M.band, cx, .15, zc - .5, g);
     });
 
-    /* The glazed front, set back under the canopy, in a dark frame. */
+    /* The glazed front, set back under the canopy. The doorway is a hole cut
+       out of it with a lobby behind, not a lit panel painted on the glass: the
+       camera walks through this, and a plane across the opening means the lens
+       passes through the window in plain sight. */
     var gw = HW * 2 - 5.0, gh = 5.5, gz = zc - 2.6;
-    var wall = new THREE.Mesh(new THREE.PlaneGeometry(gw, gh), M.glass);
-    wall.position.set(0, gh / 2, gz);
-    g.add(wall);
-    /* the doors themselves, warm from the lobby behind */
-    var lit = new THREE.MeshBasicMaterial({ color: main ? 0x6d5836 : 0x554529, toneMapped: false });
-    var doors = new THREE.Mesh(new THREE.PlaneGeometry(main ? 5.2 : 3.6, 2.9), lit);
-    doors.position.set(0, 1.5, gz + .04);
-    g.add(doors);
-    /* frame, transom, mullions */
+    var dw = main ? 5.6 : 4.0, dh = 3.2;        /* the opening itself */
+    var sideW = (gw - dw) / 2;
+    [-1, 1].forEach(function (sgn) {
+      var pane = new THREE.Mesh(new THREE.PlaneGeometry(sideW, gh), M.glass);
+      pane.position.set(sgn * (dw / 2 + sideW / 2), gh / 2, gz);
+      g.add(pane);
+      /* mullions on the panes only */
+      var bays = main ? 3 : 2;
+      for (var d = 0; d <= bays; d++) {
+        box(.2, gh, .2, M.dark, sgn * (dw / 2 + d * (sideW / bays)), gh / 2, gz + .06, g);
+      }
+    });
+    /* the transom over the doors, and the frame round the lot */
+    var trans = new THREE.Mesh(new THREE.PlaneGeometry(dw, gh - dh), M.glass);
+    trans.position.set(0, dh + (gh - dh) / 2, gz);
+    g.add(trans);
     box(gw + .5, .26, .26, M.dark, 0, gh, gz + .06, g);
-    box(gw + .5, .22, .22, M.dark, 0, 3.1, gz + .07, g);
+    box(dw + .4, .22, .3, M.dark, 0, dh, gz + .07, g);
     box(gw + .5, .3, .3, M.dark, 0, .15, gz + .06, g);
-    var bays = main ? 8 : 6;
-    for (var d = -bays / 2; d <= bays / 2; d++) {
-      box(.2, gh, .2, M.dark, d * (gw / bays), gh / 2, gz + .08, g);
-    }
+    box(.24, dh, .3, M.dark, -dw / 2, dh / 2, gz + .07, g);
+    box(.24, dh, .3, M.dark, dw / 2, dh / 2, gz + .07, g);
+
+    /* The lobby, running from the glazing through the opening in the wall to
+       the inner doors. It gives the doorway somewhere to lead, so the approach
+       reads as depth rather than as a bright rectangle stuck on a facade. */
+    var lobW = dw + 4.0, lobEnd = DOOR_PLANE - .3, lobD = gz - lobEnd, lobZ = (gz + lobEnd) / 2;
+    var lobWall = new THREE.MeshStandardMaterial({ color: 0xbdb29c, roughness: .95 });
+    box(.4, dh + .7, lobD, lobWall, -lobW / 2, (dh + .7) / 2, lobZ, g);
+    box(.4, dh + .7, lobD, lobWall, lobW / 2, (dh + .7) / 2, lobZ, g);
+    box(lobW, .3, lobD, lobWall, 0, dh + .7, lobZ, g);
+    box(lobW, .18, lobD, new THREE.MeshStandardMaterial({ color: 0x554a3f, roughness: .95 }),
+      0, .09, lobZ, g);
+    /* the inner doors, lit from the hall beyond. The lens goes through these,
+       under the veil, and comes out inside. */
+    var innerLit = new THREE.MeshBasicMaterial({ color: 0x141c2b, toneMapped: false });
+    var inner2 = new THREE.Mesh(new THREE.PlaneGeometry(dw + 1.4, dh + .2), innerLit);
+    inner2.position.set(0, (dh + .2) / 2, DOOR_PLANE);
+    g.add(inner2);
+    /* a little of the hall's own light spilling round the leaves */
+    var spill = new THREE.MeshBasicMaterial({ color: 0x3d5a7e, toneMapped: false });
+    box(dw + 1.5, .12, .1, spill, 0, dh + .28, DOOR_PLANE + .02, g);
+    box(.12, dh + .2, .1, spill, -(dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
+    box(.12, dh + .2, .1, spill, (dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
+    box(.16, dh - .2, .1, M.dark, 0, (dh - .2) / 2, DOOR_PLANE + .03, g);
+    /* warm downlights in the lobby ceiling */
+    [lobZ - lobD * .3, lobZ, lobZ + lobD * .3].forEach(function (lz) {
+      var b2 = new THREE.Mesh(new THREE.SphereGeometry(.17, 10, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffdda8, toneMapped: false }));
+      b2.position.set(0, dh + .5, lz);
+      g.add(b2);
+    });
     /* the returns either side, angled back to the wall the way they are on
        the building */
     [-1, 1].forEach(function (sgn) {
@@ -1265,6 +1328,10 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
      and the light standards that actually light this lot at night. */
   for (var s = 0; s < 34; s++) {
     var sa = (s / 34) * Math.PI * 2 + .09;
+    /* the beds stop short of each entrance, because nothing is planted across
+       a doorway and the lobby is seen straight down from the drive */
+    var off = ((sa + Math.PI / 4) % (Math.PI / 2)) - Math.PI / 4;
+    if (Math.abs(off) < .17) continue;
     var sh = box(3.6, 1.1, 1.5, M.shrub,
       Math.sin(sa) * (R_OUT + 2.2), .5, Math.cos(sa) * (R_OUT + 2.2), shellGroup);
     sh.rotation.y = sa;
@@ -1331,7 +1398,6 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
    what the photographs of this room show.
    ============================================================ */
 var STAGE_Z = -30, STAGE_Y = FLOOR_Y + 1.5, SCREEN_Z = -41.5;
-var R_IN = R_OUT - 1.4;
 var SEAT_ORIGIN = new THREE.Vector3(0, 0, STAGE_Z + 1);
 
 var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, amt: { value: 1 } };
@@ -1454,6 +1520,71 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
     });
   }
 
+  /* ---- the congregation ----
+     A room this dark facing a screen this bright turns everyone in it into a
+     silhouette, and a silhouette is the one form of a person that simple
+     geometry can carry. Heads and shoulders above the seat backs, in a near
+     black material, seen from behind: no faces, no limbs, nothing asked of the
+     geometry that it cannot do. Modelling anyone in the round here would fail,
+     because a lathe-and-sphere figure never passes as a human being.
+
+     They are instanced, thinned toward the back the way a congregation
+     actually thins, and the aisles are left clear. */
+  var skinDark = new THREE.MeshStandardMaterial({ color: 0x0d1017, roughness: .95, metalness: 0 });
+  var coatDark = new THREE.MeshStandardMaterial({ color: 0x0a0d13, roughness: .97, metalness: 0 });
+  var heads = [], torsos = [];
+  var pq = new THREE.Quaternion(), pe = new THREE.Euler();
+
+  function seatPerson(x, z, y, facing, standing, scale) {
+    pe.set(0, facing, 0); pq.setFromEuler(pe);
+    var shoulder = standing ? y + 1.30 : y + 1.02;
+    var headY = standing ? y + 1.66 : y + 1.38;
+    torsos.push(new THREE.Matrix4().compose(
+      new THREE.Vector3(x, shoulder, z), pq.clone(),
+      new THREE.Vector3(scale * 1.02, scale, scale * .78)));
+    heads.push(new THREE.Matrix4().compose(
+      new THREE.Vector3(x, headY, z), pq.clone(),
+      new THREE.Vector3(scale, scale * 1.08, scale)));
+  }
+
+  for (var pr = 0; pr < 18; pr++) {
+    var prr = 11.5 + pr * 1.68 - .18;               /* a little forward on the seat */
+    var plift = FLOOR_Y + pr * pr * 0.0085;
+    /* fuller in the middle of the room, thinner at the very front and back */
+    var occ = .72 - Math.abs(pr - 7) * 0.032;
+    blocks.forEach(function (bk) {
+      var step = 0.62 / prr;
+      for (var pa = bk[0] + step * .5; pa < bk[1]; pa += step) {
+        if (Math.random() > occ) continue;
+        var px = Math.sin(pa) * prr + SEAT_ORIGIN.x;
+        var pz = Math.cos(pa) * prr + SEAT_ORIGIN.z;
+        if (px * px + pz * pz > (R_IN - 4) * (R_IN - 4)) continue;
+        seatPerson(px + (Math.random() - .5) * .1, pz, plift,
+          pa + Math.PI + (Math.random() - .5) * .25,
+          Math.random() < .06,                       /* a few on their feet */
+          .94 + Math.random() * .16);
+      }
+    });
+  }
+
+  /* the platform: a worship team either side and someone at the podium */
+  for (var sp = 0; sp < 9; sp++) {
+    var sx = -9.5 + sp * 2.4;
+    if (Math.abs(sx) < 2.2) continue;
+    seatPerson(sx + (Math.random() - .5) * .5, STAGE_Z - 3.4 - Math.random() * 1.6,
+      STAGE_Y, Math.PI + (Math.random() - .5) * .4, true, .98 + Math.random() * .1);
+  }
+  seatPerson(0, STAGE_Z - 3.1, STAGE_Y, Math.PI, true, 1.02);
+
+  var hi = new THREE.InstancedMesh(new THREE.SphereGeometry(.115, 10, 8), skinDark, heads.length);
+  heads.forEach(function (m, i) { hi.setMatrixAt(i, m); });
+  hi.instanceMatrix.needsUpdate = true;
+  roomGroup.add(hi);
+  var ti = new THREE.InstancedMesh(new THREE.CapsuleGeometry(.19, .2, 4, 8), coatDark, torsos.length);
+  torsos.forEach(function (m, i) { ti.setMatrixAt(i, m); });
+  ti.instanceMatrix.needsUpdate = true;
+  roomGroup.add(ti);
+
   /* the house lights, in rings under the cone */
   var bulb = new THREE.MeshBasicMaterial({ color: 0xffe6bd, toneMapped: false });
   [[16, 12], [30, 18], [42, 22]].forEach(function (r) {
@@ -1492,7 +1623,7 @@ scene.add(fill);
 var roomLamp = new THREE.PointLight(0xffd9a8, 1.5, 80, 1.45);
 roomLamp.position.set(0, 10, -6);
 scene.add(roomLamp);
-var stageLamp = new THREE.PointLight(0x8fc2ee, 2.2, 62, 1.5);
+var stageLamp = new THREE.PointLight(0x8fc2ee, 1.5, 50, 1.6);
 stageLamp.position.set(0, 8, STAGE_Z - 3);
 scene.add(stageLamp);
 /* under the rooflight, so the cone falls off from the middle rather than
@@ -1669,11 +1800,11 @@ var LOOKS = [
     keyC: 0x9dbce6, keyI: .40, fillC: 0xffd39a, fillI: .20, lampI: 1.7, stageI: 1.4,
     exposure: 1.06, bloomT: .70, bloomI: .70, scrim: 0, star: .8, moonC: 0xf2f0e4, screenA: .9 }),
   L(0.45, { skyTop: 0x0a1428, skyBot: 0x25456f, glow: 0x39608f, glowY: .05, glowAmt: .55,
-    fog: 0x090f1c, fogD: .0130, hemiS: 0x24354f, hemiG: 0x090d16, hemiI: .30,
+    fog: 0x090f1c, fogD: .0130, hemiS: 0x1c2a3e, hemiG: 0x070a11, hemiI: .18,
     keyC: 0x7e9cc6, keyI: .10, fillC: 0xffcf92, fillI: .12, lampI: 1.0, stageI: 1.25,
     exposure: .92, bloomT: .88, bloomI: .48, scrim: .36, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
   L(0.84, { skyTop: 0x14243f, skyBot: 0x486d9c, glow: 0x6d92bd, glowY: .08, glowAmt: .8,
-    fog: 0x090f1c, fogD: .0125, hemiS: 0x24354f, hemiG: 0x090d16, hemiI: .32,
+    fog: 0x090f1c, fogD: .0125, hemiS: 0x1c2a3e, hemiG: 0x070a11, hemiI: .20,
     keyC: 0x7e9cc6, keyI: .12, fillC: 0xffcf92, fillI: .14, lampI: 1.1, stageI: 1.35,
     exposure: .92, bloomT: .86, bloomI: .50, scrim: .36, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
   L(0.93, { skyTop: 0x6f9bd0, skyBot: 0xefdcb4, glow: 0xffe9b4, glowY: .16, glowAmt: 1.25,
@@ -1740,25 +1871,26 @@ function applyLook(p) {
    ============================================================ */
 var V = function (x, y, z) { return new THREE.Vector3(x, y, z); };
 var PATH = [
-  /* across the lot, the way anyone arrives here */
-  { p: V(13, 2.9, 101),    l: V(0, 8.5, 58),   ch: 0 },
-  { p: V(-4, 2.8, 80),     l: V(0, 7.2, 56),   ch: 0 },
-  /* up to the doors under the canopy */
-  { p: V(0, 2.8, 77),      l: V(0, 6.4, 55),   ch: 1 },
-  { p: V(0, 2.5, 53),      l: V(0, 4.6, 28),   ch: 1 },
-  /* inside, at the back of the fan */
-  { p: V(0, 5.4, 29),      l: V(0, 6, -20),    ch: 2 },
-  { p: V(-10, 4.6, 7),     l: V(3, 5.6, -26),  ch: 2 },
-  /* down among the chairs, close to the platform */
-  { p: V(3.5, 3.8, -14),   l: V(0, 4.4, -33),  ch: 3 },
-  /* under the rooflight, looking up the cone */
-  { p: V(0, 4.2, 12),      l: V(0, 15, 2),     ch: 4 },
-  { p: V(0, 11, 1.5),      l: V(0, 26, 0),     ch: 4 },
-  /* out through it, past the cross */
-  { p: V(0, 19, 0),        l: V(0, 34, 4),     ch: 4 },
-  { p: V(9, 34, 22),       l: V(0, 18, 14),    ch: 4 },
-  /* and high enough to see the whole round of it */
-  { p: V(0, 132, 178),     l: V(0, 6, -4),     ch: 4 }
+  /* across the lot, the way anyone arrives */
+  { p: V(14, 2.9, 106),    l: V(1, 8.2, 60),   ch: 0 },
+  { p: V(5, 2.8, 86),      l: V(0, 6.6, 57),   ch: 0 },
+  /* under the canopy, then held just outside the glass. No waypoint rests
+     inside the doorway, or the camera comes to a stop in the dark of it. */
+  { p: V(0, 2.7, 72),      l: V(0, 5.4, 54),   ch: 1 },
+  { p: V(0, 1.95, 60),     l: V(0, 2.4, 42),   ch: 1 },
+  /* through in one move, and into the back of the fan */
+  { p: V(0, 3.6, 36),      l: V(0, 4.6, -12),  ch: 2 },
+  { p: V(-9, 4.8, 15),     l: V(2, 5.2, -26),  ch: 2 },
+  /* down among the seats */
+  { p: V(2, 3.6, -8),      l: V(0, 4.3, -30),  ch: 3 },
+  /* settle under the rooflight and look up it */
+  { p: V(0, 4.6, 0),       l: V(0, 13, -3),    ch: 4 },
+  { p: V(0, 11, .5),       l: V(0, 24, 0),     ch: 4 },
+  { p: V(0, 19, 0),        l: V(0, 32, 1),     ch: 4 },
+  /* out, turning back on the roof */
+  { p: V(11, 38, 24),      l: V(0, 16, 8),     ch: 4 },
+  { p: V(5, 74, 88),       l: V(0, 10, -2),    ch: 4 },
+  { p: V(0, 128, 176),     l: V(0, 4, -8),     ch: 4 }
 ];
 var posCurve = new THREE.CatmullRomCurve3(PATH.map(function (w) { return w.p; }), false, 'catmullrom', .5);
 var lookCurve = new THREE.CatmullRomCurve3(PATH.map(function (w) { return w.l; }), false, 'catmullrom', .5);
@@ -1772,9 +1904,15 @@ for (var c = 0; c < CHAPTERS.length; c++) {
 }
 ANCHOR.push(1);
 
+/* Smoothstep on its own puts velocity at zero on every anchor, which is right
+   for a waypoint and wrong for a chapter boundary: five chapters means four
+   dead stops in what is meant to read as one walk. Blending a quarter of the
+   linear term back in keeps the movement alive across the handover while still
+   easing into it. */
+function ease(t) { return .26 * t + .74 * smooth(t); }
 function pathParam() {
   var c2 = clamp(scrollDrive.c, 0, CHAPTERS.length - 1);
-  return lerp(ANCHOR[c2], ANCHOR[c2 + 1], smooth(scrollDrive.f));
+  return lerp(ANCHOR[c2], ANCHOR[c2 + 1], ease(scrollDrive.f));
 }
 
 var uCur = pathParam();
@@ -1788,15 +1926,22 @@ var camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
 var insideNow = false, blink = 0;
 function surfaces(pos) {
   var v = 0;
-  /* the doors, at the +Z side of the wall */
-  if (Math.abs(pos.x) < 13 && pos.y < 12) v = Math.max(v, plateau(Math.abs(pos.z - ENTRY_Z), .3, 2.4));
+  /* The doors are a passage, not a plane. The glazing stands nine metres proud
+     of the wall with the lobby between them, so blacking out at the wall alone
+     left the lens travelling through the glass in plain sight for the whole
+     length of the porch. The veil is full from the glass to just inside the
+     wall, and eases away either side of that. */
+  if (Math.abs(pos.x) < 10 && pos.y < 8) {
+    var r = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
+    v = Math.max(v, plateau(Math.abs(r - DOOR_PLANE), .8, 2.0));
+  }
   /* the rooflight at the middle of the cone */
   if (pos.x * pos.x + pos.z * pos.z < LIGHT_R * LIGHT_R * 2.2)
     v = Math.max(v, plateau(Math.abs(pos.y - APEX_Y), .5, 3.2));
   return v;
 }
 function updateWorld(pos) {
-  var inside = (pos.x * pos.x + pos.z * pos.z) < R_OUT * R_OUT && pos.y < APEX_Y;
+  var inside = (pos.x * pos.x + pos.z * pos.z) < R_IN * R_IN && pos.y < APEX_Y;
   if (inside !== insideNow) {
     insideNow = inside;
     roomGroup.visible = inside;
@@ -1838,14 +1983,14 @@ function frame() {
      the lag is what turns it into a walk. */
   var target = pathParam();
   if (RM) uCur = target;
-  else uCur += (target - uCur) * (1 - Math.exp(-dt * 3.4));
+  else uCur += (target - uCur) * (1 - Math.exp(-dt * 2.6));
 
   posCurve.getPoint(clamp(uCur, 0, 1), camPos);
   lookCurve.getPoint(clamp(uCur, 0, 1), camLook);
 
   /* Clamp above the floor while indoors. A Catmull-Rom heading for a waypoint
      high above the roof will otherwise dip through the flagstones on the way. */
-  if ((camPos.x * camPos.x + camPos.z * camPos.z) < R_OUT * R_OUT && camPos.y < APEX_Y)
+  if ((camPos.x * camPos.x + camPos.z * camPos.z) < R_IN * R_IN && camPos.y < APEX_Y)
     camPos.y = Math.max(camPos.y, FLOOR_Y + 1.5);
 
   camera.position.copy(camPos);

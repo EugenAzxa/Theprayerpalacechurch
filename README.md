@@ -28,10 +28,18 @@ more than fifty nationalities in the congregation.
   in: the block drum of the walls, the checkerboard course near the head of it, the
   punched dark glazing, four projecting entrance canopies, the twenty-four ridges of
   the roof, the rooflights and plant scattered over it, and the cross.
+- Walks in through the doors rather than through the glass. The doorway is a hole
+  cut out of the glazing with a lit lobby behind it and a real opening in the wall
+  beyond that, so the approach reads as depth and the camera goes through a passage
+  it can actually fit down.
 - Takes the camera inside, into the room the church actually meets in. A round
   building gives you a fan rather than a nave: concentric tiers of seating swung
   round a platform on one side, under the underside of the same cone that is the
   roof, with a curved screen wall that is the brightest thing in the building.
+- Fills it. Around a thousand people in the seats and a dozen on the platform, as
+  heads and shoulders above the seat backs in near black. A room this dark facing a
+  screen this bright turns everyone in it into a silhouette, and a silhouette is
+  the one form of a person that simple geometry can carry.
 - Leaves through the rooflight. The ceiling carries the same twenty-four seams,
   converging on a five-metre opening at the middle that the camera climbs out
   through, past the cross, and up until the whole round of the site is in frame.
@@ -92,12 +100,13 @@ keeps moving without claiming to be finished.
 **A fixed canvas.** `position: fixed; inset: 0; z-index: 0`. Everything else floats
 over it. The page scrolls, the canvas never moves.
 
-**A camera on a curve.** Twelve waypoints, a Catmull-Rom through them, and the
-scroll mapped onto it. Each chapter owns a stretch of the curve and the fraction
-within a chapter is smoothed, which puts velocity at zero on every anchor rather
-than snapping from a forty-metre stride outdoors to a two-metre one indoors. The
-camera lags the scrollbar on purpose: scroll is a step function, and the lag is
-what turns it into a walk.
+**A camera on a curve.** Thirteen waypoints, a Catmull-Rom through them, and the
+scroll mapped onto it. Each chapter owns a stretch of the curve. Smoothstep on its
+own puts velocity at zero on every anchor, which is right for a waypoint and wrong
+for a chapter boundary: five chapters means four dead stops in what is meant to
+read as one walk, so a quarter of the linear term is blended back in to keep the
+movement alive across the handover. The camera lags the scrollbar on purpose:
+scroll is a step function, and the lag is what turns it into a walk.
 
 **An editorial layer.** Real HTML at `z-index: 10`, revealed by IntersectionObserver,
 with headings split word by word into clipping boxes so a line assembles rather
@@ -142,6 +151,18 @@ block with a shallow cone for a roof. Nothing about the modelled version survive
 the photographs: not the geometry, not the material, not the approach, not the
 plan of the room inside it. A generic silhouette read as wrong from every angle,
 in exactly the way a five-bay porch invented for a building that has none does.
+
+**Constants declared below the code that reads them are silently undefined.**
+`DOOR_PLANE` and `R_IN` sat with the room, a hundred lines under the entrance that
+measures the lobby off them. `var` hoisting meant no error, just `undefined`, so
+the lobby was built out of NaN and never appeared at all. What showed through the
+front doors was the far side of the car park, straight through the building and
+out of the opening on the opposite side.
+
+**Cutting a hole in the glass is only half a doorway.** The wall behind it was one
+unbroken cylinder, so the opening led to solid blockwork. The wall is built in two
+bands now: the lower one in four arcs with a gap at each entrance, the upper one
+continuous over the top of them.
 
 **The screen wall was facing the wrong way round its own cylinder.**
 `CylinderGeometry` measures theta from +Z, so an arc from -0.46 to +0.46 bulges

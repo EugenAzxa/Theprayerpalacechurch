@@ -37,6 +37,11 @@ aerial and street photographs before writing any geometry. This one is round.
   tiers of seating swung round a platform on one side, a podium and planters, and a
   curved screen wall that is the brightest thing in the building. The ceiling is the
   underside of the same cone, carrying the same seams, converging on the rooflight.
+- Put the congregation in it. Heads and shoulders above the seat backs, in near
+  black, seen from behind: no faces, no limbs, nothing asked of the geometry that
+  it cannot do. A dark room facing a bright screen turns everyone in it into a
+  silhouette, and a silhouette is the one form of a person that primitives can
+  carry. Modelling anyone in the round will fail.
 - Model the seating as continuous curved rows. At the distance the room is seen
   from a chair is about five pixels wide, and several thousand of them alias into a
   flat grey field rather than reading as seating.
@@ -103,6 +108,13 @@ aerial and street photographs before writing any geometry. This one is round.
 - Draw the sky first, with the depth test off. A sky is a background, not a distant
   object. Keep its sphere well inside the far plane, or it is clipped into a visible
   dome.
+- Walk in through the doors, not through the window. Cut the doorway out of the
+  glazing, cut a matching opening in the wall behind it, and put a lit lobby
+  between the two. A veil over a lens travelling through a sheet of glass is
+  hiding a mistake rather than making a transition.
+- Declare every dimension the building is measured off above the code that reads
+  it. Hoisting means a constant used before its declaration is `undefined` rather
+  than an error, and geometry built out of NaN does not appear at all.
 - Swap the interior and the shell rather than cross-fading them, keyed to where the
   camera is rather than to scroll position, and cover the cut with a veil that
   reaches full black. Take the veil from the two surfaces the lens genuinely
