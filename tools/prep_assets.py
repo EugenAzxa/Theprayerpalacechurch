@@ -74,6 +74,66 @@ def lift_alpha(src, name, size, crop=None, quality=90, ink=True if False else Fa
     print(f"{name:22} {out.size[0]}x{out.size[1]}  {os.path.getsize(dst)//1024:>4} KB   <- {src}")
 
 
+def stage_screen(src, name, size=(1600, 512)):
+    """Compose what the screen wall is showing: a live camera shot of the pastor.
+
+    In a room this size nobody at the back sees a face; they see the screens. So
+    the one person on this page rendered as a photograph rather than as geometry
+    is the one the room is actually looking at, and he appears where the room
+    actually looks at him.
+    """
+    from PIL import ImageDraw, ImageFilter, ImageFont
+    import math
+    W, H = size
+    cx, cy = W * 0.615, H * 0.46
+
+    # A soft field behind, brightest around the head. Built by hand rather than
+    # with stacked ellipses, which leave visible steps.
+    field = Image.new("RGB", (W, H))
+    fp = field.load()
+    for y in range(H):
+        for x in range(0, W, 2):
+            d = math.hypot((x - cx) / (W * 0.52), (y - cy) / (H * 0.86))
+            t = max(0.0, 1.0 - d)
+            t = t * t
+            c = (int(9 + 52 * t), int(24 + 86 * t), int(48 + 112 * t))
+            fp[x, y] = c
+            if x + 1 < W:
+                fp[x + 1, y] = c
+    plate = field.filter(ImageFilter.GaussianBlur(10))
+
+    # the portrait, feathered to an oval so it sits in the field rather than on it
+    por = Image.open(os.path.join(SRC, src)).convert("RGB")
+    ph = int(H * 1.02)
+    pw = int(por.size[0] * ph / por.size[1])
+    por = por.resize((pw, ph), Image.LANCZOS)
+    por = ImageEnhance.Brightness(por).enhance(1.05)
+    por = ImageEnhance.Contrast(por).enhance(1.06)
+
+    mask = Image.new("L", (pw, ph), 0)
+    ImageDraw.Draw(mask).ellipse(
+        [pw * 0.10, ph * 0.03, pw * 0.90, ph * 0.97], fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(ph * 0.075))
+    plate.paste(por, (int(cx - pw / 2), int(cy - ph / 2)), mask)
+
+    # a lower third, the way a broadcast carries a name
+    d = ImageDraw.Draw(plate, "RGBA")
+    d.rectangle([0, int(H * 0.80), W, H], fill=(6, 18, 38, 165))
+    d.rectangle([0, int(H * 0.80), W, int(H * 0.807)], fill=(150, 198, 245, 210))
+    fpath = "/System/Library/Fonts/Supplemental/Futura.ttc"
+    try:
+        f1 = ImageFont.truetype(fpath, 52)
+        f2 = ImageFont.truetype(fpath, 26)
+    except Exception:
+        f1 = f2 = ImageFont.load_default()
+    d.text((int(W * 0.05), int(H * 0.835)), "PASTOR TOM MELNICHUK", font=f1, fill=(238, 246, 255))
+    d.text((int(W * 0.052), int(H * 0.925)), "THE PRAYER PALACE", font=f2, fill=(146, 188, 234))
+
+    dst = os.path.join(OUT, name + ".webp")
+    plate.save(dst, "WEBP", quality=88, method=6)
+    print(f"{name:22} {W}x{H}  {os.path.getsize(dst)//1024:>4} KB   <- {src}")
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
 
@@ -92,6 +152,7 @@ if __name__ == "__main__":
 
     # The founding family.
     grade("si-45.png", "pastor-tom", (760, 760), keep=0.45)
+    stage_screen("si-45.png", "stage-screen")
     grade("gal-24.jpg", "pastor-paul", (480, 660), crop=(588, 130, 905, 600), keep=0.42)
 
     # The work of the church.

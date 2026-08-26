@@ -165,11 +165,12 @@
   var api = {
     vendor: task(7),
     scene: task(4),
+    stage: task(2),
     frame: task(3),
     finish: function () {
       if (ended) return;
       ended = true;
-      api.vendor(); api.scene(); api.frame();
+      api.vendor(); api.scene(); api.stage(); api.frame();
       target = 1; lastStep = now();
       if (RM) { shown = 1; render(1); }
       cap.textContent = 'Welcome';
@@ -703,6 +704,13 @@ if (!renderer || !renderer.getContext()) {
    because the composite pass at the end applies its own gamma. Skipping this
    renders the night as an overcast afternoon. */
 THREE.ColorManagement.enabled = true;
+/* Setting that flag is not enough on this build: Color.setHex stores the sRGB
+   value as-is rather than converting it into the linear working space, so every
+   colour in the scene was being used about three to twelve times too bright in
+   the shadows and nothing dark would stay dark. Measured, not assumed:
+   setHex(0x151a28) came back as 0.082, 0.102, 0.157 instead of 0.007, 0.011,
+   0.022. Every authored colour goes through here instead. */
+function SC(hex) { return new THREE.Color(hex).convertSRGBToLinear(); }
 renderer.outputEncoding = THREE.LinearEncoding;   /* the composite writes sRGB itself */
 renderer.setClearColor(0x05080f, 1);
 /* Every clear on this page is explicit. The additive upsample renders a quad
@@ -898,22 +906,22 @@ var TX = {
 
 /* ---------- materials ---------- */
 var M = {
-  block: new THREE.MeshStandardMaterial({ color: 0xf2efe8, map: TX.block, roughness: .95, metalness: 0 }),
-  band: new THREE.MeshStandardMaterial({ color: 0xe8e4dc, map: TX.band, roughness: .92, metalness: 0 }),
-  check: new THREE.MeshStandardMaterial({ color: 0xece8e0, map: TX.check, roughness: .93, metalness: 0 }),
-  rib: new THREE.MeshStandardMaterial({ color: 0xf4f6f8, map: TX.rib, roughness: .48, metalness: .35 }),
-  roof: new THREE.MeshStandardMaterial({ color: 0xb7bcc2, map: TX.roof, roughness: .82, metalness: .12 }),
-  asphalt: new THREE.MeshStandardMaterial({ color: 0x9aa1ab, map: TX.asphalt, roughness: .97, metalness: 0 }),
-  grass: new THREE.MeshStandardMaterial({ color: 0x8f9c7e, map: TX.grass, roughness: 1, metalness: 0 }),
-  carpet: new THREE.MeshStandardMaterial({ color: 0x2b3348, map: TX.carpet, roughness: 1, metalness: 0 }),
+  block: new THREE.MeshStandardMaterial({ color: SC(0xf2efe8), map: TX.block, roughness: .95, metalness: 0 }),
+  band: new THREE.MeshStandardMaterial({ color: SC(0xe8e4dc), map: TX.band, roughness: .92, metalness: 0 }),
+  check: new THREE.MeshStandardMaterial({ color: SC(0xece8e0), map: TX.check, roughness: .93, metalness: 0 }),
+  rib: new THREE.MeshStandardMaterial({ color: SC(0xf4f6f8), map: TX.rib, roughness: .48, metalness: .35 }),
+  roof: new THREE.MeshStandardMaterial({ color: SC(0xb7bcc2), map: TX.roof, roughness: .82, metalness: .12 }),
+  asphalt: new THREE.MeshStandardMaterial({ color: SC(0x9aa1ab), map: TX.asphalt, roughness: .97, metalness: 0 }),
+  grass: new THREE.MeshStandardMaterial({ color: SC(0x8f9c7e), map: TX.grass, roughness: 1, metalness: 0 }),
+  carpet: new THREE.MeshStandardMaterial({ color: SC(0x151a28), map: TX.carpet, roughness: 1, metalness: 0 }),
   glass: new THREE.MeshBasicMaterial({ map: TX.glass, toneMapped: false }),
-  white: new THREE.MeshStandardMaterial({ color: 0xe9ebe8, roughness: .6, metalness: .08 }),
-  dark: new THREE.MeshStandardMaterial({ color: 0x1b2029, roughness: .86, metalness: .05 }),
-  seat: new THREE.MeshStandardMaterial({ color: 0x2b3243, roughness: .84, metalness: .04 }),
-  shrub: new THREE.MeshStandardMaterial({ color: 0x3d4c34, roughness: 1, metalness: 0 }),
-  bark: new THREE.MeshStandardMaterial({ color: 0x3b3a38, roughness: 1, metalness: 0 }),
-  leaf: new THREE.MeshStandardMaterial({ color: 0x415033, roughness: 1, metalness: 0 }),
-  line: new THREE.MeshBasicMaterial({ color: 0x6e7682, toneMapped: false })
+  white: new THREE.MeshStandardMaterial({ color: SC(0xe9ebe8), roughness: .6, metalness: .08 }),
+  dark: new THREE.MeshStandardMaterial({ color: SC(0x1b2029), roughness: .86, metalness: .05 }),
+  seat: new THREE.MeshStandardMaterial({ color: SC(0x2b3243), roughness: .84, metalness: .04 }),
+  shrub: new THREE.MeshStandardMaterial({ color: SC(0x3d4c34), roughness: 1, metalness: 0 }),
+  bark: new THREE.MeshStandardMaterial({ color: SC(0x3b3a38), roughness: 1, metalness: 0 }),
+  leaf: new THREE.MeshStandardMaterial({ color: SC(0x415033), roughness: 1, metalness: 0 }),
+  line: new THREE.MeshBasicMaterial({ color: SC(0x6e7682), toneMapped: false })
 };
 
 function box(w, h, d, mat, x, y, z, parent) {
@@ -947,9 +955,9 @@ function strut(from, to, w, d, mat, parent) {
    to the ordinary opaque sort it will paint over the building standing in
    front of it. */
 var skyUni = {
-  top: { value: new THREE.Color(0x0a1226) },
-  bot: { value: new THREE.Color(0x22406b) },
-  glow: { value: new THREE.Color(0x36598c) },
+  top: { value: SC(0x0a1226) },
+  bot: { value: SC(0x22406b) },
+  glow: { value: SC(0x36598c) },
   glowY: { value: 0.06 },
   glowAmt: { value: 0.55 }
 };
@@ -976,7 +984,7 @@ skyDome.renderOrder = -1000;
 skyDome.material.depthTest = false;
 skyGroup.add(skyDome);
 
-var starMat = new THREE.PointsMaterial({ color: 0xdce6f6, size: 1.5, sizeAttenuation: false, transparent: true, opacity: .9, depthWrite: false });
+var starMat = new THREE.PointsMaterial({ color: SC(0xdce6f6), size: 1.5, sizeAttenuation: false, transparent: true, opacity: .9, depthWrite: false });
 (function stars() {
   var n = 700, pos = new Float32Array(n * 3);
   for (var i = 0; i < n; i++) {
@@ -994,12 +1002,12 @@ var starMat = new THREE.PointsMaterial({ color: 0xdce6f6, size: 1.5, sizeAttenua
 })();
 
 var moon = new THREE.Mesh(new THREE.SphereGeometry(12, 24, 16),
-  new THREE.MeshBasicMaterial({ color: 0xf2f0e4, toneMapped: false }));
+  new THREE.MeshBasicMaterial({ color: SC(0xf2f0e4), toneMapped: false }));
 moon.position.set(-260, 190, 150);
 moon.renderOrder = -900;
 skyGroup.add(moon);
 var halo = new THREE.Mesh(new THREE.SphereGeometry(34, 20, 14),
-  new THREE.MeshBasicMaterial({ color: 0x9fc0e8, transparent: true, opacity: .16, depthWrite: false, toneMapped: false }));
+  new THREE.MeshBasicMaterial({ color: SC(0x9fc0e8), transparent: true, opacity: .16, depthWrite: false, toneMapped: false }));
 halo.position.copy(moon.position);
 halo.renderOrder = -899;
 skyGroup.add(halo);
@@ -1128,7 +1136,7 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
 
   /* rooflights and plant, scattered over the roof the way they are on the
      real one */
-  var rlMat = new THREE.MeshBasicMaterial({ color: 0x8fb0d8, toneMapped: false });
+  var rlMat = new THREE.MeshBasicMaterial({ color: SC(0x8fb0d8), toneMapped: false });
   for (var k = 0; k < 14; k++) {
     var ra = (k / 14) * Math.PI * 2 + .3, rr = 18 + (k % 3) * 9;
     var t = (rr - LIGHT_R) / (R_OUT - LIGHT_R);
@@ -1224,31 +1232,34 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
        the inner doors. It gives the doorway somewhere to lead, so the approach
        reads as depth rather than as a bright rectangle stuck on a facade. */
     var lobW = dw + 4.0, lobEnd = DOOR_PLANE - .3, lobD = gz - lobEnd, lobZ = (gz + lobEnd) / 2;
-    var lobWall = new THREE.MeshStandardMaterial({ color: 0xbdb29c, roughness: .95 });
+    var lobWall = new THREE.MeshStandardMaterial({ color: SC(0xbdb29c), roughness: .95 });
     box(.4, dh + .7, lobD, lobWall, -lobW / 2, (dh + .7) / 2, lobZ, g);
     box(.4, dh + .7, lobD, lobWall, lobW / 2, (dh + .7) / 2, lobZ, g);
     box(lobW, .3, lobD, lobWall, 0, dh + .7, lobZ, g);
-    box(lobW, .18, lobD, new THREE.MeshStandardMaterial({ color: 0x554a3f, roughness: .95 }),
+    box(lobW, .18, lobD, new THREE.MeshStandardMaterial({ color: SC(0x554a3f), roughness: .95 }),
       0, .09, lobZ, g);
     /* the inner doors, lit from the hall beyond. The lens goes through these,
        under the veil, and comes out inside. */
-    var innerLit = new THREE.MeshBasicMaterial({ color: 0x141c2b, toneMapped: false });
+    var innerLit = new THREE.MeshBasicMaterial({ color: SC(0x141c2b), toneMapped: false });
     var inner2 = new THREE.Mesh(new THREE.PlaneGeometry(dw + 1.4, dh + .2), innerLit);
     inner2.position.set(0, (dh + .2) / 2, DOOR_PLANE);
     g.add(inner2);
     /* a little of the hall's own light spilling round the leaves */
-    var spill = new THREE.MeshBasicMaterial({ color: 0x3d5a7e, toneMapped: false });
+    var spill = new THREE.MeshBasicMaterial({ color: SC(0x3d5a7e), toneMapped: false });
     box(dw + 1.5, .12, .1, spill, 0, dh + .28, DOOR_PLANE + .02, g);
     box(.12, dh + .2, .1, spill, -(dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
     box(.12, dh + .2, .1, spill, (dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
     box(.16, dh - .2, .1, M.dark, 0, (dh - .2) / 2, DOOR_PLANE + .03, g);
-    /* warm downlights in the lobby ceiling */
+    /* warm downlights in the lobby ceiling, and a lamp that actually lights it */
     [lobZ - lobD * .3, lobZ, lobZ + lobD * .3].forEach(function (lz) {
-      var b2 = new THREE.Mesh(new THREE.SphereGeometry(.17, 10, 8),
-        new THREE.MeshBasicMaterial({ color: 0xffdda8, toneMapped: false }));
+      var b2 = new THREE.Mesh(new THREE.SphereGeometry(.14, 10, 8),
+        new THREE.MeshBasicMaterial({ color: SC(0xffdda8), toneMapped: false }));
       b2.position.set(0, dh + .5, lz);
       g.add(b2);
     });
+    var lobLamp = new THREE.PointLight(SC(0xffdcaa), main ? 1.9 : 1.3, 15, 1.5);
+    lobLamp.position.set(0, dh + .2, lobZ);
+    g.add(lobLamp);
     /* the returns either side, angled back to the wall the way they are on
        the building */
     [-1, 1].forEach(function (sgn) {
@@ -1277,9 +1288,9 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
 
       /* the louvred plant vent up on the block, and the Welcome Centre sign */
       box(4.2, 1.5, .2, new THREE.MeshStandardMaterial({
-        color: 0x6e747c, roughness: .6, metalness: .35 }), HW + 7.5, 5.9, R_OUT - .4, g);
+        color: SC(0x6e747c), roughness: .6, metalness: .35 }), HW + 7.5, 5.9, R_OUT - .4, g);
       var wc = box(2.6, .95, .16, new THREE.MeshBasicMaterial({
-        color: 0x9fb6cc, toneMapped: false }), -HW - 6.2, 3.9, R_OUT - .35, g);
+        color: SC(0x9fb6cc), toneMapped: false }), -HW - 6.2, 3.9, R_OUT - .35, g);
       wc.rotation.y = 0.16;
     }
     return g;
@@ -1312,7 +1323,7 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
   fx.lineTo(56, 30); fx.lineTo(64, 29); fx.lineTo(48, 40); fx.lineTo(32, 29);
   fx.lineTo(40, 30); fx.lineTo(36, 17); fx.lineTo(43, 20); fx.closePath(); fx.fill();
   var flagMat = new THREE.MeshStandardMaterial({
-    map: tex(flagCanvas, 1, 1), color: 0xffffff, roughness: .9, side: THREE.DoubleSide
+    map: tex(flagCanvas, 1, 1), color: SC(0xffffff), roughness: .9, side: THREE.DoubleSide
   });
   for (var f = 0; f < 3; f++) {
     var fxp = -15.5 - f * 4.2, fzp = R_OUT + 13.5 + (f % 2) * 1.2;
@@ -1369,7 +1380,7 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
   ci.instanceMatrix.needsUpdate = true;
   shellGroup.add(ci);
 
-  var headMat = new THREE.MeshBasicMaterial({ color: 0xffe0ab, toneMapped: false });
+  var headMat = new THREE.MeshBasicMaterial({ color: SC(0xffe0ab), toneMapped: false });
   for (var L = 0; L < 16; L++) {
     var la = (L / 16) * Math.PI * 2 + .38, lr = 82 + (L % 3) * 28;
     var lx = Math.sin(la) * lr, lz = Math.cos(la) * lr;
@@ -1400,7 +1411,18 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
 var STAGE_Z = -30, STAGE_Y = FLOOR_Y + 1.5, SCREEN_Z = -41.5;
 var SEAT_ORIGIN = new THREE.Vector3(0, 0, STAGE_Z + 1);
 
-var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, amt: { value: 1 } };
+/* Nobody at the back of a room this size sees a face; they see the screens. So
+   the one person on this page rendered as a photograph rather than as geometry
+   is the one the room is looking at, and he appears where it looks at him. */
+var stageTex = new THREE.TextureLoader().load('assets/stage-screen.webp', function () {
+  if (window.__load) window.__load.stage();
+}, undefined, function () { if (window.__load) window.__load.stage(); });
+stageTex.encoding = THREE.sRGBEncoding;
+stageTex.wrapS = stageTex.wrapT = THREE.ClampToEdgeWrapping;
+var screenUni = {
+  t: { value: 0 }, tint: { value: SC(0x2f6fa8) }, amt: { value: 1 },
+  content: { value: stageTex }
+};
 
 (function room() {
   /* the floor, raked away from the platform */
@@ -1409,16 +1431,16 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
   roomGroup.add(fl);
 
   /* the wall and the two banding courses, seen from within */
-  var inner = new THREE.MeshStandardMaterial({ color: 0x2b313c, roughness: .95, metalness: 0, side: THREE.BackSide });
+  var inner = new THREE.MeshStandardMaterial({ color: SC(0x2b313c), roughness: .95, metalness: 0, side: THREE.BackSide });
   cyl(R_IN, R_IN, WALL_Y, 64, inner, 0, WALL_Y / 2, 0, roomGroup, true);
   cyl(R_IN - .02, R_IN - .02, .4, 64, new THREE.MeshStandardMaterial({
-    color: 0x1a1f27, roughness: .9, side: THREE.BackSide }), 0, 4.35, 0, roomGroup, true);
+    color: SC(0x1a1f27), roughness: .9, side: THREE.BackSide }), 0, 4.35, 0, roomGroup, true);
 
   /* the ceiling: the same cone, from underneath */
-  var ceil = new THREE.MeshStandardMaterial({ color: 0x242a34, roughness: .95, metalness: 0, side: THREE.BackSide });
+  var ceil = new THREE.MeshStandardMaterial({ color: SC(0x242a34), roughness: .95, metalness: 0, side: THREE.BackSide });
   cyl(LIGHT_R, R_IN, APEX_Y - WALL_Y, 48, ceil, 0, (WALL_Y + APEX_Y) / 2, 0, roomGroup, true);
   /* the seams, picked out because they are the only articulation the ceiling has */
-  var seamMat = new THREE.MeshStandardMaterial({ color: 0x39404c, roughness: .9 });
+  var seamMat = new THREE.MeshStandardMaterial({ color: SC(0x39404c), roughness: .9 });
   for (var i = 0; i < 24; i++) {
     var a = (i / 24) * Math.PI * 2;
     strut(new THREE.Vector3(Math.sin(a) * (R_IN - .3), WALL_Y + .1, Math.cos(a) * (R_IN - .3)),
@@ -1427,24 +1449,24 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
   }
   /* the rooflight, and the kerb it sits in */
   cyl(LIGHT_R, LIGHT_R, 1.0, 32, new THREE.MeshStandardMaterial({
-    color: 0x7d879a, roughness: .7, side: THREE.BackSide }), 0, APEX_Y - .5, 0, roomGroup, true);
+    color: SC(0x7d879a), roughness: .7, side: THREE.BackSide }), 0, APEX_Y - .5, 0, roomGroup, true);
   var lightRing = new THREE.Mesh(new THREE.TorusGeometry(LIGHT_R, .2, 8, 40),
-    new THREE.MeshBasicMaterial({ color: 0xd8e4f4, toneMapped: false }));
+    new THREE.MeshBasicMaterial({ color: SC(0xd8e4f4), toneMapped: false }));
   lightRing.rotation.x = Math.PI / 2;
   lightRing.position.y = APEX_Y - .1;
   roomGroup.add(lightRing);
 
   /* the platform, its steps, the planters and the podium */
-  box(40, 1.5, 12, new THREE.MeshStandardMaterial({ color: 0x35302a, roughness: .9 }),
+  box(40, 1.5, 12, new THREE.MeshStandardMaterial({ color: SC(0x35302a), roughness: .9 }),
     0, FLOOR_Y + .75, STAGE_Z - 6, roomGroup);
   for (var st = 0; st < 3; st++) {
     box(16 - st * 1.4, .32, .95, M.dark, 0, FLOOR_Y + .3 + st * .4, STAGE_Z + .5 + st * .95, roomGroup);
   }
   [-11, -6.5, 6.5, 11].forEach(function (x) {
-    box(3.6, 1.0, 1.8, new THREE.MeshStandardMaterial({ color: 0x2f3d2c, roughness: 1 }),
+    box(3.6, 1.0, 1.8, new THREE.MeshStandardMaterial({ color: SC(0x2f3d2c), roughness: 1 }),
       x, STAGE_Y + .5, STAGE_Z - .6, roomGroup);
   });
-  box(1.5, 1.35, .8, new THREE.MeshStandardMaterial({ color: 0x6d5c3c, roughness: .5, metalness: .2 }),
+  box(1.5, 1.35, .8, new THREE.MeshStandardMaterial({ color: SC(0x6d5c3c), roughness: .5, metalness: .2 }),
     0, STAGE_Y + .68, STAGE_Z - 2.4, roomGroup);
 
   /* the screen wall, curved to follow the room. Not a lit panel but a field
@@ -1455,20 +1477,21 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
       uniforms: screenUni, side: THREE.BackSide, depthWrite: true, toneMapped: false, fog: false,
       vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
       fragmentShader: [
-        'uniform float t; uniform vec3 tint; uniform float amt; varying vec2 vU;',
-        'float h(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }',
+        'uniform float t; uniform vec3 tint; uniform float amt;',
+        'uniform sampler2D content; varying vec2 vU;',
         'void main(){',
-        '  vec2 p = vU - 0.5;',
-        '  float core = exp(-dot(p, p) * 3.2);',
-        '  float band = 0.5 + 0.5 * sin(vU.x * 22.0 + t * 0.35 + sin(vU.y * 4.0 + t * 0.22) * 1.6);',
-        '  float glint = 0.0;',
-        '  for (int i = 0; i < 5; i++) {',
-        '    float fi = float(i);',
-        '    vec2 c = vec2(fract(h(vec2(fi, 3.0)) + t * (0.012 + fi * 0.004)), h(vec2(fi, 9.0)));',
-        '    glint += 0.055 / (distance(vU, c) + 0.055);',
-        '  }',
-        '  vec3 col = tint * (0.52 + core * 0.86 + band * 0.32) + vec3(0.55, 0.72, 1.0) * glint * 0.14;',
-        '  col += vec3(0.78, 0.88, 1.0) * pow(core, 3.0) * 0.26;',
+        /* the arc is drawn from inside, so its u runs the other way */
+        '  vec2 uv = vec2(1.0 - vU.x, vU.y);',
+        '  vec3 base = texture2D(content, uv).rgb;',
+        /* a slow horizontal shimmer and a scan, so the wall reads as lit rather
+           than as a poster hung across the end of the room */
+        '  float band = 0.5 + 0.5 * sin(uv.x * 9.0 + t * 0.3 + sin(uv.y * 3.0 + t * 0.2) * 1.4);',
+        '  float scan = 0.5 + 0.5 * sin((uv.y + t * 0.035) * 220.0);',
+        '  vec3 col = base * (0.86 + band * 0.12 + scan * 0.03);',
+        '  col += tint * 0.035;',
+        /* falls off at the edges the way a big panel does */
+        '  vec2 e = abs(uv - 0.5) * 2.0;',
+        '  col *= 1.0 - smoothstep(0.86, 1.0, max(e.x, e.y)) * 0.5;',
         '  gl_FragColor = vec4(col * amt, 1.0);',
         '}'
       ].join('\n')
@@ -1482,22 +1505,32 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
      antialiasing off that many bright edges alias into a flat grey field
      instead of reading as seating. Detail below the threshold is not detail,
      it is noise. */
-  var rowBack = new THREE.MeshStandardMaterial({ color: 0x2b3243, roughness: .86, metalness: .04 });
-  var rowPan = new THREE.MeshStandardMaterial({ color: 0x232a3a, roughness: .9, metalness: .03 });
-  var FAN = 1.28, AISLE = 0.058;
-  var AISLES = [-0.92, -0.31, 0.31, 0.92];
-  var blocks = [];
-  var edge = -FAN;
-  AISLES.forEach(function (c) { blocks.push([edge, c - AISLE]); edge = c + AISLE; });
-  blocks.push([edge, FAN]);
+  var rowBack = new THREE.MeshStandardMaterial({ color: SC(0x1b2130), roughness: .9, metalness: .03 });
+  var rowPan = new THREE.MeshStandardMaterial({ color: SC(0x161b28), roughness: .93, metalness: .02 });
+  var FAN = 1.28;
+  var AISLES = [-0.86, 0, 0.86];
+  /* An aisle is a width in metres, not an angle: a fixed angular gap is half a
+     metre at the front row and two and a half at the back. The middle one is
+     wider because the camera walks down it, and everyone needs to be far enough
+     from the lens not to be examined. */
+  function blocksFor(rr) {
+    var out = [], edge = -FAN;
+    AISLES.forEach(function (a) {
+      var half = (a === 0 ? 1.7 : 0.85) / rr;
+      out.push([edge, a - half]);
+      edge = a + half;
+    });
+    out.push([edge, FAN]);
+    return out;
+  }
 
   var seatGrp = new THREE.Group();
   seatGrp.position.copy(SEAT_ORIGIN);
   roomGroup.add(seatGrp);
-  for (var ring = 0; ring < 18; ring++) {
-    var rr = 11.5 + ring * 1.68;
-    var lift = FLOOR_Y + ring * ring * 0.0085;
-    blocks.forEach(function (bk) {
+  for (var ring = 0; ring < 24; ring++) {
+    var rr = 8.6 + ring * 1.42;
+    var lift = FLOOR_Y + ring * ring * 0.0055;
+    blocksFor(rr).forEach(function (bk) {
       var t0 = bk[0], len = bk[1] - bk[0];
       var seg = Math.max(3, Math.round(len * rr / 1.6));
       /* the backs */
@@ -1530,53 +1563,55 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
 
      They are instanced, thinned toward the back the way a congregation
      actually thins, and the aisles are left clear. */
-  var skinDark = new THREE.MeshStandardMaterial({ color: 0x0d1017, roughness: .95, metalness: 0 });
-  var coatDark = new THREE.MeshStandardMaterial({ color: 0x0a0d13, roughness: .97, metalness: 0 });
+  var skinDark = new THREE.MeshStandardMaterial({ color: SC(0x0d1017), roughness: .95, metalness: 0 });
+  var coatDark = new THREE.MeshStandardMaterial({ color: SC(0x0a0d13), roughness: .97, metalness: 0 });
   var heads = [], torsos = [];
   var pq = new THREE.Quaternion(), pe = new THREE.Euler();
 
+  /* A head is about a third the width of a pair of shoulders. Built any nearer
+     to equal and a seated figure reads as a skittle, which is what the first
+     pass did across a thousand seats. */
   function seatPerson(x, z, y, facing, standing, scale) {
     pe.set(0, facing, 0); pq.setFromEuler(pe);
-    var shoulder = standing ? y + 1.30 : y + 1.02;
-    var headY = standing ? y + 1.66 : y + 1.38;
+    var shoulder = standing ? y + 1.26 : y + 0.98;
+    var headY = standing ? y + 1.62 : y + 1.33;
     torsos.push(new THREE.Matrix4().compose(
       new THREE.Vector3(x, shoulder, z), pq.clone(),
-      new THREE.Vector3(scale * 1.02, scale, scale * .78)));
+      new THREE.Vector3(scale * 1.34, scale * .92, scale * .60)));
     heads.push(new THREE.Matrix4().compose(
       new THREE.Vector3(x, headY, z), pq.clone(),
-      new THREE.Vector3(scale, scale * 1.08, scale)));
+      new THREE.Vector3(scale, scale * 1.12, scale * .94)));
   }
 
-  for (var pr = 0; pr < 18; pr++) {
-    var prr = 11.5 + pr * 1.68 - .18;               /* a little forward on the seat */
-    var plift = FLOOR_Y + pr * pr * 0.0085;
-    /* fuller in the middle of the room, thinner at the very front and back */
-    var occ = .72 - Math.abs(pr - 7) * 0.032;
-    blocks.forEach(function (bk) {
+  for (var pr = 0; pr < 24; pr++) {
+    var prr = 8.6 + pr * 1.42 - .16;                /* a little forward on the seat */
+    var plift = FLOOR_Y + pr * pr * 0.0055;
+    /* fuller in the middle of the room, thinner at the front and the back, and
+       never solid: gaps are what stop a crowd reading as a pattern */
+    var occ = .78 - Math.abs(pr - 11) * 0.022;
+    blocksFor(prr).forEach(function (bk) {
       var step = 0.62 / prr;
       for (var pa = bk[0] + step * .5; pa < bk[1]; pa += step) {
         if (Math.random() > occ) continue;
-        var px = Math.sin(pa) * prr + SEAT_ORIGIN.x;
-        var pz = Math.cos(pa) * prr + SEAT_ORIGIN.z;
+        var jitter = (Math.random() - .5) * step * .5;
+        var rj = prr + (Math.random() - .5) * .22;
+        var px = Math.sin(pa + jitter) * rj + SEAT_ORIGIN.x;
+        var pz = Math.cos(pa + jitter) * rj + SEAT_ORIGIN.z;
         if (px * px + pz * pz > (R_IN - 4) * (R_IN - 4)) continue;
-        seatPerson(px + (Math.random() - .5) * .1, pz, plift,
-          pa + Math.PI + (Math.random() - .5) * .25,
-          Math.random() < .06,                       /* a few on their feet */
-          .94 + Math.random() * .16);
+        seatPerson(px, pz, plift,
+          pa + Math.PI + (Math.random() - .5) * .3,
+          Math.random() < .05,                       /* a few on their feet */
+          .9 + Math.random() * .2);
       }
     });
   }
 
-  /* the platform: a worship team either side and someone at the podium */
-  for (var sp = 0; sp < 9; sp++) {
-    var sx = -9.5 + sp * 2.4;
-    if (Math.abs(sx) < 2.2) continue;
-    seatPerson(sx + (Math.random() - .5) * .5, STAGE_Z - 3.4 - Math.random() * 1.6,
-      STAGE_Y, Math.PI + (Math.random() - .5) * .4, true, .98 + Math.random() * .1);
-  }
-  seatPerson(0, STAGE_Z - 3.1, STAGE_Y, Math.PI, true, 1.02);
+  /* The platform carries one person. The room is looking at him and so is the
+     page, and a scatter of figures beside him would only invite the comparison
+     the screen has already won. */
+  seatPerson(0, STAGE_Z - 3.0, STAGE_Y, Math.PI, true, 1.02);
 
-  var hi = new THREE.InstancedMesh(new THREE.SphereGeometry(.115, 10, 8), skinDark, heads.length);
+  var hi = new THREE.InstancedMesh(new THREE.SphereGeometry(.101, 10, 8), skinDark, heads.length);
   heads.forEach(function (m, i) { hi.setMatrixAt(i, m); });
   hi.instanceMatrix.needsUpdate = true;
   roomGroup.add(hi);
@@ -1586,7 +1621,7 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
   roomGroup.add(ti);
 
   /* the house lights, in rings under the cone */
-  var bulb = new THREE.MeshBasicMaterial({ color: 0xffe6bd, toneMapped: false });
+  var bulb = new THREE.MeshBasicMaterial({ color: SC(0xffe6bd), toneMapped: false });
   [[16, 12], [30, 18], [42, 22]].forEach(function (r) {
     for (var b = 0; b < r[1]; b++) {
       var ba = (b / r[1]) * Math.PI * 2;
@@ -1602,7 +1637,7 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
   [0, Math.PI / 2, Math.PI, -Math.PI / 2].forEach(function (a, i) {
     var gw = i === 0 ? 19.8 : 12.8;
     var op = new THREE.Mesh(new THREE.PlaneGeometry(gw, 4.6),
-      new THREE.MeshBasicMaterial({ color: 0x16233c, toneMapped: false }));
+      new THREE.MeshBasicMaterial({ color: SC(0x16233c), toneMapped: false }));
     op.position.set(Math.sin(a) * (R_IN - .1), 2.7, Math.cos(a) * (R_IN - .1));
     op.rotation.y = a + Math.PI;
     roomGroup.add(op);
@@ -1612,23 +1647,23 @@ var screenUni = { t: { value: 0 }, tint: { value: new THREE.Color(0x2f6fa8) }, a
 /* ---------- lights ----------
    Few, and none of them casting shadows: what costs on this page is pixels,
    not triangles, and a shadow map is a second pass over all of them. */
-var hemi = new THREE.HemisphereLight(0x50719e, 0x121b2c, 0.34);
+var hemi = new THREE.HemisphereLight(SC(0x50719e), SC(0x121b2c), 1.15);
 scene.add(hemi);
-var key = new THREE.DirectionalLight(0x8fb0dc, 0.34);
+var key = new THREE.DirectionalLight(SC(0x8fb0dc), 1.15);
 key.position.set(-120, 140, 90);
 scene.add(key);
-var fill = new THREE.DirectionalLight(0xffd7a2, 0.12);
+var fill = new THREE.DirectionalLight(SC(0xffd7a2), 0.45);
 fill.position.set(60, 40, -80);
 scene.add(fill);
-var roomLamp = new THREE.PointLight(0xffd9a8, 1.5, 80, 1.45);
+var roomLamp = new THREE.PointLight(SC(0xbcc8e0), 2.6, 74, 1.5);
 roomLamp.position.set(0, 10, -6);
 scene.add(roomLamp);
-var stageLamp = new THREE.PointLight(0x8fc2ee, 1.5, 50, 1.6);
+var stageLamp = new THREE.PointLight(SC(0x8fc2ee), 5.0, 56, 1.5);
 stageLamp.position.set(0, 8, STAGE_Z - 3);
 scene.add(stageLamp);
 /* under the rooflight, so the cone falls off from the middle rather than
    sitting at one flat value all the way to the wall */
-var drumLamp = new THREE.PointLight(0xcfe0f6, 1.1, 42, 1.5);
+var drumLamp = new THREE.PointLight(SC(0xcfe0f6), 2.8, 40, 1.5);
 drumLamp.position.set(0, APEX_Y - 3, 0);
 scene.add(drumLamp);
 
@@ -1792,34 +1827,35 @@ function post() {
 function L(p, o) { o.p = p; return o; }
 var LOOKS = [
   L(0.00, { skyTop: 0x070c1a, skyBot: 0x1b3760, glow: 0x2d5182, glowY: .04, glowAmt: .62,
-    fog: 0x0e1a31, fogD: .0072, hemiS: 0x50719e, hemiG: 0x121b2c, hemiI: .34,
-    keyC: 0x8fb0dc, keyI: .34, fillC: 0xffd7a2, fillI: .12, lampI: 1.4, stageI: 1.2,
+    fog: 0x0e1a31, fogD: .0072, hemiS: 0x50719e, hemiG: 0x121b2c, hemiI: 1.15,
+    keyC: 0x8fb0dc, keyI: 1.15, fillC: 0xffd7a2, fillI: .45, lampI: 4.6, stageI: 4.0,
     exposure: 1.06, bloomT: .70, bloomI: .66, scrim: 0, star: .9, moonC: 0xf2f0e4, screenA: .8 }),
   L(0.32, { skyTop: 0x081025, skyBot: 0x21406c, glow: 0x38608f, glowY: .05, glowAmt: .70,
-    fog: 0x101d36, fogD: .0080, hemiS: 0x5878a4, hemiG: 0x141d30, hemiI: .38,
-    keyC: 0x9dbce6, keyI: .40, fillC: 0xffd39a, fillI: .20, lampI: 1.7, stageI: 1.4,
+    fog: 0x101d36, fogD: .0080, hemiS: 0x5878a4, hemiG: 0x141d30, hemiI: 1.3,
+    keyC: 0x9dbce6, keyI: 1.3, fillC: 0xffd39a, fillI: .7, lampI: 5.4, stageI: 4.6,
     exposure: 1.06, bloomT: .70, bloomI: .70, scrim: 0, star: .8, moonC: 0xf2f0e4, screenA: .9 }),
   L(0.45, { skyTop: 0x0a1428, skyBot: 0x25456f, glow: 0x39608f, glowY: .05, glowAmt: .55,
-    fog: 0x090f1c, fogD: .0130, hemiS: 0x1c2a3e, hemiG: 0x070a11, hemiI: .18,
-    keyC: 0x7e9cc6, keyI: .10, fillC: 0xffcf92, fillI: .12, lampI: 1.0, stageI: 1.25,
-    exposure: .92, bloomT: .88, bloomI: .48, scrim: .36, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
+    fog: 0x090f1c, fogD: .0130, hemiS: 0x22344c, hemiG: 0x090d15, hemiI: .8,
+    keyC: 0x7e9cc6, keyI: .3, fillC: 0xffcf92, fillI: .4, lampI: 2.6, stageI: 5.2,
+    exposure: .92, bloomT: .95, bloomI: .34, scrim: .36, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
   L(0.84, { skyTop: 0x14243f, skyBot: 0x486d9c, glow: 0x6d92bd, glowY: .08, glowAmt: .8,
-    fog: 0x090f1c, fogD: .0125, hemiS: 0x1c2a3e, hemiG: 0x070a11, hemiI: .20,
-    keyC: 0x7e9cc6, keyI: .12, fillC: 0xffcf92, fillI: .14, lampI: 1.1, stageI: 1.35,
-    exposure: .92, bloomT: .86, bloomI: .50, scrim: .36, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
+    fog: 0x090f1c, fogD: .0125, hemiS: 0x22344c, hemiG: 0x090d15, hemiI: .88,
+    keyC: 0x7e9cc6, keyI: .34, fillC: 0xffcf92, fillI: .45, lampI: 2.8, stageI: 5.6,
+    exposure: .92, bloomT: .94, bloomI: .36, scrim: .36, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
   L(0.93, { skyTop: 0x6f9bd0, skyBot: 0xefdcb4, glow: 0xffe9b4, glowY: .16, glowAmt: 1.25,
-    fog: 0xbcccdd, fogD: .0011, hemiS: 0xa8c4e4, hemiG: 0x7d8378, hemiI: .62,
-    keyC: 0xffeec6, keyI: 1.02, fillC: 0xd8e4f2, fillI: .28, lampI: .6, stageI: .5,
+    fog: 0xbcccdd, fogD: .0011, hemiS: 0xa8c4e4, hemiG: 0x7d8378, hemiI: 1.45,
+    keyC: 0xffeec6, keyI: 2.2, fillC: 0xd8e4f2, fillI: .7, lampI: .6, stageI: .5,
     exposure: .92, bloomT: .80, bloomI: .58, scrim: .62, star: 0, moonC: 0xfff6df, screenA: 1 }),
   L(1.00, { skyTop: 0x7fa9da, skyBot: 0xf8ead0, glow: 0xfff2cf, glowY: .20, glowAmt: 1.5,
-    fog: 0xcadaea, fogD: .0008, hemiS: 0xb8d2ee, hemiG: 0x868b80, hemiI: .70,
-    keyC: 0xfff2d4, keyI: 1.18, fillC: 0xe2ecf8, fillI: .3, lampI: .4, stageI: .4,
+    fog: 0xcadaea, fogD: .0008, hemiS: 0xb8d2ee, hemiG: 0x868b80, hemiI: 1.6,
+    keyC: 0xfff2d4, keyI: 2.5, fillC: 0xe2ecf8, fillI: .75, lampI: .4, stageI: .4,
     exposure: .94, bloomT: .78, bloomI: .62, scrim: .70, star: 0, moonC: 0xfffbe8, screenA: 1 })
 ];
 
 var cA = new THREE.Color(), cB = new THREE.Color(), cT = new THREE.Color();
 function mixColor(target, a, b, t) {
-  cA.setHex(a); cB.setHex(b);
+  cA.setHex(a).convertSRGBToLinear();
+  cB.setHex(b).convertSRGBToLinear();
   target.copy(cA).lerp(cB, t);
 }
 function applyLook(p) {
@@ -1836,7 +1872,7 @@ function applyLook(p) {
 
   mixColor(scene.fog.color, a.fog, b.fog, t);
   scene.fog.density = lerp(a.fogD, b.fogD, t);
-  renderer.setClearColor(scene.fog.color, 1);
+  renderer.setClearColor(cT.copy(scene.fog.color).convertLinearToSRGB(), 1);
 
   mixColor(hemi.color, a.hemiS, b.hemiS, t);
   mixColor(hemi.groundColor, a.hemiG, b.hemiG, t);
@@ -1879,12 +1915,12 @@ var PATH = [
   { p: V(0, 2.7, 72),      l: V(0, 5.4, 54),   ch: 1 },
   { p: V(0, 1.95, 60),     l: V(0, 2.4, 42),   ch: 1 },
   /* through in one move, and into the back of the fan */
-  { p: V(0, 3.6, 36),      l: V(0, 4.6, -12),  ch: 2 },
-  { p: V(-9, 4.8, 15),     l: V(2, 5.2, -26),  ch: 2 },
+  { p: V(0, 6.0, 34),      l: V(0, 4.6, -16),  ch: 2 },
+  { p: V(0, 6.4, 15),      l: V(0, 4.4, -25),  ch: 2 },
   /* down among the seats */
-  { p: V(2, 3.6, -8),      l: V(0, 4.3, -30),  ch: 3 },
+  { p: V(0, 5.4, -6),      l: V(0, 3.8, -30),  ch: 3 },
   /* settle under the rooflight and look up it */
-  { p: V(0, 4.6, 0),       l: V(0, 13, -3),    ch: 4 },
+  { p: V(0, 5.4, 2),       l: V(0, 14, -2),    ch: 4 },
   { p: V(0, 11, .5),       l: V(0, 24, 0),     ch: 4 },
   { p: V(0, 19, 0),        l: V(0, 32, 1),     ch: 4 },
   /* out, turning back on the roof */
@@ -2026,7 +2062,8 @@ if (/[?&]freeze/.test(location.search)) {
   Object.defineProperty(scrollDrive, 'c', { get: function () { return 0; } });
   pathParam = function () { return frozen; };
 }
-window.__scene = { scene: scene, camera: camera, renderer: renderer, path: PATH, look: applyLook };
+window.__scene = { scene: scene, camera: camera, renderer: renderer, path: PATH,
+  look: applyLook, comp: matComp, bright: matBright, up: matUp };
 
 })();
 </script>

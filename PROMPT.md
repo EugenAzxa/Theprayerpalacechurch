@@ -37,6 +37,9 @@ aerial and street photographs before writing any geometry. This one is round.
   tiers of seating swung round a platform on one side, a podium and planters, and a
   curved screen wall that is the brightest thing in the building. The ceiling is the
   underside of the same cone, carrying the same seams, converging on the rooflight.
+- Put one person on the screen wall and let the room look at him. Nobody at the
+  back of a hall this size sees a face; they see the screens. The single figure on
+  the platform should be small and distant, which is what it actually is.
 - Put the congregation in it. Heads and shoulders above the seat backs, in near
   black, seen from behind: no faces, no limbs, nothing asked of the geometry that
   it cannot do. A dark room facing a bright screen turns everyone in it into a
@@ -100,9 +103,11 @@ aerial and street photographs before writing any geometry. This one is round.
 - Provide working anchor navigation, mobile navigation, responsive layouts, semantic
   landmarks and accessible labels.
 - Keep runtime assets local and use relative paths.
-- Author every scene colour in sRGB and linearise on the way in, because the
-  composite pass applies its own gamma. Skipping this renders the night as an
-  overcast afternoon.
+- Author every scene colour in sRGB and linearise it on the way in, because the
+  composite pass applies its own gamma. Do not trust a colour-management flag to do
+  this for you: measure one known colour after setting it and check the stored value
+  is the linear one. If it is not, every dark surface in the scene is several times
+  too bright and no amount of relighting will fix it.
 - Hand-roll the bloom on core Three.js: bright pass, mip chain, separable blur,
   additive upsample, filmic composite. Do not pull in `examples/jsm`.
 - Draw the sky first, with the depth test off. A sky is a background, not a distant

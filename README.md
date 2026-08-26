@@ -36,10 +36,17 @@ more than fifty nationalities in the congregation.
   building gives you a fan rather than a nave: concentric tiers of seating swung
   round a platform on one side, under the underside of the same cone that is the
   roof, with a curved screen wall that is the brightest thing in the building.
-- Fills it. Around a thousand people in the seats and a dozen on the platform, as
-  heads and shoulders above the seat backs in near black. A room this dark facing a
-  screen this bright turns everyone in it into a silhouette, and a silhouette is
-  the one form of a person that simple geometry can carry.
+- Fills it. Around a thousand people in the seats, as heads and shoulders above the
+  seat backs in near black, thinning toward the front and the back and never solid.
+  A room this dark facing a screen this bright turns everyone in it into a
+  silhouette, and a silhouette is the one form of a person that simple geometry can
+  carry. The camera runs down the centre aisle, above head height, so nobody in the
+  congregation is ever close enough to the lens to be examined.
+- Puts one person on the screen wall. Nobody at the back of a room this size sees a
+  face, they see the screens, so the one person on this page rendered as a
+  photograph rather than as geometry is the one the room is actually looking at,
+  and he appears where the room looks at him. The platform itself carries a single
+  distant figure, which is what you would actually see.
 - Leaves through the rooflight. The ceiling carries the same twenty-four seams,
   converging on a five-metre opening at the middle that the camera climbs out
   through, past the cross, and up until the whole round of the site is in frame.
@@ -151,6 +158,18 @@ block with a shallow cone for a roof. Nothing about the modelled version survive
 the photographs: not the geometry, not the material, not the approach, not the
 plan of the room inside it. A generic silhouette read as wrong from every angle,
 in exactly the way a five-bay porch invented for a building that has none does.
+
+**Setting `ColorManagement.enabled = true` did not do what the flag says.** This was
+the single most expensive thing here, because it made every other judgement wrong.
+On this build `Color.setHex` stores the sRGB value as-is rather than converting it
+into the linear working space, so every one of the forty-odd authored colours in
+the scene was being used between three and twelve times too bright in the shadows.
+Nothing dark would stay dark. Weeks of a real project could go into relighting
+around that. It was settled in one measurement: `setHex(0x151a28)` came back as
+0.082, 0.102, 0.157 where the linear value is 0.007, 0.011, 0.022. Every authored
+colour now goes through one helper that converts explicitly, and the whole rig was
+relit afterwards. The lesson is not about three.js: it is that a flag whose name
+describes an outcome is not evidence the outcome happened.
 
 **Constants declared below the code that reads them are silently undefined.**
 `DOOR_PLANE` and `R_IN` sat with the room, a hundred lines under the entrance that
