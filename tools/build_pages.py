@@ -110,6 +110,7 @@ FOOTER = f"""<footer>
         <li><a href="index.html#sanctuary">Who we are</a></li>
         <li><a href="index.html#word">Prayer</a></li>
         <li><a href="index.html#ascent">Heaven is real</a></li>
+        <li><a href="index.html#remember">Memory Pages</a></li>
         <li><a href="events.html">Events</a></li>
         <li><a href="connect.html">Connect &amp; Serve</a></li>
       </ul>

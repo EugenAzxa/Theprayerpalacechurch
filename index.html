@@ -458,6 +458,58 @@
 
 </div>
 
+<!-- ================= SAYLAVY ================= -->
+<section class="say-zone" id="remember">
+  <div class="wrap">
+    <div class="col wide">
+      <div class="mark-line"><span class="num">08</span><span class="rule"></span><span class="lbl">Keeping a life</span></div>
+      <h2>The house<br>remembers</h2>
+      <p class="lede">Sixty years on Arrow Road, a founder promoted to glory, and more people
+        through this room than anyone has counted. The Prayer Palace keeps the remembrance.
+        Saylavy keeps the pages.</p>
+
+      <div class="say-cols">
+        <div>
+          <h3>What a Memory Page is</h3>
+          <p>A page that belongs to one person, and to the family who makes it: a photograph,
+            the years, the story in their own words, a timeline, and a time capsule for the
+            people who come after.</p>
+          <p>It stays where it is put. It does not live in a phone that gets replaced, or in a
+            folder nobody can find when it matters.</p>
+        </div>
+        <div>
+          <h3>How a family starts</h3>
+          <ol class="say-steps">
+            <li><span>Call the office, or speak to a pastor after a service. Nothing is uploaded first.</span></li>
+            <li><span>The family writes the page. It is theirs, and they own what is on it.</span></li>
+            <li><span>Saylavy keeps it, so it survives a lost phone and a changed address.</span></li>
+            <li><span>The name is read here either way.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="say-plate">
+        <span class="say-logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M16 3.5 27 9v10.4L16 28.5 5 19.4V9z"/><path d="M16 11.4v9.2M11.6 14v4M20.4 14v4"/></svg>
+        </span>
+        <span class="tx">
+          <b>Powered by Saylavy</b>
+          <i>Every Memory Page is kept by Saylavy. The church keeps the remembrance and the
+            room; each family keeps its own page and owns what is on it.</i>
+        </span>
+        <a class="btn" href="https://saylavy.com/memory-page" target="_blank" rel="noopener">
+          saylavy.com
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+        </a>
+      </div>
+
+      <p class="say-note">A page is not what earns remembrance. Every name is read here whether
+        or not a family ever makes one, and nothing on this page is needed to be prayed for by
+        this church.</p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="fwrap">
     <div>
@@ -472,6 +524,7 @@
         <li><a href="#sanctuary">Who we are</a></li>
         <li><a href="#word">Prayer</a></li>
         <li><a href="#ascent">Heaven is real</a></li>
+        <li><a href="#remember">Memory Pages</a></li>
         <li><a href="events.html">Events</a></li>
         <li><a href="connect.html">Connect &amp; Serve</a></li>
       </ul>
@@ -616,11 +669,17 @@ var railBtns = Array.prototype.slice.call(document.querySelectorAll('#rail butto
    invisible. The bar reads which ground is under it and swaps to ink. */
 var navEl = document.getElementById('nav');
 var paperZone = document.querySelector('.paper-zone');
-var footEl = document.querySelector('footer');
+var railEl = document.getElementById('rail');
+/* Ask the paper zone where its own edges are rather than inferring them from
+   whatever happens to follow it. Keyed to the footer, adding a dark section in
+   between left the bar in ink over a black ground. */
 function navGround() {
-  if (!paperZone || !footEl) return;
-  var onPaper = paperZone.getBoundingClientRect().top < 64 && footEl.getBoundingClientRect().top > 64;
-  navEl.classList.toggle('on-paper', onPaper);
+  if (!paperZone) return;
+  var y = navEl.offsetHeight * 0.6;
+  var r = paperZone.getBoundingClientRect();
+  navEl.classList.toggle('on-paper', r.top < y && r.bottom > y);
+  /* the rail belongs to the chapters, and there are none down here */
+  if (railEl) railEl.classList.toggle('gone', r.top < window.innerHeight * 0.5);
 }
 
 /* One shared source of truth for which chapter is active. The rail, the
@@ -805,25 +864,29 @@ function blockTex() {
    never a repeat, and each one carries a thin rim where the light off the
    screen wall would catch a shoulder. */
 function personAtlas() {
-  var CELL = 256, COLS = 4, ROWS = 2;
+  var CELL = 256, COLS = 4, ROWS = 4;
   var c = cvs(CELL * COLS, CELL * ROWS), x = c.getContext('2d');
   x.clearRect(0, 0, c.width, c.height);
 
+  var DARK = '#171d2a', LIT = '#2b3648', DEEP = '#0a0d13';
+  var RIM = 'rgba(132,164,208,.4)';
+  var SEAM = 'rgba(120,150,192,.22)';
+
   function body(ox, oy, opt) {
-    var sw = opt.shoulder, hw = opt.head, hy = opt.headY, lean = opt.lean || 0;
+    var sw = opt.shoulder, hw = opt.head, hy = opt.headY;
+    var lean = opt.lean || 0, tilt = opt.tilt || 0;
     var hBot = hy + hw * 1.2, neckW = hw * 0.52, shoulderY = 176;
     x.save();
     x.translate(ox + CELL / 2, oy);
     x.rotate(lean);
 
     var grad = x.createLinearGradient(0, 140, 0, CELL);
-    grad.addColorStop(0, opt.lit);
-    grad.addColorStop(0.5, opt.fill);
-    grad.addColorStop(1, opt.deep);
+    grad.addColorStop(0, opt.lit || LIT);
+    grad.addColorStop(0.5, DARK);
+    grad.addColorStop(1, DEEP);
 
-    /* an arm up, the way a few hands always are. Drawn first so the shoulder
-       reads in front of it. */
-    function arm(dir) {
+    /* arms first, so the shoulder reads in front of them */
+    function arm(dir, phone) {
       x.beginPath();
       x.moveTo(dir * sw * 0.52, 232);
       x.quadraticCurveTo(dir * sw * 0.98, 148, dir * sw * 0.82, 46);
@@ -831,21 +894,29 @@ function personAtlas() {
       x.quadraticCurveTo(dir * sw * 0.62, 150, dir * sw * 0.24, 234);
       x.closePath();
       x.fillStyle = grad; x.fill();
-      x.strokeStyle = opt.rim; x.lineWidth = 2.0; x.stroke();
+      x.strokeStyle = RIM; x.lineWidth = 2.0; x.stroke();
+      if (phone) {
+        x.beginPath();
+        x.rect(dir * sw * 0.70 - 11, 8, 22, 34);
+        x.fillStyle = DEEP; x.fill();
+        x.strokeStyle = 'rgba(150,186,232,.5)'; x.lineWidth = 2.0; x.stroke();
+      }
     }
-    if (opt.arm) { arm(1); if (opt.arm === 2) arm(-1); }
+    if (opt.arm) { arm(1, opt.phone); if (opt.arm === 2) arm(-1); }
 
-    /* the neck, so the head is not sitting straight on the shoulders */
+    /* the neck: only just visible above the collar, and the tone of the body
+       rather than a black column */
     x.beginPath();
-    x.moveTo(-neckW, hBot - 10);
-    x.lineTo(-neckW * 0.92, shoulderY);
-    x.lineTo(neckW * 0.92, shoulderY);
-    x.lineTo(neckW, hBot - 10);
+    x.moveTo(-neckW * 0.80, hBot - 14);
+    x.lineTo(-neckW * 0.74, shoulderY - 8);
+    x.lineTo(neckW * 0.74, shoulderY - 8);
+    x.lineTo(neckW * 0.80, hBot - 14);
     x.closePath();
-    x.fillStyle = opt.fill; x.fill();
+    var ng = x.createLinearGradient(0, hBot - 14, 0, shoulderY - 8);
+    ng.addColorStop(0, DARK); ng.addColorStop(1, DEEP);
+    x.fillStyle = ng; x.fill();
 
-    /* the shoulders: the deltoid rounds off, the trapezius slopes up to the
-       neck. A single dome for both is what makes a figure read as a skittle. */
+    /* the shoulders: deltoid rounds off, trapezius slopes up to the neck */
     x.beginPath();
     x.moveTo(-sw, CELL);
     x.lineTo(-sw, 214);
@@ -857,50 +928,118 @@ function personAtlas() {
     x.lineTo(sw, CELL);
     x.closePath();
     x.fillStyle = grad; x.fill();
-    x.strokeStyle = opt.rim; x.lineWidth = 2.2; x.stroke();
+    x.strokeStyle = RIM; x.lineWidth = 2.2; x.stroke();
 
-    /* the head */
+    /* a collar, and the seam where a sleeve is set into a shoulder. Small, but
+       it is the difference between a garment and a shape. */
+    x.strokeStyle = SEAM; x.lineWidth = 1.8;
+    x.beginPath();
+    x.moveTo(-neckW * 1.45, shoulderY - 4);
+    x.quadraticCurveTo(0, shoulderY + 18, neckW * 1.45, shoulderY - 4);
+    x.stroke();
+    if (opt.seam !== false) {
+      [-1, 1].forEach(function (d) {
+        x.beginPath();
+        x.moveTo(d * sw * 0.60, shoulderY + 6);
+        x.quadraticCurveTo(d * sw * 0.80, 214, d * sw * 0.86, CELL);
+        x.stroke();
+      });
+    }
+
+    /* the head, tilted on its own so the shoulders stay level */
+    x.save();
+    x.translate(0, hBot);
+    x.rotate(tilt);
+    x.translate(0, -hBot);
     x.beginPath();
     x.ellipse(0, hy, hw, hw * 1.2, 0, 0, 6.284);
     var hg = x.createLinearGradient(0, hy - hw * 1.2, 0, hy + hw * 1.2);
-    hg.addColorStop(0, opt.lit); hg.addColorStop(1, opt.fill);
+    hg.addColorStop(0, opt.lit || LIT); hg.addColorStop(1, DARK);
     x.fillStyle = hg; x.fill();
-    x.strokeStyle = opt.rim; x.lineWidth = 2.0; x.stroke();
+    x.strokeStyle = RIM; x.lineWidth = 2.0; x.stroke();
 
-    if (opt.hair === 'long') {
+    var H = opt.hair;
+    if (H === 'long' || H === 'scarf') {
       x.beginPath();
       x.moveTo(-hw * 1.02, hy - 4);
-      x.quadraticCurveTo(-hw * 1.34, hy + 54, -hw * 1.12, shoulderY - 2);
+      x.quadraticCurveTo(-hw * (H === 'scarf' ? 1.24 : 1.34), hy + 54, -hw * 1.12, shoulderY - 2);
       x.lineTo(hw * 1.12, shoulderY - 2);
-      x.quadraticCurveTo(hw * 1.34, hy + 54, hw * 1.02, hy - 4);
-      x.quadraticCurveTo(0, hy - hw * 1.54, -hw * 1.02, hy - 4);
+      x.quadraticCurveTo(hw * (H === 'scarf' ? 1.24 : 1.34), hy + 54, hw * 1.02, hy - 4);
+      x.quadraticCurveTo(0, hy - hw * (H === 'scarf' ? 1.42 : 1.54), -hw * 1.02, hy - 4);
       x.closePath();
       x.fillStyle = grad; x.fill();
-      x.strokeStyle = opt.rim; x.lineWidth = 2.0; x.stroke();
-    } else if (opt.hair === 'bun') {
+      x.strokeStyle = RIM; x.lineWidth = 2.0; x.stroke();
+    } else if (H === 'mid') {
+      x.beginPath();
+      x.moveTo(-hw * 1.0, hy + 2);
+      x.quadraticCurveTo(-hw * 1.22, hy + 34, -hw * 0.96, hy + 52);
+      x.lineTo(hw * 0.96, hy + 52);
+      x.quadraticCurveTo(hw * 1.22, hy + 34, hw * 1.0, hy + 2);
+      x.quadraticCurveTo(0, hy - hw * 1.48, -hw * 1.0, hy + 2);
+      x.closePath();
+      x.fillStyle = grad; x.fill();
+      x.strokeStyle = RIM; x.lineWidth = 2.0; x.stroke();
+    } else if (H === 'bun') {
       x.beginPath(); x.arc(0, hy - hw * 1.28, hw * 0.44, 0, 6.284);
-      x.fillStyle = opt.fill; x.fill();
-      x.strokeStyle = opt.rim; x.lineWidth = 1.8; x.stroke();
+      x.fillStyle = DARK; x.fill();
+      x.strokeStyle = RIM; x.lineWidth = 1.8; x.stroke();
+    } else if (H === 'curl') {
+      x.beginPath();
+      x.ellipse(0, hy - hw * 0.24, hw * 1.2, hw * 1.06, 0, 0, 6.284);
+      x.fillStyle = DARK; x.fill();
+      for (var k = 0; k < 13; k++) {
+        var ka = Math.PI * 1.06 + (k / 12) * Math.PI * 0.88;
+        x.beginPath();
+        x.arc(Math.cos(ka) * hw * 1.02, hy - hw * 0.24 + Math.sin(ka) * hw * 0.92,
+          hw * 0.30, 0, 6.284);
+        x.fillStyle = DARK; x.fill();
+        x.strokeStyle = 'rgba(132,164,208,.18)'; x.lineWidth = 1.4; x.stroke();
+      }
+      x.beginPath();
+      x.ellipse(0, hy - hw * 0.24, hw * 1.28, hw * 1.16, 0, Math.PI * 1.04, Math.PI * 1.96);
+      x.strokeStyle = RIM; x.lineWidth = 1.8; x.stroke();
+    } else if (H === 'cap') {
+      x.beginPath();
+      x.ellipse(0, hy - hw * 0.30, hw * 1.06, hw * 0.72, 0, Math.PI, 0);
+      x.fillStyle = DEEP; x.fill();
+      x.strokeStyle = RIM; x.lineWidth = 1.8; x.stroke();
+    } else if (H === 'short') {
+      /* a parting, so a plain head is not a plain egg */
+      x.strokeStyle = SEAM; x.lineWidth = 1.6;
+      x.beginPath();
+      x.moveTo(-hw * 0.34, hy - hw * 0.98);
+      x.quadraticCurveTo(-hw * 0.1, hy - hw * 0.2, -hw * 0.42, hy + hw * 0.5);
+      x.stroke();
     }
+    x.restore();
     x.restore();
   }
 
-  var DARK = '#171d2a', LIT = '#2b3648', DEEP = '#0a0d13';
-  var RIM = 'rgba(132,164,208,.4)';
-  var VARIANTS = [
-    { shoulder: 76, head: 31, headY: 100, hair: 'short', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
-    { shoulder: 60, head: 30, headY: 102, hair: 'bald', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
-    { shoulder: 68, head: 30, headY: 98, hair: 'long', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
-    { shoulder: 73, head: 31, headY: 100, hair: 'bun', fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
-    { shoulder: 78, head: 31, headY: 101, hair: 'short', lean: 0.05, fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
-    { shoulder: 75, head: 30, headY: 100, hair: 'short', arm: 1, fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
-    { shoulder: 84, head: 30, headY: 99, hair: 'long', arm: 2, fill: DARK, lit: LIT, deep: DEEP, rim: RIM },
-    { shoulder: 70, head: 27, headY: 114, hair: 'short', fill: DARK, lit: LIT, deep: DEEP, rim: RIM }
+  /* Sixteen of them. A congregation is mostly ordinary people sitting still,
+     so most of these are small differences of build and hair; the leaning, the
+     tilted heads and the few raised hands are what stop a row repeating. */
+  var V = [
+    { shoulder: 76, head: 31, headY: 100, hair: 'short' },
+    { shoulder: 86, head: 30, headY: 102, hair: 'bald' },
+    { shoulder: 66, head: 30, headY: 98, hair: 'long' },
+    { shoulder: 73, head: 31, headY: 100, hair: 'bun' },
+    { shoulder: 78, head: 31, headY: 101, hair: 'short', lean: 0.055 },
+    { shoulder: 75, head: 30, headY: 100, hair: 'short', arm: 1 },
+    { shoulder: 68, head: 30, headY: 99, hair: 'long', arm: 2 },
+    { shoulder: 58, head: 27, headY: 116, hair: 'short' },
+    { shoulder: 88, head: 31, headY: 101, hair: 'cap' },
+    { shoulder: 79, head: 31, headY: 99, hair: 'curl' },
+    { shoulder: 67, head: 30, headY: 99, hair: 'scarf' },
+    { shoulder: 77, head: 31, headY: 100, hair: 'short', tilt: -0.11 },
+    { shoulder: 93, head: 32, headY: 103, hair: 'short', seam: false },
+    { shoulder: 74, head: 30, headY: 104, hair: 'mid', lean: -0.05 },
+    { shoulder: 76, head: 30, headY: 100, hair: 'short', arm: 1, phone: true },
+    { shoulder: 70, head: 30, headY: 99, hair: 'bun', arm: 1, tilt: 0.08 }
   ];
-  VARIANTS.forEach(function (v, i) {
+  V.forEach(function (v, i) {
     body((i % COLS) * CELL, Math.floor(i / COLS) * CELL, v);
   });
-  return { canvas: c, cols: COLS, rows: ROWS, count: VARIANTS.length };
+  return { canvas: c, cols: COLS, rows: ROWS, count: V.length };
 }
 
 /* The checkerboard course of dark blocks near the head of the wall. */
@@ -1702,7 +1841,9 @@ var screenUni = {
     var mid = y + (standing ? 1.62 : 1.24) * scale;
     var idx = Math.floor(Math.random() * atlas.count);
     /* the raised arms belong to a minority, wherever the dice fall */
-    if ((idx === 5 || idx === 6) && Math.random() > .34) idx = Math.floor(Math.random() * 5);
+    /* hands up are a minority, wherever the dice fall */
+    if ((idx === 5 || idx === 6 || idx === 14 || idx === 15) && Math.random() > .3)
+      idx = Math.floor(Math.random() * 5);
     buckets[idx].push({ m: new THREE.Matrix4().compose(
       new THREE.Vector3(x, mid, z), pq.clone(), new THREE.Vector3(w, h, 1)) });
   }

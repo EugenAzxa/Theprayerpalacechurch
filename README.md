@@ -63,6 +63,9 @@ more than fifty nationalities in the congregation.
   Clarendon rebuild in Jamaica.
 - Hands over to four flat pages for the things a church site has to actually do:
   Give, Events, Connect &amp; Serve, and Visit.
+- Closes on Saylavy, back on a dark ground. Memory Pages, what one is, how a family
+  starts one, and a plain statement that a page is not what earns remembrance: the
+  name is read here either way. A credit and an invitation, not a sales panel.
 
 ## How it is made
 
@@ -206,8 +209,9 @@ script checks in against it.
 it.** A capsule with a sphere on top is a skittle. Correcting the head-to-shoulder
 ratio to the anatomical third helped and was still a skittle, because what is
 missing is the neck, the slope from trapezius to deltoid, and the fact that no two
-people in a room have the same outline. They are drawn silhouettes now, eight
-variants in one atlas, alpha tested rather than blended so they keep early-z, and
+people in a room have the same outline. They are drawn silhouettes now, sixteen
+variants in one atlas, with collars, sleeve seams, hair that is not a larger head,
+tilts, leans and a few raised hands, alpha tested rather than blended so they keep early-z, and
 fixed facing the platform rather than billboarded at the camera: a congregation
 that swivels to follow the lens is worse than one seen slightly off axis. The seat
 backs came down from 1.13m to 0.87m at the same time, because at the old height a
@@ -280,3 +284,5 @@ palette, the modelled building and the post chain are original to this project.
   them.
 - Photography in the editorial layer is still limited to what the old site
   published.
+- The Saylavy section points at `https://saylavy.com/memory-page`. If the route
+  changes it is one edit, in `index.html` and in the footer of `tools/build_pages.py`.
