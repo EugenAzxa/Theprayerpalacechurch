@@ -68,8 +68,11 @@ more than fifty nationalities in the congregation.
   QR code in the hall, the four things Saylavy keeps for a church, and a working
   demonstration of the memory wall with filters. Six fictional people, marked as
   fictional in a notice nobody can miss, because a demonstration that reads as a
-  real congregation is a lie about the dead. No selling language, and a plain
-  statement that a page is not what earns remembrance.
+  real congregation is a lie about the dead. Each page counts prayers rather than
+  candles, and the prayers are offered for the family rather than for the person
+  who has died: this church is evangelical, and a candle lit for the departed is
+  not its practice. No selling language, and a plain statement that a page is not
+  what earns remembrance.
 
 ## How it is made
 
@@ -215,12 +218,14 @@ ratio to the anatomical third helped and was still a skittle, because what is
 missing is the neck, the slope from trapezius to deltoid, and the fact that no two
 people in a room have the same outline. They are drawn silhouettes now, sixteen
 variants in one atlas, with collars, sleeve seams, hair that is not a larger head,
-tilts, leans and a few raised hands, and every one of them tinted separately: most
-of a congregation is in something dark, a fifth in something mid, and a handful in
-something pale that reads right across the room. The last of those mattered more
-than all the drawing. Sixteen shapes in one tone is still a pattern, because what
-tells one person from the next at forty metres is not the outline, it is that they
-are not wearing the same thing. alpha tested rather than blended so they keep early-z, and
+tilts, leans and a few raised hands, and every one of them dressed from a
+wardrobe of eighteen: charcoal, black and navy for most of the room, grey, tan,
+brown, olive, burgundy and teal filling in, cream and pale blue for the few the eye
+picks out. The colours are authored as clothes you could name and then muted into
+the room, because a hall lit only by its stage does not contain postbox red. That
+mattered more than all the drawing: sixteen shapes in one tone is still a pattern,
+because what tells one person from the next at forty metres is not the outline, it
+is that they are not wearing the same thing. alpha tested rather than blended so they keep early-z, and
 fixed facing the platform rather than billboarded at the camera: a congregation
 that swivels to follow the lens is worse than one seen slightly off axis. The seat
 backs came down from 1.13m to 0.87m at the same time, because at the old height a
