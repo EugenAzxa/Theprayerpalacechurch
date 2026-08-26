@@ -147,8 +147,14 @@ aerial and street photographs before writing any geometry. This one is round.
   against the night and fails against the screen wall, and this page has both.
 - Hold a constant horizontal field of view. A vertical one crops sideways as the
   viewport narrows and puts the lens inside the building on a phone.
-- Watch fill rate, not triangle count: cap the pixel ratio, start the bloom chain
-  low, and keep backdrop-filters off anything that repaints while scrolling.
+- Watch fill rate, not triangle count: cap the pixel ratio at two, start the bloom
+  chain low, and keep backdrop-filters off anything that repaints while scrolling.
+- Put the antialiasing on the render target, not on the renderer. `antialias: true`
+  in the constructor only touches the default framebuffer, so a scene drawn into a
+  target for post-processing gets none of it, and every edge in the world crawls.
+- Weight film grain by luminance. Applied flat it is a few per cent of a midtone
+  and a quarter of a shadow, which makes the darkest part of a night scene the
+  noisiest part of it.
 - Survive a WebGL failure: remove the canvas and keep the page readable as a flat
   editorial document. Feature-detect first, so a machine without WebGL gets a quiet
   document rather than a console full of red.

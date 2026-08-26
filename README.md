@@ -243,6 +243,21 @@ appeared again at the other end of the journey, where the glory blew both sky an
 stone to the same white. Both ends needed the lights pulled down until the
 building sat below the sky rather than beside it.
 
+**`antialias: true` does nothing to a render target.** The single largest thing
+wrong with how this looked, and it hid for the whole build behind art-direction
+problems it was actually causing. The renderer flag only ever touches the default
+framebuffer; the world here is drawn into a half-float target for the bloom
+chain, so nothing in the scene was ever antialiased. Every edge of the building,
+every seat back and every one of a thousand people was crawling, and no amount of
+relighting or reshaping was going to fix it. The setting has to go on the target,
+as `samples: 4`, which needs WebGL2. It costs nothing measurable: 61fps at device
+pixel ratio 2 in the fullest shot in the room.
+
+**Film grain applied flat lands hardest where there is nothing to grain.** At a
+constant amplitude the noise is a couple of per cent of a midtone and a quarter of
+a deep shadow, so the darkest parts of a night scene are the noisiest. Weighted by
+luminance it reads as film; unweighted it reads as dirt.
+
 **Clamp the camera against the floor it is actually over.** The rake rises three
 and a half metres from the platform to the back wall, so a clamp that only keeps
 the lens above `FLOOR_Y` leaves it inside the back rows: a waypoint set by eye at
@@ -280,7 +295,7 @@ carries a feathered panel that deepens as the world brightens, driven by the sam
 
 ## Verified, not assumed
 
-Driven headlessly at 1440x900, 1024x768 and 390x844, on all five pages: no console
+Driven headlessly at 1440, 1024, 768, 390 and 375 wide, on all five pages: no console
 errors, no failed requests, no horizontal overflow. Plus `prefers-reduced-motion`,
 where every reveal is visible and nothing waits on a scroll trigger, and WebGL
 unavailable, where the canvas is removed and the page stands up as a flat

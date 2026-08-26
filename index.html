@@ -874,7 +874,7 @@ function webglAvailable() {
 
 if (webglAvailable()) {
   try {
-    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: 'high-performance', alpha: false });
   } catch (err) { renderer = null; }
 }
 
@@ -904,7 +904,7 @@ renderer.setClearColor(0x05080f, 1);
    clear would wipe that out before the blend ever happened. */
 renderer.autoClear = false;
 /* Watch fill rate, not triangle count. */
-var DPR_CAP = 1.75;
+var DPR_CAP = 2;
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, DPR_CAP));
 renderer.setSize(window.innerWidth, window.innerHeight, false);
 
@@ -2168,12 +2168,20 @@ var quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), null);
 quad.frustumCulled = false;
 quadScene.add(quad);
 
-function rt(w, h, depth) {
-  return new THREE.WebGLRenderTarget(Math.max(2, w | 0), Math.max(2, h | 0), {
+function rt(w, h, depth, samples) {
+  var t = new THREE.WebGLRenderTarget(Math.max(2, w | 0), Math.max(2, h | 0), {
     type: THREE.HalfFloatType, format: THREE.RGBAFormat,
     minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
     depthBuffer: !!depth, stencilBuffer: false
   });
+  /* antialias:true on the renderer only ever touches the default framebuffer.
+     The world is drawn into a target for the bloom chain, so none of it was
+     being antialiased at all: every edge in the building, every seat back and
+     every one of a thousand people was aliasing, and no amount of art direction
+     was going to fix that. A multisampled target is where the setting has to
+     go. */
+  if (samples && renderer.capabilities.isWebGL2) t.samples = samples;
+  return t;
 }
 
 var matBright = new THREE.ShaderMaterial({
@@ -2219,7 +2227,7 @@ var matComp = new THREE.ShaderMaterial({
   uniforms: {
     src: { value: null }, blm: { value: null },
     bloomI: { value: .62 }, exposure: { value: 1.05 },
-    veil: { value: 0 }, grain: { value: .026 }, vig: { value: .42 }, t: { value: 0 }
+    veil: { value: 0 }, grain: { value: .014 }, vig: { value: .42 }, t: { value: 0 }
   },
   vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
   fragmentShader: [
@@ -2240,7 +2248,8 @@ var matComp = new THREE.ShaderMaterial({
     '  float d = distance(vU, vec2(0.5));',
     '  c *= 1.0 - smoothstep(0.42, 0.95, d) * vig;',
     '  float n = fract(sin(dot(vU * 1024.0 + t, vec2(12.9898, 78.233))) * 43758.5453) - 0.5;',
-    '  c += n * grain;',
+    '  float luma = dot(c, vec3(0.2126, 0.7152, 0.0722));',
+    '  c += n * grain * smoothstep(0.0, 0.30, luma);',
     '  c *= (1.0 - veil);',
     '  gl_FragColor = vec4(pow(max(c, 0.0), vec3(1.0 / 2.2)), 1.0);',
     '}'
@@ -2257,7 +2266,7 @@ function allocTargets() {
      plane paints over the car park laid on top of it and the sky paints over
      the building standing in front of it. The bloom targets are fullscreen
      quads and genuinely do not need one. */
-  rtScene = rt(w, h, true);
+  rtScene = rt(w, h, true, 4);
   down = []; tmp = [];
   /* Start the chain low: the bloom is the most expensive thing on the page and
      nobody can tell where it was sampled from. */

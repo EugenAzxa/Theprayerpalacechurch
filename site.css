@@ -55,7 +55,7 @@ body{
 }
 img{max-width:100%;display:block}
 a{color:inherit}
-button{font:inherit;color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--brand-lift);outline-offset:3px;border-radius:2px}
 
 /* ============================================================
