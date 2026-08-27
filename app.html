@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Prayer Palace app - home screen prototype</title>
+<meta name="description" content="A working prototype of the home screen of a Prayer Palace mobile app. Built from the church's own published service times, giving methods and events.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/mark.webp" type="image/webp">
+<meta name="theme-color" content="#0B1220" media="(prefers-color-scheme:dark)">
+<meta name="theme-color" content="#EFEDE6" media="(prefers-color-scheme:light)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* ============================================================
+   THE PRAYER PALACE - app prototype
+   One screen of a church app, running for real in the browser.
+
+   The palette is the site's, moved onto semantic tokens so the
+   whole thing themes in one place. Every colour a component uses
+   is a token; nothing is a per-screen hex. Both themes are
+   defined in full, because a dark app whose light mode was
+   inferred rather than authored is a light mode that fails.
+   ============================================================ */
+:root{
+  /* dark, and the default: the site this belongs to is a night walk */
+  --bg:#0B1220;
+  --bg-2:#080E1A;
+  --surface:#131E33;
+  --surface-2:#1B2942;
+  --surface-3:#233350;
+  --line:rgba(220,227,236,.14);
+  --line-2:rgba(220,227,236,.26);
+  --text:#F3F0E8;
+  --text-2:#AEBCD0;
+  --text-3:#8394AC;
+  --accent:#E7CF9B;
+  --accent-2:#C6A15B;
+  --accent-ink:#17223A;
+  --brand:#6FB4D6;
+  --live:#F07167;
+  --ok:#7FC7A4;
+  --scrim:rgba(4,8,16,.62);
+  --shadow:0 18px 44px rgba(0,0,0,.55);
+  --frame:#05080F;
+
+  /* 4/8 rhythm, one scale for the whole app */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px; --s8:48px;
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px;
+  --icon:24px;
+
+  --f-display:"Cormorant Garamond",'Iowan Old Style',Palatino,Georgia,serif;
+  --f-sans:"Inter",-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --tap:160ms;
+}
+:root[data-theme="light"]{
+  --bg:#EFEDE6;
+  --bg-2:#E4E1D8;
+  --surface:#FFFFFF;
+  --surface-2:#F5F3ED;
+  --surface-3:#EAE7DE;
+  --line:rgba(16,26,44,.13);
+  --line-2:rgba(16,26,44,.24);
+  --text:#101A2C;
+  --text-2:#44526A;
+  --text-3:#5E6D85;
+  --accent:#8A6B21;
+  --accent-2:#6F551A;
+  --accent-ink:#FFFFFF;
+  --brand:#1F6C90;
+  --live:#B23A2E;
+  --ok:#2F7355;
+  --scrim:rgba(16,26,44,.48);
+  --shadow:0 18px 40px rgba(16,26,44,.18);
+  --frame:#C9C5BA;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#EFEDE6; --bg-2:#E4E1D8; --surface:#FFFFFF; --surface-2:#F5F3ED; --surface-3:#EAE7DE;
+    --line:rgba(16,26,44,.13); --line-2:rgba(16,26,44,.24);
+    --text:#101A2C; --text-2:#44526A; --text-3:#5E6D85;
+    --accent:#8A6B21; --accent-2:#6F551A; --accent-ink:#FFFFFF;
+    --brand:#1F6C90; --live:#B23A2E; --ok:#2F7355;
+    --scrim:rgba(16,26,44,.48); --shadow:0 18px 40px rgba(16,26,44,.18); --frame:#C9C5BA;
+  }
+}
+
+*,*::before,*::after{box-sizing:border-box}
+/* Type is in rem, so a reader who has raised their text size gets a bigger
+   app rather than a bigger nothing. Sizes that hold a hit area or an icon box
+   stay in px: those are ergonomics, not typography, and 44px is 44px. */
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg-2);color:var(--text);
+  font-family:var(--f-sans);font-size:1rem;line-height:1.5;font-weight:400;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+svg{display:block;flex:0 0 auto}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+[hidden]{display:none !important}
+
+/* ---------- the desktop stage ----------
+   On a phone this is nothing: the app fills the screen. On a desktop it
+   is a bench to stand the phone on, so the prototype can be judged at
+   the size it would actually be used. */
+.stage{min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+  padding:var(--s8) var(--s5) var(--s7);gap:var(--s6);
+  background:radial-gradient(120% 80% at 50% 0%,var(--bg) 0%,var(--bg-2) 70%)}
+.stage-head{max-width:560px;text-align:center;display:flex;flex-direction:column;gap:var(--s3);align-items:center}
+.stage-head h1{margin:0;font-family:var(--f-display);font-size:2.125rem;line-height:1.15;font-weight:500;letter-spacing:.01em}
+.stage-head p{margin:0;color:var(--text-2);font-size:0.9375rem;font-weight:300;max-width:46ch}
+.stage-tools{display:flex;gap:var(--s2);flex-wrap:wrap;justify-content:center}
+.tool{display:inline-flex;align-items:center;gap:var(--s2);min-height:44px;padding:0 var(--s4);
+  border:1px solid var(--line-2);border-radius:999px;color:var(--text-2);font-size:0.875rem;
+  transition:background-color var(--tap) var(--ease),color var(--tap) var(--ease)}
+.tool:hover{background:var(--surface);color:var(--text)}
+.tool[aria-pressed="true"]{background:var(--surface-2);color:var(--text);border-color:var(--line-2)}
+.tool svg{width:18px;height:18px}
+
+/* the device shell */
+.device{width:414px;max-width:100%;flex:0 0 auto;
+  background:var(--frame);border-radius:44px;padding:12px;box-shadow:var(--shadow)}
+/* 414 outside, 12 of frame each side: the screen is a true 390, which is the
+   width the layout was drawn for. Take the frame's own width off it and the
+   header runs out of room and starts truncating the church's name. */
+.device-screen{position:relative;border-radius:33px;overflow:hidden;background:var(--bg);
+  height:clamp(560px,calc(100dvh - 272px),800px);display:flex;flex-direction:column}
+
+/* ---------- the app ---------- */
+.app{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--bg)}
+
+.statusbar{display:flex;align-items:center;justify-content:space-between;
+  padding:var(--s3) var(--s5) var(--s1);font-size:0.8125rem;font-weight:500;color:var(--text);
+  padding-top:max(var(--s3),env(safe-area-inset-top))}
+.statusbar .sb-right{display:flex;align-items:center;gap:6px;opacity:.85}
+.statusbar svg{width:17px;height:17px}
+
+.appbar{display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s5) var(--s3)}
+.appbar .mark{width:34px;height:34px;border-radius:50%;object-fit:cover;
+  background:var(--surface-2);flex:0 0 auto}
+.appbar .who{min-width:0;flex:1}
+.appbar .who b{display:block;font-size:0.9375rem;font-weight:600;letter-spacing:.005em;
+  /* wraps rather than truncates: at a raised text size an ellipsis turns the
+     church's name into "The Pra...", and a name is the one thing in a header
+     that has to survive. The address below it can truncate, it is a detail. */
+  overflow-wrap:anywhere}
+.appbar .who span{display:block;font-size:0.75rem;color:var(--text-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-proto{font-family:var(--f-mono);font-size:0.625rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text-3);border:1px solid var(--line);border-radius:999px;padding:3px 8px;flex:0 0 auto}
+.icon-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;
+  color:var(--text-2);position:relative;flex:0 0 auto;
+  transition:background-color var(--tap) var(--ease),color var(--tap) var(--ease)}
+.icon-btn:hover{color:var(--text)}
+.icon-btn:active{background:var(--surface-2)}
+.icon-btn svg{width:var(--icon);height:var(--icon)}
+.icon-btn .dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--bg)}
+
+/* screens scroll, the bars do not */
+.screens{flex:1;min-height:0;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:var(--s2) var(--s5) calc(var(--s8) + var(--s6))}
+.screen::-webkit-scrollbar{width:0}
+
+.sec{margin-top:var(--s6)}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);
+  margin-bottom:var(--s3)}
+.sec-head h2{margin:0;font-size:0.8125rem;font-weight:600;letter-spacing:.10em;text-transform:uppercase;
+  color:var(--text-3)}
+.sec-more{font-size:0.8125rem;color:var(--accent);min-height:44px;display:inline-flex;align-items:center;
+  padding:0 2px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+
+/* ---------- the service card, the reason the app gets opened ---------- */
+.now{position:relative;border-radius:var(--r-xl);overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(160deg,var(--surface-2) 0%,var(--surface) 62%)}
+.now-media{position:relative;aspect-ratio:16/9;background:var(--surface-3)}
+.now-media img{width:100%;height:100%;object-fit:cover;opacity:.55}
+.now-media::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,var(--surface) 2%,rgba(0,0,0,0) 62%)}
+.now-badge{position:absolute;top:var(--s3);left:var(--s3);z-index:2;
+  display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+  font-size:0.6875rem;font-weight:600;letter-spacing:.10em;text-transform:uppercase;
+  background:var(--live);color:#fff}
+.now-badge.is-off{background:var(--surface-3);color:var(--text-2)}
+.now-badge i{width:7px;height:7px;border-radius:50%;background:currentColor;display:block}
+.pulse{animation:pulse 1.8s var(--ease) infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.now-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;
+  width:64px;height:64px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(8,14,26,.55);color:#fff;border:1px solid rgba(255,255,255,.42);
+  transition:background-color var(--tap) var(--ease)}
+.now-play:active{background:rgba(8,14,26,.78)}
+.now-play svg{width:26px;height:26px;margin-left:3px}
+.now-body{padding:var(--s5);position:relative;z-index:2;margin-top:-28px}
+.now-body h3{margin:0 0 var(--s1);font-family:var(--f-display);font-size:1.6875rem;line-height:1.16;font-weight:500}
+.now-when{margin:0;color:var(--text-2);font-size:0.875rem}
+.countdown{display:flex;gap:var(--s2);margin-top:var(--s4)}
+.cd{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:var(--s3) var(--s2);text-align:center}
+.cd b{display:block;font-family:var(--f-mono);font-size:1.3125rem;font-weight:500;line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.cd span{display:block;font-size:0.625rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);
+  margin-top:3px}
+.now-actions{display:flex;gap:var(--s2);margin-top:var(--s4)}
+/* two buttons on one row at 390px leaves about 150px each: at the standard
+   pill padding the second label wraps onto a second line and the row grows a
+   step taller than the first. Tighter insets, and nothing wraps. */
+.now-actions .btn{padding:0 var(--s3);white-space:nowrap}
+
+.btn{min-height:48px;padding:0 var(--s5);border-radius:999px;display:inline-flex;align-items:center;
+  justify-content:center;gap:var(--s2);font-size:0.9375rem;font-weight:500;
+  transition:background-color var(--tap) var(--ease),color var(--tap) var(--ease),
+             border-color var(--tap) var(--ease),opacity var(--tap) var(--ease)}
+.btn svg{width:19px;height:19px}
+.btn-primary{background:var(--accent);color:var(--accent-ink);flex:1}
+.btn-primary:active{background:var(--accent-2)}
+.btn-ghost{border:1px solid var(--line-2);color:var(--text);flex:1}
+.btn-ghost:active{background:var(--surface-2)}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* ---------- the Sunday running order ---------- */
+.run{list-style:none;margin:0;padding:0}
+.run li{display:flex;gap:var(--s4);padding:var(--s4) var(--s5);border-top:1px solid var(--line)}
+.run li:first-child{border-top:0}
+.run time{font-family:var(--f-mono);font-size:0.8125rem;color:var(--accent);flex:0 0 46px;padding-top:2px;
+  font-variant-numeric:tabular-nums}
+.run b{display:block;font-size:0.9375rem;font-weight:500;margin-bottom:2px}
+.run p{margin:0;font-size:0.8125rem;color:var(--text-2);line-height:1.5}
+.run li.is-now{background:var(--surface-2)}
+.run li.is-now time{color:var(--live)}
+
+/* ---------- give ---------- */
+.amounts{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s2);margin-bottom:var(--s3)}
+.amt{min-height:52px;border:1px solid var(--line-2);border-radius:var(--r-md);
+  font-family:var(--f-mono);font-size:0.9375rem;color:var(--text);
+  transition:background-color var(--tap) var(--ease),border-color var(--tap) var(--ease),
+             color var(--tap) var(--ease)}
+.amt:active{background:var(--surface-2)}
+.amt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+.funds{display:flex;gap:var(--s2);overflow-x:auto;padding-bottom:var(--s2);margin-bottom:var(--s3);
+  scrollbar-width:none}
+.funds::-webkit-scrollbar{height:0}
+.fund{flex:0 0 auto;min-height:44px;padding:0 var(--s4);border:1px solid var(--line-2);
+  border-radius:999px;font-size:0.875rem;color:var(--text-2);white-space:nowrap;
+  transition:background-color var(--tap) var(--ease),color var(--tap) var(--ease),border-color var(--tap) var(--ease)}
+.fund:active{background:var(--surface-2)}
+.fund[aria-pressed="true"]{background:var(--surface-3);color:var(--text);border-color:var(--line-2)}
+
+.rows{list-style:none;margin:0;padding:0}
+.row{display:flex;align-items:center;gap:var(--s4);width:100%;text-align:left;
+  padding:var(--s4) var(--s5);border-top:1px solid var(--line);min-height:64px;
+  transition:background-color var(--tap) var(--ease)}
+.rows li:first-child .row{border-top:0}
+.row:active{background:var(--surface-2)}
+.row .ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+  background:var(--surface-2);color:var(--accent)}
+.row .ic svg{width:20px;height:20px}
+.row .tx{flex:1;min-width:0}
+.row .tx b{display:block;font-size:0.9375rem;font-weight:500}
+.row .tx span{display:block;font-size:0.8125rem;color:var(--text-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .go{color:var(--text-3)}
+.row .go svg{width:18px;height:18px}
+
+/* ---------- prayer ---------- */
+.pray-compose{padding:var(--s5)}
+.pray-compose label{display:block;font-size:0.8125rem;color:var(--text-2);margin-bottom:var(--s2)}
+.pray-compose textarea{width:100%;min-height:84px;resize:vertical;padding:var(--s3);
+  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);
+  color:var(--text);font:inherit;font-size:0.9375rem;line-height:1.5}
+.pray-compose textarea::placeholder{color:var(--text-3)}
+.pray-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);margin-top:var(--s3)}
+.switch{display:inline-flex;align-items:center;gap:var(--s2);min-height:44px;font-size:0.875rem;color:var(--text-2)}
+.switch input{width:20px;height:20px;accent-color:var(--accent)}
+.req{padding:var(--s4) var(--s5);border-top:1px solid var(--line)}
+.req p{margin:0 0 var(--s3);font-size:0.9375rem;line-height:1.55}
+.req-meta{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
+.req-who{font-size:0.75rem;color:var(--text-3)}
+.prayed{display:inline-flex;align-items:center;gap:var(--s2);min-height:44px;padding:0 var(--s4);
+  border:1px solid var(--line-2);border-radius:999px;font-size:0.875rem;color:var(--text-2);
+  transition:background-color var(--tap) var(--ease),color var(--tap) var(--ease),border-color var(--tap) var(--ease)}
+.prayed:active{background:var(--surface-2)}
+.prayed[aria-pressed="true"]{background:var(--surface-3);color:var(--accent);border-color:var(--line-2)}
+.prayed svg{width:17px;height:17px}
+.prayed b{font-variant-numeric:tabular-nums;font-weight:500}
+
+/* ---------- events ---------- */
+.ev{display:flex;gap:var(--s4);width:100%;text-align:left;padding:var(--s4) var(--s5);
+  border-top:1px solid var(--line);transition:background-color var(--tap) var(--ease)}
+.rows li:first-child .ev{border-top:0}
+.ev:active{background:var(--surface-2)}
+.ev-date{flex:0 0 52px;text-align:center;background:var(--surface-2);border-radius:var(--r-sm);
+  padding:var(--s2) 0;align-self:flex-start}
+.ev-date b{display:block;font-family:var(--f-mono);font-size:1.125rem;line-height:1;font-weight:500}
+.ev-date span{display:block;font-size:0.625rem;letter-spacing:.10em;text-transform:uppercase;color:var(--text-3);margin-top:3px}
+.ev-tx{flex:1;min-width:0}
+.ev-tx b{display:block;font-size:0.9375rem;font-weight:500;margin-bottom:2px}
+.ev-tx span{display:block;font-size:0.8125rem;color:var(--text-2)}
+
+.note{margin:var(--s5) 0 0;padding:var(--s4);border:1px dashed var(--line-2);border-radius:var(--r-md);
+  font-size:0.8125rem;line-height:1.55;color:var(--text-3)}
+.lede{margin:var(--s2) 0 var(--s5);color:var(--text-2);font-size:0.9375rem;line-height:1.6}
+.screen h1.title{margin:var(--s3) 0 0;font-family:var(--f-display);font-size:1.875rem;font-weight:500;line-height:1.15}
+
+/* ---------- tab bar ---------- */
+.tabbar{flex:0 0 auto;display:flex;background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;color:var(--text-3);padding:var(--s2) var(--s1);
+  transition:color var(--tap) var(--ease),background-color var(--tap) var(--ease)}
+.tab:active{background:var(--surface-2)}
+.tab svg{width:23px;height:23px}
+.tab span{font-size:0.6875rem;letter-spacing:.02em}
+.tab[aria-selected="true"]{color:var(--accent)}
+.tab[aria-selected="true"] span{font-weight:600}
+
+/* ---------- the give sheet ---------- */
+.scrim{position:absolute;inset:0;background:var(--scrim);z-index:8;opacity:0;pointer-events:none;
+  transition:opacity 220ms var(--ease)}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:9;background:var(--surface);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;border-top:1px solid var(--line);
+  padding:var(--s3) var(--s5) calc(var(--s6) + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform 260ms var(--ease);max-height:86%;overflow-y:auto}
+.sheet.on{transform:translateY(0)}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line-2);margin:0 auto var(--s4)}
+.sheet h3{margin:0 0 var(--s1);font-family:var(--f-display);font-size:1.5rem;font-weight:500}
+.sheet .sum{margin:0 0 var(--s5);color:var(--text-2);font-size:0.875rem}
+.sheet .rows{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;margin-bottom:var(--s4)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important}
+  .sheet{transition:none}
+}
+
+/* the phone is the phone: below this the frame is a costume, so it comes off */
+@media (max-width:560px){
+  .stage{padding:0;gap:0;min-height:100dvh}
+  .stage-head{display:none}
+  .device{width:100%;padding:0;border-radius:0;box-shadow:none;background:var(--bg)}
+  .device-screen{height:100dvh;border-radius:0}
+}
+@media (max-width:560px) and (orientation:landscape){
+  .device-screen{height:100dvh}
+}
+</style>
+</head>
+<body>
+
+<!-- one icon family: 24px box, 1.5 stroke, round caps, outline only -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+ <defs>
+  <g id="i-base" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></g>
+ </defs>
+ <symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3.5 10.5 12 4l8.5 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-3.5V14h-7v6.5H5A1.5 1.5 0 0 1 3.5 19z"/></symbol>
+ <symbol id="ic-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7.5 5.2v13.6a.6.6 0 0 0 .92.5l10.4-6.8a.6.6 0 0 0 0-1l-10.4-6.8a.6.6 0 0 0-.92.5z"/></symbol>
+ <symbol id="ic-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3.75 11h16.5v8.25a1 1 0 0 1-1 1h-14.5a1 1 0 0 1-1-1z"/><path d="M2.75 7.5h18.5V11H2.75z"/>
+  <path d="M12 7.5v13"/><path d="M12 7.5S10.8 3.5 8.5 3.5a2 2 0 0 0 0 4z"/><path d="M12 7.5s1.2-4 3.5-4a2 2 0 0 1 0 4z"/></symbol>
+ <symbol id="ic-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 20s-7.5-4.4-7.5-9.4A4.1 4.1 0 0 1 12 8.2a4.1 4.1 0 0 1 7.5 2.4C19.5 15.6 12 20 12 20z"/></symbol>
+ <symbol id="ic-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5z"/><path d="M13.7 18.5a2 2 0 0 1-3.4 0"/></symbol>
+ <symbol id="ic-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m9.5 5.5 7 6.5-7 6.5"/></symbol>
+ <symbol id="ic-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+ <symbol id="ic-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M6.2 3.5h3l1.6 4-2 1.4a11.5 11.5 0 0 0 6.3 6.3l1.4-2 4 1.6v3a1.5 1.5 0 0 1-1.6 1.5C10.6 19.6 4.4 13.4 3.7 5.1A1.5 1.5 0 0 1 5.2 3.5z"/></symbol>
+ <symbol id="ic-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3.5v4M16 3.5v4"/></symbol>
+ <symbol id="ic-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="9" cy="8.5" r="3.2"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0"/><path d="M16.4 5.7a3.2 3.2 0 0 1 0 6.1"/><path d="M17.6 14.4A6.2 6.2 0 0 1 21.2 20"/></symbol>
+ <symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5a13 13 0 0 1 0 17 13 13 0 0 1 0-17z"/></symbol>
+ <symbol id="ic-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.6 7 8.4 6 8.4-6"/></symbol>
+ <symbol id="ic-msg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20.5 12a8.5 8.5 0 0 1-12.4 7.6L3.5 20.5l1-4.6A8.5 8.5 0 1 1 20.5 12z"/></symbol>
+ <symbol id="ic-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2.8" y="5.5" width="18.4" height="13" rx="2"/><path d="M2.8 10h18.4"/><path d="M6.5 14.6h4"/></symbol>
+ <symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></symbol>
+ <symbol id="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/></symbol>
+ <symbol id="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 14.2A8.4 8.4 0 0 1 9.8 4 8.5 8.5 0 1 0 20 14.2z"/></symbol>
+ <symbol id="ic-wifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M2.8 9.2a13 13 0 0 1 18.4 0M6 12.6a8.4 8.4 0 0 1 12 0M9.2 16a3.9 3.9 0 0 1 5.6 0"/><circle cx="12" cy="19.2" r=".9" fill="currentColor" stroke="none"/></symbol>
+ <symbol id="ic-batt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2.5" y="7.5" width="17" height="9" rx="2.4"/><path d="M21.5 11v2"/><rect x="4.6" y="9.6" width="11" height="4.8" rx="1.2" fill="currentColor" stroke="none"/></symbol>
+</svg>
+
+<div class="stage">
+  <div class="stage-head">
+    <h1>The Prayer Palace, in the hand</h1>
+    <p>A working prototype of the app's home screen. Every service time, giving method and event in it is the church's own published information. Tap anything.</p>
+    <div class="stage-tools">
+      <button class="tool" id="themeBtn" type="button" aria-pressed="false">
+        <svg aria-hidden="true"><use href="#ic-moon"></use></svg><span id="themeLbl">Match my system</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="device">
+    <div class="device-screen">
+      <div class="app">
+
+        <div class="statusbar" aria-hidden="true">
+          <span id="sbClock">9:41</span>
+          <span class="sb-right">
+            <svg><use href="#ic-wifi"></use></svg>
+            <svg><use href="#ic-batt"></use></svg>
+          </span>
+        </div>
+
+        <header class="appbar">
+          <img class="mark" src="assets/mark.webp" alt="">
+          <span class="who">
+            <b>The Prayer Palace</b>
+            <span>1111 Arrow Road, Toronto</span>
+          </span>
+          <span class="chip-proto">Prototype</span>
+          <button class="icon-btn" type="button" aria-label="Notifications, 1 new">
+            <svg aria-hidden="true"><use href="#ic-bell"></use></svg><i class="dot"></i>
+          </button>
+        </header>
+
+        <div class="screens">
+
+          <!-- ============ HOME ============ -->
+          <div class="screen" id="p-home" role="tabpanel" aria-labelledby="t-home" tabindex="0">
+
+            <section class="now" id="nowCard">
+              <div class="now-media">
+                <img src="assets/congregation.webp" alt="">
+                <span class="now-badge" id="nowBadge"><i></i><span id="nowBadgeText">Next service</span></span>
+                <button class="now-play" id="nowPlay" type="button" aria-label="Watch the live stream">
+                  <svg aria-hidden="true"><use href="#ic-play"></use></svg>
+                </button>
+              </div>
+              <div class="now-body">
+                <h3 id="nowTitle">Worship and Word</h3>
+                <p class="now-when" id="nowWhen">Sunday, 10:30 am - main sanctuary</p>
+                <div class="countdown" id="nowCountdown">
+                  <div class="cd"><b id="cdD">0</b><span>days</span></div>
+                  <div class="cd"><b id="cdH">0</b><span>hours</span></div>
+                  <div class="cd"><b id="cdM">0</b><span>mins</span></div>
+                </div>
+                <div class="now-actions">
+                  <button class="btn btn-primary" type="button" data-go="give">
+                    <svg aria-hidden="true"><use href="#ic-gift"></use></svg>Give
+                  </button>
+                  <button class="btn btn-ghost" type="button" id="tellBtn">
+                    <svg aria-hidden="true"><use href="#ic-users"></use></svg>I am coming
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="sec">
+              <div class="sec-head"><h2>This Sunday</h2></div>
+              <div class="card">
+                <ul class="run" id="runList">
+                  <li data-from="585" data-to="615"><time>09:45</time><span><b>Connect Class</b>
+                    <p>Wing 2 Chapel. Thirty minutes on who we are and what happens next.</p></span></li>
+                  <li data-from="615" data-to="630"><time>10:15</time><span><b>Palace Kidz check-in</b>
+                    <p>Wing 1. Ages nought to twelve.</p></span></li>
+                  <li data-from="630" data-to="750"><time>10:30</time><span><b>Worship and Word</b>
+                    <p>Main sanctuary. Expect to be there until about 12:30.</p></span></li>
+                  <li data-from="750" data-to="810"><time>12:30</time><span><b>Welcome Reception</b>
+                    <p>Connect Cafe. Light refreshments and a welcome package to take home.</p></span></li>
+                </ul>
+              </div>
+              <p class="note">Nursery care runs from birth to three years in Wing 2. Real-time translation is
+                offered every Sunday, at no cost, in your language.</p>
+            </section>
+
+            <section class="sec">
+              <div class="sec-head"><h2>Give</h2>
+                <button class="sec-more" type="button" data-go="give">All ways to give</button></div>
+              <div class="amounts" role="group" aria-label="Amount">
+                <button class="amt" type="button" aria-pressed="false" data-amt="25">$25</button>
+                <button class="amt" type="button" aria-pressed="true" data-amt="50">$50</button>
+                <button class="amt" type="button" aria-pressed="false" data-amt="100">$100</button>
+                <button class="amt" type="button" aria-pressed="false" data-amt="other">Other</button>
+              </div>
+              <div class="funds" role="group" aria-label="Fund">
+                <button class="fund" type="button" aria-pressed="true" data-fund="Tithe">Tithe</button>
+                <button class="fund" type="button" aria-pressed="false" data-fund="Offering">Offering</button>
+                <button class="fund" type="button" aria-pressed="false" data-fund="Missions: raise the roof">Missions: raise the roof</button>
+                <button class="fund" type="button" aria-pressed="false" data-fund="Building">Building</button>
+              </div>
+              <button class="btn btn-primary btn-block" type="button" id="giveBtn">
+                <svg aria-hidden="true"><use href="#ic-gift"></use></svg>
+                <span id="giveBtnText">Give $50 to Tithe</span>
+              </button>
+            </section>
+
+            <section class="sec">
+              <div class="sec-head"><h2>Prayer</h2>
+                <button class="sec-more" type="button" data-go="pray">Open the wall</button></div>
+              <div class="card" id="homePray"></div>
+            </section>
+
+            <section class="sec">
+              <div class="sec-head"><h2>What is on</h2>
+                <button class="sec-more" type="button" data-go="watch">Everything</button></div>
+              <div class="card">
+                <ul class="rows">
+                  <li><button class="ev" type="button">
+                    <span class="ev-date"><b>30</b><span>Aug</span></span>
+                    <span class="ev-tx"><b>Back to school service</b>
+                      <span>Sunday, 10:30 am - prayer and anointing for the new season</span></span></button></li>
+                  <li><button class="ev" type="button">
+                    <span class="ev-date"><b>05</b><span>Sep</span></span>
+                    <span class="ev-tx"><b>Sunrise prayer</b>
+                      <span>Saturday, 6:30 to 9 am - a morning given to corporate prayer</span></span></button></li>
+                  <li><button class="ev" type="button">
+                    <span class="ev-date"><b>12</b><span>Sep</span></span>
+                    <span class="ev-tx"><b>Guys grill and gather at the park</b>
+                      <span>Saturday, 12 to 3 pm - food, games and real conversation</span></span></button></li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="sec">
+              <div class="sec-head"><h2>Visit</h2></div>
+              <div class="card">
+                <ul class="rows">
+                  <li><a class="row" href="https://maps.google.com/?q=1111+Arrow+Road+Toronto+Ontario+M9M+3B3"
+                        target="_blank" rel="noopener">
+                    <span class="ic"><svg aria-hidden="true"><use href="#ic-pin"></use></svg></span>
+                    <span class="tx"><b>1111 Arrow Road</b><span>Toronto, Ontario M9M 3B3</span></span>
+                    <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+                  <li><a class="row" href="tel:+14162411100">
+                    <span class="ic"><svg aria-hidden="true"><use href="#ic-phone"></use></svg></span>
+                    <span class="tx"><b>416 241 1100</b><span>Church office</span></span>
+                    <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+                  <li><a class="row" href="mailto:info@theprayerpalace.com">
+                    <span class="ic"><svg aria-hidden="true"><use href="#ic-mail"></use></svg></span>
+                    <span class="tx"><b>info@theprayerpalace.com</b><span>General enquiries</span></span>
+                    <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+                </ul>
+              </div>
+              <p class="note">There is no dress code and no form to fill in at the door. Parking is free and
+                someone is watching for you.</p>
+            </section>
+          </div>
+
+          <!-- ============ WATCH ============ -->
+          <div class="screen" id="p-watch" role="tabpanel" aria-labelledby="t-watch" tabindex="0" hidden>
+            <h1 class="title">Watch</h1>
+            <p class="lede">The Sunday service is streamed live from the main sanctuary. Everything else here
+              is what is coming, not what has been.</p>
+            <div class="card" style="overflow:hidden">
+              <div class="now-media" style="border-radius:0">
+                <img src="assets/sanctuary-light.webp" alt="">
+                <span class="now-badge is-off" id="watchBadge"><i></i><span>Next service</span></span>
+                <button class="now-play" type="button" aria-label="Watch the live stream">
+                  <svg aria-hidden="true"><use href="#ic-play"></use></svg></button>
+              </div>
+              <div style="padding:var(--s5)">
+                <b style="font-size:16px">Sunday, 10:30 am</b>
+                <p style="margin:4px 0 0;color:var(--text-2);font-size:14px">
+                  Worship and Word, live from 1111 Arrow Road.</p>
+              </div>
+            </div>
+            <section class="sec">
+              <div class="sec-head"><h2>Also this week</h2></div>
+              <div class="card">
+                <ul class="rows">
+                  <li><span class="row">
+                    <span class="ic"><svg aria-hidden="true"><use href="#ic-users"></use></svg></span>
+                    <span class="tx"><b>Palace youth</b><span>Friday, 7:30 pm - Wing 1 Chapel</span></span></span></li>
+                  <li><span class="row">
+                    <span class="ic"><svg aria-hidden="true"><use href="#ic-globe"></use></svg></span>
+                    <span class="tx"><b>Live translation</b><span>Every Sunday, at no cost, in your language</span></span></span></li>
+                  <li><span class="row">
+                    <span class="ic"><svg aria-hidden="true"><use href="#ic-cal"></use></svg></span>
+                    <span class="tx"><b>Sunrise prayer</b><span>Saturday 5 September, 6:30 to 9 am</span></span></span></li>
+                </ul>
+              </div>
+            </section>
+            <p class="note">This is a prototype. Past services are not listed here, because inventing a
+              catalogue of messages the church has not published would be making things up.</p>
+          </div>
+
+          <!-- ============ GIVE ============ -->
+          <div class="screen" id="p-give" role="tabpanel" aria-labelledby="t-give" tabindex="0" hidden>
+            <h1 class="title">Give</h1>
+            <p class="lede">Giving through tithes and offerings is not just a donation. You are sowing into the
+              furtherance of the gospel, and into the families this house feeds and clothes every week.</p>
+            <div class="card">
+              <ul class="rows">
+                <li><a class="row" href="give.html">
+                  <span class="ic"><svg aria-hidden="true"><use href="#ic-card"></use></svg></span>
+                  <span class="tx"><b>Online, once or recurring</b><span>Through Pushpay - manage your schedule and statements</span></span>
+                  <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+                <li><a class="row" href="mailto:give@theprayerpalace.com">
+                  <span class="ic"><svg aria-hidden="true"><use href="#ic-mail"></use></svg></span>
+                  <span class="tx"><b>Interac e-Transfer</b><span>give@theprayerpalace.com - no fees deducted</span></span>
+                  <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+                <li><a class="row" href="sms:77977&body=TPP">
+                  <span class="ic"><svg aria-hidden="true"><use href="#ic-msg"></use></svg></span>
+                  <span class="tx"><b>By text</b><span>Text TPP to 77977 and follow the reply</span></span>
+                  <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+                <li><span class="row">
+                  <span class="ic"><svg aria-hidden="true"><use href="#ic-gift"></use></svg></span>
+                  <span class="tx"><b>In person</b><span>During any service, Sundays 10:30 am</span></span></span></li>
+                <li><span class="row">
+                  <span class="ic"><svg aria-hidden="true"><use href="#ic-pin"></use></svg></span>
+                  <span class="tx"><b>By mail</b><span>1111 Arrow Road, Toronto, Ontario M9M 3B3</span></span></span></li>
+                <li><a class="row" href="mailto:info@theprayerpalace.com">
+                  <span class="ic"><svg aria-hidden="true"><use href="#ic-globe"></use></svg></span>
+                  <span class="tx"><b>Non-cash gifts</b><span>Vehicles, real estate, stocks and other assets</span></span>
+                  <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+              </ul>
+            </div>
+            <section class="sec">
+              <div class="sec-head"><h2>Mission: raise the roof</h2></div>
+              <div class="card" style="overflow:hidden">
+                <img src="assets/jamaica.webp" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover">
+                <div style="padding:var(--s5)">
+                  <p style="margin:0;color:var(--text-2);font-size:14px;line-height:1.6">
+                    Hurricane Melissa struck Jamaica on 28 October 2025. In Clarendon a local church lost its
+                    roof entirely. We have committed to rebuilding it, and to reinforcing it against the next
+                    storm.</p>
+                </div>
+              </div>
+            </section>
+            <p class="note">No card details are collected in this prototype. Every route above is the church's
+              own, and hands off to it.</p>
+          </div>
+
+          <!-- ============ PRAYER ============ -->
+          <div class="screen" id="p-pray" role="tabpanel" aria-labelledby="t-pray" tabindex="0" hidden>
+            <h1 class="title">Prayer</h1>
+            <p class="lede">Ask the house to pray with you, and pray for the people who have asked.</p>
+            <div class="card">
+              <form class="pray-compose" id="prayForm">
+                <label for="prayText">What can we pray with you about?</label>
+                <textarea id="prayText" placeholder="Write as much or as little as you want."
+                  maxlength="400"></textarea>
+                <div class="pray-foot">
+                  <label class="switch"><input type="checkbox" id="prayAnon" checked> Post anonymously</label>
+                  <button class="btn btn-primary" type="submit" style="flex:0 0 auto">Send</button>
+                </div>
+              </form>
+            </div>
+            <section class="sec">
+              <div class="sec-head"><h2>The wall</h2></div>
+              <div class="card" id="wall"></div>
+            </section>
+            <p class="note">The requests here are samples, and anything you send stays on this device. A real
+              build would need somewhere for them to go, and someone reading them.</p>
+          </div>
+
+        </div>
+
+        <nav class="tabbar" role="tablist" aria-label="Main">
+          <button class="tab" id="t-home" role="tab" aria-selected="true" aria-controls="p-home" data-tab="home">
+            <svg aria-hidden="true"><use href="#ic-home"></use></svg><span>Home</span></button>
+          <button class="tab" id="t-watch" role="tab" aria-selected="false" aria-controls="p-watch" data-tab="watch" tabindex="-1">
+            <svg aria-hidden="true"><use href="#ic-play"></use></svg><span>Watch</span></button>
+          <button class="tab" id="t-give" role="tab" aria-selected="false" aria-controls="p-give" data-tab="give" tabindex="-1">
+            <svg aria-hidden="true"><use href="#ic-gift"></use></svg><span>Give</span></button>
+          <button class="tab" id="t-pray" role="tab" aria-selected="false" aria-controls="p-pray" data-tab="pray" tabindex="-1">
+            <svg aria-hidden="true"><use href="#ic-heart"></use></svg><span>Prayer</span></button>
+        </nav>
+
+        <div class="scrim" id="scrim"></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+          <div class="grab"></div>
+          <h3 id="sheetTitle">Give $50 to Tithe</h3>
+          <p class="sum">Choose how to send it. Nothing is charged here.</p>
+          <ul class="rows">
+            <li><a class="row" href="give.html">
+              <span class="ic"><svg aria-hidden="true"><use href="#ic-card"></use></svg></span>
+              <span class="tx"><b>Card or bank</b><span>Through the Pushpay portal</span></span>
+              <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+            <li><a class="row" href="mailto:give@theprayerpalace.com">
+              <span class="ic"><svg aria-hidden="true"><use href="#ic-mail"></use></svg></span>
+              <span class="tx"><b>Interac e-Transfer</b><span>give@theprayerpalace.com</span></span>
+              <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+            <li><a class="row" href="sms:77977&body=TPP">
+              <span class="ic"><svg aria-hidden="true"><use href="#ic-msg"></use></svg></span>
+              <span class="tx"><b>By text</b><span>Text TPP to 77977</span></span>
+              <span class="go"><svg aria-hidden="true"><use href="#ic-chev"></use></svg></span></a></li>
+          </ul>
+          <button class="btn btn-ghost btn-block" type="button" id="sheetClose">
+            <svg aria-hidden="true"><use href="#ic-x"></use></svg>Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* Storage is a convenience, never a requirement: a private window, cleared
+     site data or a browser set to block it all throw or come back empty, and
+     the screen has to render correctly with nothing in it. */
+  function store(k, v) {
+    try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }
+    catch (e) { return null; }
+  }
+
+  /* ---------- theme ----------
+     Three states, not two: light, dark, and follow the system. The button
+     cycles them and says which one it is on, because an icon alone cannot. */
+  var THEMES = [
+    { key: '', label: 'Match my system', icon: '#ic-moon' },
+    { key: 'light', label: 'Light', icon: '#ic-sun' },
+    { key: 'dark', label: 'Dark', icon: '#ic-moon' }
+  ];
+  var themeIdx = 0;
+  var saved = store('tpp-app-theme');
+  if (saved === 'light') themeIdx = 1; else if (saved === 'dark') themeIdx = 2;
+  function applyTheme() {
+    var t = THEMES[themeIdx];
+    if (t.key) document.documentElement.setAttribute('data-theme', t.key);
+    else document.documentElement.removeAttribute('data-theme');
+    $('#themeLbl').textContent = t.label;
+    $('#themeBtn').setAttribute('aria-pressed', t.key ? 'true' : 'false');
+    $('#themeBtn').querySelector('use').setAttribute('href', t.icon);
+    store('tpp-app-theme', t.key);
+  }
+  $('#themeBtn').addEventListener('click', function () {
+    themeIdx = (themeIdx + 1) % THEMES.length; applyTheme();
+  });
+  applyTheme();
+
+  /* ---------- tabs ----------
+     Real tab semantics: one stop in the tab order, arrow keys between them,
+     and the panel each one owns named on the button. */
+  var tabs = $$('.tab');
+  function selectTab(name, focus) {
+    tabs.forEach(function (b) {
+      var on = b.dataset.tab === name;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+      var panel = $('#p-' + b.dataset.tab);
+      if (panel) { panel.hidden = !on; if (on) panel.scrollTop = 0; }
+      if (on && focus) b.focus();
+    });
+  }
+  tabs.forEach(function (b) {
+    b.addEventListener('click', function () { selectTab(b.dataset.tab); });
+    b.addEventListener('keydown', function (e) {
+      var i = tabs.indexOf(b), n = null;
+      if (e.key === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
+      else if (e.key === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
+      else if (e.key === 'Home') n = tabs[0];
+      else if (e.key === 'End') n = tabs[tabs.length - 1];
+      if (n) { e.preventDefault(); selectTab(n.dataset.tab, true); }
+    });
+  });
+  $$('[data-go]').forEach(function (b) {
+    b.addEventListener('click', function () { selectTab(b.dataset.go); });
+  });
+
+  /* ---------- the clock, and the service ----------
+     The church is in Toronto and the phone may not be, so the hour that
+     matters is read in the church's own zone rather than the device's.
+     Intl gives the parts; everything after that is arithmetic. */
+  var TZ = 'America/Toronto';
+  var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  function churchNow() {
+    var f = new Intl.DateTimeFormat('en-GB', {
+      timeZone: TZ, weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    var p = {}, parts = f.formatToParts(new Date());
+    for (var i = 0; i < parts.length; i++) p[parts[i].type] = parts[i].value;
+    var h = parseInt(p.hour, 10) % 24, m = parseInt(p.minute, 10);
+    return { day: Math.max(0, DAYS.indexOf(p.weekday)), h: h, m: m, mins: h * 60 + m };
+  }
+  var SERVICE_START = 630, SERVICE_END = 750;   /* 10:30 to 12:30, Sunday */
+
+  function paintService() {
+    var t = churchNow();
+    var live = (t.day === 0 && t.mins >= SERVICE_START && t.mins < SERVICE_END);
+
+    $('#sbClock').textContent = ((t.h % 12) || 12) + ':' + (t.m < 10 ? '0' : '') + t.m;
+
+    var badge = $('#nowBadge'), wbadge = $('#watchBadge');
+    badge.classList.toggle('is-off', !live);
+    if (wbadge) wbadge.classList.toggle('is-off', !live);
+    badge.querySelector('i').classList.toggle('pulse', live);
+    $('#nowBadgeText').textContent = live ? 'Live now' : 'Next service';
+    if (wbadge) wbadge.querySelector('span').textContent = live ? 'Live now' : 'Next service';
+    $('#nowCountdown').hidden = live;
+    $('#nowTitle').textContent = live ? 'Worship and Word, live' : 'Worship and Word';
+    $('#nowWhen').textContent = live
+      ? 'On now in the main sanctuary, until about 12:30'
+      : 'Sunday, 10:30 am - main sanctuary';
+
+    if (!live) {
+      var mins = ((7 - t.day) % 7) * 1440 + SERVICE_START - t.mins;
+      if (mins <= 0) mins += 7 * 1440;
+      $('#cdD').textContent = Math.floor(mins / 1440);
+      $('#cdH').textContent = Math.floor((mins % 1440) / 60);
+      $('#cdM').textContent = mins % 60;
+    }
+
+    /* mark the item of the running order that is happening right now */
+    $$('#runList li').forEach(function (li) {
+      var on = t.day === 0 && t.mins >= +li.dataset.from && t.mins < +li.dataset.to;
+      li.classList.toggle('is-now', on);
+    });
+  }
+  paintService();
+  setInterval(paintService, 20000);
+
+  /* ---------- give ---------- */
+  var amount = '50', fund = 'Tithe';
+  function paintGive() {
+    var a = amount === 'other' ? 'an amount' : '$' + amount;
+    $('#giveBtnText').textContent = 'Give ' + a + ' to ' + fund;
+    $('#sheetTitle').textContent = 'Give ' + a + ' to ' + fund;
+  }
+  $$('.amt').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $$('.amt').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true'); amount = b.dataset.amt; paintGive();
+    });
+  });
+  $$('.fund').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $$('.fund').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true'); fund = b.dataset.fund; paintGive();
+    });
+  });
+  paintGive();
+
+  /* the sheet. hidden is removed a frame before the class goes on, or the
+     transform has nothing to animate from and the sheet simply appears. */
+  var sheet = $('#sheet'), scrim = $('#scrim'), lastFocus = null;
+  function openSheet() {
+    lastFocus = document.activeElement;
+    sheet.hidden = false;
+    requestAnimationFrame(function () { sheet.classList.add('on'); scrim.classList.add('on'); });
+    var first = sheet.querySelector('a,button');
+    if (first) first.focus();
+  }
+  function closeSheet() {
+    sheet.classList.remove('on'); scrim.classList.remove('on');
+    setTimeout(function () { sheet.hidden = true; }, 260);
+    if (lastFocus) lastFocus.focus();
+  }
+  $('#giveBtn').addEventListener('click', openSheet);
+  $('#sheetClose').addEventListener('click', closeSheet);
+  scrim.addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeSheet();
+  });
+
+  $('#tellBtn').addEventListener('click', function () {
+    var b = $('#tellBtn');
+    b.innerHTML = '<svg aria-hidden="true"><use href="#ic-heart"></use></svg>We are watching for you';
+    b.disabled = true;
+  });
+
+  /* ---------- the prayer wall ----------
+     Sample requests, and whatever this device has added. Counts live in
+     local storage so a tap survives a reload, and nothing leaves the phone. */
+  var WALL = [
+    { id: 'a', text: 'My mother goes in for surgery on Thursday. Praying for steady hands and a quick recovery.', who: 'Anonymous', n: 46 },
+    { id: 'b', text: 'Six months without work now. Asking for a door to open, and for peace in the waiting.', who: 'Anonymous', n: 71 },
+    { id: 'c', text: 'For my son, that he would come home to this house and to the Lord.', who: 'Anonymous', n: 118 },
+    { id: 'd', text: 'Thanking God for the roof going back on in Clarendon. Praying for the families still displaced.', who: 'Anonymous', n: 29 }
+  ];
+  try {
+    var mine = JSON.parse(store('tpp-app-wall') || '[]');
+    if (Object.prototype.toString.call(mine) === '[object Array]') WALL = mine.concat(WALL);
+  } catch (e) { /* nothing saved, or nothing readable: the samples stand alone */ }
+
+  function prayedCount(id, base) {
+    var v = store('tpp-app-prayed-' + id);
+    return base + (v ? 1 : 0);
+  }
+  function reqNode(r) {
+    var wrap = document.createElement('div');
+    wrap.className = 'req';
+    var on = !!store('tpp-app-prayed-' + r.id);
+    var p = document.createElement('p');
+    p.textContent = r.text;
+    var meta = document.createElement('div');
+    meta.className = 'req-meta';
+    var who = document.createElement('span');
+    who.className = 'req-who'; who.textContent = r.who;
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'prayed';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.innerHTML = '<svg aria-hidden="true"><use href="#ic-heart"></use></svg>' +
+      '<span>' + (on ? 'Prayed' : 'I prayed') + '</span> <b>' + prayedCount(r.id, r.n) + '</b>';
+    btn.addEventListener('click', function () {
+      var nowOn = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', nowOn ? 'true' : 'false');
+      if (nowOn) store('tpp-app-prayed-' + r.id, '1');
+      else { try { localStorage.removeItem('tpp-app-prayed-' + r.id); } catch (e) {} }
+      btn.querySelector('span').textContent = nowOn ? 'Prayed' : 'I prayed';
+      btn.querySelector('b').textContent = r.n + (nowOn ? 1 : 0);
+    });
+    meta.appendChild(who); meta.appendChild(btn);
+    wrap.appendChild(p); wrap.appendChild(meta);
+    return wrap;
+  }
+  function paintWall() {
+    var wall = $('#wall'), home = $('#homePray');
+    wall.innerHTML = ''; home.innerHTML = '';
+    WALL.forEach(function (r, i) {
+      wall.appendChild(reqNode(r));
+      if (i < 2) home.appendChild(reqNode(r));
+    });
+  }
+  paintWall();
+
+  $('#prayForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = $('#prayText').value.trim();
+    if (!text) return;
+    var rec = { id: 'm' + Date.now(), text: text, n: 0,
+      who: $('#prayAnon').checked ? 'Anonymous' : 'You, just now' };
+    WALL.unshift(rec);
+    var mineOnly = WALL.filter(function (r) { return r.id.charAt(0) === 'm'; });
+    store('tpp-app-wall', JSON.stringify(mineOnly.slice(0, 20)));
+    $('#prayText').value = '';
+    paintWall();
+  });
+})();
+</script>
+</body>
+</html>

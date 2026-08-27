@@ -418,6 +418,37 @@ editorial document with all six thousand characters of it readable.
 `?freeze` holds the camera where it is so the scene can be inspected by hand while
 the rig keeps running.
 
+## The app prototype
+
+`app.html` is a separate thing from the site: a working prototype of the home
+screen of a Prayer Palace phone app, standing on its own page. It is not linked
+from the site's navigation and carries `noindex`, because a prototype presented
+as a product is a lie about what exists.
+
+It runs the same way the site does - one document, no build step, no framework -
+but it does not touch `site.css`. The app is a different design system and shares
+only the palette, moved onto semantic tokens so both themes are authored rather
+than inferred.
+
+What is real in it: every service time, giving method, address, phone number,
+event and mission is the church's published information. What is not: the prayer
+requests are samples, and the counters live in the phone's own storage.
+
+Two things it deliberately does not do. It collects no card details anywhere -
+the giving flow picks an amount and a fund and then hands off to the church's own
+routes, the Pushpay portal, the e-transfer address, the text line. And it lists no
+past messages, because inventing a catalogue of sermons a real person has not
+published would be making things up about him.
+
+Four tabs, real tab semantics, arrow keys between them. The service card reads the
+hour in `America/Toronto` rather than the device's zone, so a phone in another
+country still sees the right countdown, and it switches itself to a live state
+between 10:30 and 12:30 on a Sunday.
+
+Verified headlessly at 1440, 390, 375 and in landscape, in both themes: no console
+errors, no failed requests, no horizontal overflow, no tap target under 44px,
+nothing clipped at 150% text, and the sheet still reachable with reduced motion on.
+
 ## Content and assets
 
 Copy and photographs are the church's own, taken from theprayerpalace.com. The
