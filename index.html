@@ -2268,7 +2268,7 @@ window.__load.scene();
    vendored file.
    ============================================================ */
 var MIPS = 5;
-var rtScene, down = [], tmp = [];
+var rtScene, down = [], tmp = [], dofA, dofB;
 var quadScene = new THREE.Scene();
 var quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 var quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), null);
@@ -2323,6 +2323,12 @@ var matBlur = new THREE.ShaderMaterial({
   ].join('\n')
 });
 
+var matCopy = new THREE.ShaderMaterial({
+  uniforms: { src: { value: null } },
+  vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: 'uniform sampler2D src; varying vec2 vU; void main(){ gl_FragColor = vec4(texture2D(src, vU).rgb, 1.0); }'
+});
+
 var matUp = new THREE.ShaderMaterial({
   uniforms: { src: { value: null }, amt: { value: .82 } },
   blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false, transparent: true,
@@ -2334,13 +2340,27 @@ var matComp = new THREE.ShaderMaterial({
   uniforms: {
     src: { value: null }, blm: { value: null },
     bloomI: { value: .62 }, exposure: { value: 1.05 },
-    veil: { value: 0 }, grain: { value: .014 }, vig: { value: .42 }, t: { value: 0 }
+    veil: { value: 0 }, grain: { value: .014 }, vig: { value: .42 }, t: { value: 0 },
+    dof: { value: null }, depth: { value: null },
+    focus: { value: 40 }, focusRange: { value: 34 }, dofAmt: { value: .62 },
+    camNear: { value: .4 }, camFar: { value: 2600 },
+    /* the grade */
+    contrast: { value: 1.045 }, sat: { value: .96 }, lift: { value: .006 },
+    shadowT: { value: new THREE.Vector3(.93, .975, 1.075) },
+    highT: { value: new THREE.Vector3(1.04, 1.012, .955) },
+    halo: { value: new THREE.Vector3(1.08, .95, .82) },
+    ca: { value: .0016 }
   },
   vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
   fragmentShader: [
     'uniform sampler2D src; uniform sampler2D blm;',
     'uniform float bloomI; uniform float exposure; uniform float veil;',
     'uniform float grain; uniform float vig; uniform float t;',
+    'uniform float contrast; uniform float sat; uniform float lift; uniform float ca;',
+    'uniform vec3 shadowT; uniform vec3 highT; uniform vec3 halo;',
+    'uniform sampler2D dof; uniform sampler2D depth;',
+    'uniform float focus; uniform float focusRange; uniform float dofAmt;',
+    'uniform float camNear; uniform float camFar;',
     'varying vec2 vU;',
     /* a filmic shoulder, so the highlights on the screen wall and the glory
        roll off instead of clipping to a flat white */
@@ -2348,15 +2368,44 @@ var matComp = new THREE.ShaderMaterial({
     '  const float a = 2.51, b = 0.03, c = 2.43, d = 0.59, e = 0.14;',
     '  return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);',
     '}',
+    'float luma(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }',
     'void main(){',
-    '  vec3 c = texture2D(src, vU).rgb + texture2D(blm, vU).rgb * bloomI;',
+    '  vec2 d2 = vU - 0.5;',
+    /* a lens does not focus every wavelength on the same spot, and the error
+       grows with distance from the axis. A very little of this is the
+       difference between a render and a photograph. */
+    '  float caR = 1.0 + ca * dot(d2, d2) * 12.0;',
+    '  vec3 c;',
+    '  c.r = texture2D(src, 0.5 + d2 * caR).r;',
+    '  c.g = texture2D(src, vU).g;',
+    '  c.b = texture2D(src, 0.5 + d2 / caR).b;',
+    /* halation: the glow around a highlight runs warm, because on film it is
+       light scattering back off the base behind the emulsion */
+    /* how far away this pixel is, in metres */
+    '  float dz = texture2D(depth, vU).x;',
+    '  float ndc = dz * 2.0 - 1.0;',
+    '  float lin = (2.0 * camNear * camFar) / (camFar + camNear - ndc * (camFar - camNear));',
+    /* The circle of confusion. A wide lens focused forty metres away holds
+       almost everything, so there is a band either side of the focus plane
+       that stays sharp before anything starts to soften. Without it the whole
+       congregation goes out of focus, which is a portrait lens in a hall. */
+    '  float dist = abs(lin - focus);',
+    '  float band = focus * 0.45;',
+    '  float coc = clamp((dist - band) / (focus * 1.6 + 45.0), 0.0, 1.0);',
+    '  c = mix(c, texture2D(dof, vU).rgb, coc * coc * dofAmt);',
+    '  vec3 bl = texture2D(blm, vU).rgb;',
+    '  c += bl * bloomI * halo;',
     '  c *= exposure;',
     '  c = filmic(c);',
-    '  float d = distance(vU, vec2(0.5));',
-    '  c *= 1.0 - smoothstep(0.42, 0.95, d) * vig;',
+    /* the grade: cool the shadows, warm the highlights, hold the middle */
+    '  float l = luma(c);',
+    '  c *= mix(shadowT, highT, smoothstep(0.04, 0.62, l));',
+    '  c = (c - 0.5) * contrast + 0.5 + lift;',
+    '  c = mix(vec3(luma(c)), c, sat);',
+    '  float d = length(d2 * vec2(1.0, 1.12));',
+    '  c *= 1.0 - smoothstep(0.34, 0.86, d) * vig;',
     '  float n = fract(sin(dot(vU * 1024.0 + t, vec2(12.9898, 78.233))) * 43758.5453) - 0.5;',
-    '  float luma = dot(c, vec3(0.2126, 0.7152, 0.0722));',
-    '  c += n * grain * smoothstep(0.0, 0.30, luma);',
+    '  c += n * grain * smoothstep(0.0, 0.30, luma(c));',
     '  c *= (1.0 - veil);',
     '  gl_FragColor = vec4(pow(max(c, 0.0), vec3(1.0 / 2.2)), 1.0);',
     '}'
@@ -2374,6 +2423,17 @@ function allocTargets() {
      the building standing in front of it. The bloom targets are fullscreen
      quads and genuinely do not need one. */
   rtScene = rt(w, h, true, 4);
+  /* Depth, so the composite can know how far away each pixel is and defocus
+     it accordingly. Everything being sharp from one metre to five hundred is
+     the single clearest sign that a picture was rendered rather than shot. */
+  if (rtScene.depthTexture) rtScene.depthTexture.dispose();
+  rtScene.depthTexture = new THREE.DepthTexture(w, h);
+  rtScene.depthTexture.type = THREE.UnsignedIntType;
+  rtScene.depthTexture.minFilter = THREE.NearestFilter;
+  rtScene.depthTexture.magFilter = THREE.NearestFilter;
+  if (dofA) { dofA.dispose(); dofB.dispose(); }
+  dofA = rt(w >> 1, h >> 1);
+  dofB = rt(w >> 1, h >> 1);
   down = []; tmp = [];
   /* Start the chain low: the bloom is the most expensive thing on the page and
      nobody can tell where it was sampled from. */
@@ -2399,7 +2459,9 @@ function post() {
   for (var i = 1; i < MIPS; i++) {
     var s = down[i - 1], d = down[i], tp = tmp[i];
     matBlur.uniforms.src.value = s.texture;
-    matBlur.uniforms.texel.value.set(1 / s.width, 1 / s.height);
+    /* wider across than down: a bloom that streaks horizontally is the one
+       cue that reads as a lens rather than as a gaussian */
+    matBlur.uniforms.texel.value.set(2.6 / s.width, 1 / s.height);
     matBlur.uniforms.dir.value.set(1, 0);
     blit(matBlur, tp, true);
     matBlur.uniforms.src.value = tp.texture;
@@ -2411,8 +2473,22 @@ function post() {
     matUp.uniforms.src.value = down[j].texture;
     blit(matUp, down[j - 1], false);          /* additive, so no clear */
   }
+  /* one downsample and a separable blur is enough: a circle of confusion this
+     soft does not need a real bokeh kernel at the sizes it is seen at */
+  matCopy.uniforms.src.value = rtScene.texture;
+  blit(matCopy, dofA, true);
+  matBlur.uniforms.src.value = dofA.texture;
+  matBlur.uniforms.texel.value.set(1.9 / dofA.width, 1.9 / dofA.height);
+  matBlur.uniforms.dir.value.set(1, 0);
+  blit(matBlur, dofB, true);
+  matBlur.uniforms.src.value = dofB.texture;
+  matBlur.uniforms.dir.value.set(0, 1);
+  blit(matBlur, dofA, true);
+
   matComp.uniforms.src.value = rtScene.texture;
   matComp.uniforms.blm.value = down[0].texture;
+  matComp.uniforms.dof.value = dofA.texture;
+  matComp.uniforms.depth.value = rtScene.depthTexture;
   blit(matComp, null, true);
 }
 
@@ -2441,21 +2517,21 @@ var TIMES = {
     skyTop: 0x3f74b4, skyBot: 0xa8c8e4, glow: 0xdce9f6, glowY: .04, glowAmt: .5,
     fog: 0xbdd0e2, fogD: .0022, hemiS: 0xa8c6e8, hemiG: 0x6f7566, hemiI: 2.0,
     keyC: 0xfff3dc, keyI: 2.6, fillC: 0xcfe0f4, fillI: .6,
-    exposure: .92, bloomT: .88, bloomI: .34, scrim: .74, star: 0,
+    exposure: .82, bloomT: .90, bloomI: .30, scrim: .74, star: 0,
     moonC: 0xfff8e4, moonY: 240, lotI: 0, litI: .25
   },
   dusk: {
     skyTop: 0x101a34, skyBot: 0x2b4c78, glow: 0xc98a52, glowY: .03, glowAmt: 1.1,
     fog: 0x1a2947, fogD: .0060, hemiS: 0x5878a4, hemiG: 0x1a2030, hemiI: 1.25,
     keyC: 0xdaa678, keyI: 1.05, fillC: 0x8fb0dc, fillI: .40,
-    exposure: 1.04, bloomT: .70, bloomI: .70, scrim: .26, star: .35,
+    exposure: .96, bloomT: .72, bloomI: .66, scrim: .26, star: .35,
     moonC: 0xf6ecd6, moonY: 150, lotI: .7, litI: .8
   },
   night: {
     skyTop: 0x05080f, skyBot: 0x101c33, glow: 0x24406a, glowY: .03, glowAmt: .45,
     fog: 0x080d18, fogD: .0075, hemiS: 0x2c3f5e, hemiG: 0x0a0d15, hemiI: .78,
     keyC: 0x7f9ecb, keyI: .62, fillC: 0xffd7a2, fillI: .16,
-    exposure: 1.08, bloomT: .66, bloomI: .74, scrim: 0, star: 1,
+    exposure: 1.02, bloomT: .68, bloomI: .70, scrim: 0, star: 1,
     moonC: 0xf2f0e4, moonY: 150, lotI: 1, litI: 1
   }
 };
@@ -2842,6 +2918,14 @@ function frame() {
   stepEnv(dt);
   wxUni.t.value = el;
   wxUni.cam.value.copy(camPos);
+
+  /* Pull focus onto whatever the shot is about. The camera already knows what
+     it is looking at, so the focus plane is simply the distance to it. */
+  var fd = camPos.distanceTo(camLook);
+  matComp.uniforms.focus.value += (fd - matComp.uniforms.focus.value) * (1 - Math.exp(-dt * 2.2));
+  matComp.uniforms.focusRange.value = Math.max(18, fd * 0.85);
+  matComp.uniforms.camNear.value = camera.near;
+  matComp.uniforms.camFar.value = camera.far;
 
   applyLook(clamp(scrollDrive.raw, 0, 1));
 
