@@ -18,6 +18,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=ROOT, **kw)
 
+    def translate_path(self, path):
+        """Resolve /give to give.html, the way the host does in production.
+
+        The deployed site serves clean URLs, so the pages link to /give rather
+        than to give.html. Without the same rule here the links only work on
+        one of the two, which is the sort of difference that is found late.
+        """
+        full = super().translate_path(path)
+        if not os.path.isdir(full) and not os.path.exists(full):
+            if os.path.exists(full + ".html"):
+                return full + ".html"
+        return full
+
     def end_headers(self):
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         self.send_header("Pragma", "no-cache")

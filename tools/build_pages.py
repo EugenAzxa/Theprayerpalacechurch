@@ -56,11 +56,11 @@ def nav(current):
         rows.append('      <a href="%s"%s>%s</a>\n' % (href, mark, label))
     links = "".join(rows)
     return f"""<nav id="nav" aria-label="Primary">
-  <a class="brand" href="index.html" aria-label="The Prayer Palace, home"><img src="assets/logo.webp" alt="The Prayer Palace"></a>
+  <a class="brand" href="/" aria-label="The Prayer Palace, home"><img src="assets/logo.webp" alt="The Prayer Palace"></a>
   <div class="spacer"></div>
   <div class="links">
 {links}  </div>
-  <div class="nav-cta"><a class="btn btn-gold" href="give.html">Give</a></div>
+  <div class="nav-cta"><a class="btn btn-gold" href="/give">Give</a></div>
   <button id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
   </button>
@@ -70,15 +70,15 @@ def nav(current):
   <button class="close" aria-label="Close menu">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
   </button>
-  <a href="index.html#threshold">New here</a>
-  <a href="index.html#sanctuary">Who we are</a>
-  <a href="index.html#word">Prayer</a>
-  <a href="events.html">Events</a>
-  <a href="connect.html">Connect &amp; Serve</a>
-  <a href="contact.html">Visit us</a>
+  <a href="/#threshold">New here</a>
+  <a href="/#sanctuary">Who we are</a>
+  <a href="/#word">Prayer</a>
+  <a href="/events">Events</a>
+  <a href="/connect">Connect &amp; Serve</a>
+  <a href="/contact">Visit us</a>
   <div class="drawer-cta">
-    <a class="btn btn-gold" href="give.html">Give</a>
-    <a class="btn" href="contact.html">Plan a visit</a>
+    <a class="btn btn-gold" href="/give">Give</a>
+    <a class="btn" href="/contact">Plan a visit</a>
   </div>
 </div>
 """
@@ -106,23 +106,23 @@ FOOTER = f"""<footer>
     <div>
       <h4>The house</h4>
       <ul>
-        <li><a href="index.html#threshold">New here</a></li>
-        <li><a href="index.html#sanctuary">Who we are</a></li>
-        <li><a href="index.html#word">Prayer</a></li>
-        <li><a href="index.html#ascent">Heaven is real</a></li>
-        <li><a href="index.html#remember">Memory Pages</a></li>
-        <li><a href="events.html">Events</a></li>
-        <li><a href="connect.html">Connect &amp; Serve</a></li>
+        <li><a href="/#threshold">New here</a></li>
+        <li><a href="/#sanctuary">Who we are</a></li>
+        <li><a href="/#word">Prayer</a></li>
+        <li><a href="/#ascent">Heaven is real</a></li>
+        <li><a href="/#remember">Memory Pages</a></li>
+        <li><a href="/events">Events</a></li>
+        <li><a href="/connect">Connect &amp; Serve</a></li>
       </ul>
     </div>
     <div>
       <h4>Get in touch</h4>
       <ul>
-        <li><a href="contact.html">{ADDRESS}</a></li>
+        <li><a href="/contact">{ADDRESS}</a></li>
         <li><a href="tel:{PHONE_HREF}">{PHONE}</a></li>
         <li><a href="mailto:info@theprayerpalace.com">info@theprayerpalace.com</a></li>
-        <li><a href="give.html">Give</a></li>
-        <li><a href="contact.html#prayer">Prayer requests</a></li>
+        <li><a href="/give">Give</a></li>
+        <li><a href="/contact#prayer">Prayer requests</a></li>
       </ul>
     </div>
   </div>
@@ -316,12 +316,12 @@ EVENTS = top("08", "Events", "What is<br>coming up",
       "Youth services weekly for ages thirteen and up, in the Wing 1 Chapel.") \
 + ev("Saturdays", "All day", "Samaritan: city-wide evangelism",
       "Evangelism re-imagined. Join a team reaching the city in a way that has not been done here before.",
-      '<a class="btn" href="connect.html">Sign me up</a>') \
+      '<a class="btn" href="/connect">Sign me up</a>') \
 + ev("Sundays", "Before and after 10:30", "Bibles and gifts bookstore",
       "Open before and after the Sunday morning service. There is a free gift with purchase at the moment, while stocks last.") + """    </div>
     <div class="cta-row" style="margin-top:46px">
-      <a class="btn btn-solid" href="connect.html">Find a group to belong to</a>
-      <a class="btn" href="contact.html">Ask us about an event</a>
+      <a class="btn btn-solid" href="/connect">Find a group to belong to</a>
+      <a class="btn" href="/contact">Ask us about an event</a>
     </div>
   </div>
 </section>
@@ -396,7 +396,7 @@ CONNECT = top("09", "Connect &amp; Serve", "There is a place<br>for every part<b
     </figure>
     <div class="cta-row" style="margin-top:40px">
       <a class="btn btn-solid" href="{FORMS}" target="_blank" rel="noopener">Serve team form</a>
-      <a class="btn" href="contact.html">Talk to someone first</a>
+      <a class="btn" href="/contact">Talk to someone first</a>
     </div>
   </div>
 </section>
@@ -516,7 +516,7 @@ CONTACT = top("10", "Visit us", "Come and see",
       <div class="way">
         <h3>Just visiting</h3>
         <p>You do not need to fill in anything at all to come on a Sunday. Meet us at the Welcome Reception afterwards and we will take it from there.</p>
-        <span class="go"><a class="btn" href="index.html#threshold">What to expect</a></span>
+        <span class="go"><a class="btn" href="/#threshold">What to expect</a></span>
       </div>
     </div>
   </div>
