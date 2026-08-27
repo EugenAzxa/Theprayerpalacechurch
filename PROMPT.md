@@ -142,6 +142,14 @@ aerial and street photographs before writing any geometry. This one is round.
   this for you: measure one known colour after setting it and check the stored value
   is the linear one. If it is not, every dark surface in the scene is several times
   too bright and no amount of relighting will fix it.
+- Grade it. Geometry is not what separates a render from a photograph: a depth of
+  field with its focus pulled to whatever the camera is looking at, a split tone that
+  cools the shadows and warms the highlights, halation on the bloom, a horizontal
+  spread on it, and a little chromatic aberration growing off-axis will do more for
+  it than any amount of modelling.
+- Leave a band either side of the focus plane sharp. A wide lens at these distances
+  holds nearly everything, and a defocus that begins at the focus distance puts a
+  whole congregation out of focus.
 - Hand-roll the bloom on core Three.js: bright pass, mip chain, separable blur,
   additive upsample, filmic composite. Do not pull in `examples/jsm`.
 - Draw the sky first, with the depth test off. A sky is a background, not a distant

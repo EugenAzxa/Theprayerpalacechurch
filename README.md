@@ -142,6 +142,16 @@ scroll is a step function, and the lag is what turns it into a walk.
 with headings split word by word into clipping boxes so a line assembles rather
 than fading in.
 
+**A grade and a lens.** What separates a render from a photograph is mostly not the
+geometry. The composite carries a depth of field driven off the scene's own depth
+buffer, with the focus plane pulled to whatever the camera is looking at, so the
+subject of the shot is sharp and everything else falls away; a split tone that cools
+the shadows and warms the highlights; halation, which runs the bloom warm the way
+light scattering behind film does; a horizontal spread on the bloom, which is the one
+cue that reads as a lens rather than as a gaussian; and a little chromatic aberration
+that grows off-axis, because a real lens does not focus every wavelength on the same
+spot.
+
 **Post-processing.** Hand-rolled on core Three.js: render to a half-float target,
 bright pass into a five-level mip chain, separable blur, additive upsample, and one
 composite with a filmic shoulder, vignette, grain and gamma. Nothing comes from
@@ -255,6 +265,13 @@ full key came out at exactly the value of the sky behind it. The same mistake
 appeared again at the other end of the journey, where the glory blew both sky and
 stone to the same white. Both ends needed the lights pulled down until the
 building sat below the sky rather than beside it.
+
+**A wide lens holds almost everything.** The first depth of field pass ramped
+straight out of the focus plane, which put the whole congregation out of focus: that
+is a portrait lens in a ninety metre hall. There has to be a band either side of the
+focus distance that stays sharp before anything softens. The grade needed the same
+restraint, having started as a boost rather than a bias and pushed the building
+through the top of the filmic curve until it was white.
 
 **`antialias: true` does nothing to a render target.** The single largest thing
 wrong with how this looked, and it hid for the whole build behind art-direction
