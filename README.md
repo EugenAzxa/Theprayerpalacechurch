@@ -351,6 +351,46 @@ works against the night and fails completely against the screen wall. Each colum
 carries a feathered panel that deepens as the world brightens, driven by the same
 `--scrim` the scene sets.
 
+**A rake needs a deck and a face.** Thirty-four rows rise three and a half metres and
+then the floor dropped straight back to grade, so the bank had no back to it: the
+people who stand behind the rail floated over a four-metre void, and past that a
+fourteen-metre apron of bare carpet ran to the wall. Coming through the doors the
+lens crossed all of it, and the bottom half of the frame was lit floor. A raked bank
+is a raised deck with a riser closing it, and the apron in front of that is a cross
+aisle, not the subject of the shot.
+
+**No waypoint should rest anywhere there is nothing to look at.** Waypoints are
+spaced evenly in the curve parameter however far apart they sit, so one placed on
+the apron spends the same slice of the scroll there as one placed on the platform.
+Two of them sat on it. Removing them crosses the same ground in a couple of frames.
+
+**Do not fly down the aisle.** An aisle is a three-metre strip of empty carpet
+pointed at the stage, which is exactly where the lens was, so it ran at the camera
+for the whole approach with the congregation as a thin band above it. Held over the
+seating with the aisle to one side, the frame fills with people, and the walk stops
+being symmetrical, which is the better shot anyway.
+
+**A filled panel over the scene is a sheet of grey glass laid on the room.** The
+service times sat in a translucent box whose hard edge cut across the sanctuary
+wherever the column happened to end. The column already carries a ground; the list
+only needed rules.
+
+**`MeshNormalMaterial` as `scene.overrideMaterial` measures a composition in one
+frame** - what share is floor, what share is ceiling, what share is the thing you
+came to see. It answered in a minute what an hour of looking did not. Set
+`side: DoubleSide` on it, or every surface you are standing inside is culled and a
+closed room reads as empty space.
+
+**Raycasting names geometry, not pixels.** It reported the floor under the pale
+field, and the field was still there with the floor painted black. Hiding objects
+one at a time and measuring the frame is the attribution that holds; the raycast is
+a hypothesis.
+
+**Puppeteer's screenshot `clip` is in page coordinates, not viewport coordinates.**
+Sampling a scrolled page reads the top of the document instead, silently, and every
+measurement comes back identical - which looks exactly like a variable that has no
+effect.
+
 ## Verified, not assumed
 
 Driven headlessly at 1440, 1024, 768, 390 and 375 wide, on all five pages: no console

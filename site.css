@@ -274,6 +274,16 @@ p.body{font-size:16.5px;line-height:1.72;color:#C3CEDE;max-width:60ch;margin:18p
 .values li{background:rgba(8,12,22,.62);padding:17px 20px;display:flex;gap:16px;align-items:baseline}
 .values li span{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;color:var(--gold-lift);flex:0 0 auto}
 .values li p{margin:0;font-size:16px;color:#CFD9E7}
+/* Over the scene a filled panel reads as a sheet of grey glass laid across the
+   room, and its hard edge cuts the frame wherever the column happens to end.
+   The column already carries a soft ground, so here the list is ruled type on
+   that instead: the rules hold the structure and the room stays visible. */
+.chapter .values{background:none;border:0;gap:0}
+.chapter .values li{background:none;padding:15px 2px;
+  border-top:1px solid rgba(158,182,216,.22)}
+.chapter .values li:first-child{border-top:0;padding-top:4px}
+.chapter .values li p{color:#DAE3EE}
+.chapter .values li span{color:var(--gold-lift)}
 
 /* stat band */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);

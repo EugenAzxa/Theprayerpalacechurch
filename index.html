@@ -1320,7 +1320,7 @@ var M = {
   roof: new THREE.MeshStandardMaterial({ color: SC(0xb7bcc2), map: TX.roof, roughness: .82, metalness: .12 }),
   asphalt: new THREE.MeshStandardMaterial({ color: SC(0x9aa1ab), map: TX.asphalt, roughness: .97, metalness: 0 }),
   grass: new THREE.MeshStandardMaterial({ color: SC(0x8f9c7e), map: TX.grass, roughness: 1, metalness: 0 }),
-  carpet: new THREE.MeshStandardMaterial({ color: SC(0x151a28), map: TX.carpet, roughness: 1, metalness: 0 }),
+  carpet: new THREE.MeshStandardMaterial({ color: SC(0x1d2434), map: TX.carpet, roughness: 1, metalness: 0 }),
   glass: new THREE.MeshBasicMaterial({ map: TX.glass, toneMapped: false }),
   white: new THREE.MeshStandardMaterial({ color: SC(0xe9ebe8), roughness: .6, metalness: .08 }),
   dark: new THREE.MeshStandardMaterial({ color: SC(0x1b2029), roughness: .86, metalness: .05 }),
@@ -2214,6 +2214,40 @@ var screenUni = {
     }
   })();
 
+  /* ---- the deck the rake stands on ----
+     Thirty-four rows rise three and a half metres, and behind the last one the
+     floor simply dropped back to grade: an unclosed edge with the people who
+     stand at the back floating over it, and beyond that a wide bare apron that
+     filled the bottom of the frame on the way in. A raked bank is a raised
+     deck with a face on it, so that is what this is. The face gives the room a
+     back to read against from the doors, and the apron becomes a cross aisle
+     in front of it rather than the subject of the shot. The span stops where
+     it would otherwise run out through the outer wall. */
+  (function deck() {
+    var R0 = SEAT_R0 + SEAT_ROWS * SEAT_DR;              /* the head of the rake */
+    var R1 = 63;                                         /* and the back of the deck */
+    var TOP = FLOOR_Y + SEAT_ROWS * SEAT_ROWS * RAKE_K;
+    var EDGE = Math.acos((R1 * R1 + SEAT_ORIGIN.z * SEAT_ORIGIN.z - (R_IN - 1) * (R_IN - 1))
+      / (-2 * R1 * SEAT_ORIGIN.z));
+    var faceM = new THREE.MeshStandardMaterial({ color: SC(0x1e2434), roughness: .92, metalness: .03 });
+    var top = new THREE.Mesh(new THREE.RingGeometry(R0, R1, 64, 1, -EDGE, EDGE * 2),
+      new THREE.MeshStandardMaterial({ color: SC(0x1b2130), roughness: .96 }));
+    top.rotation.x = -Math.PI / 2;
+    top.rotation.z = -Math.PI / 2;                       /* RingGeometry opens on +X, the fan on +Z */
+    top.position.set(SEAT_ORIGIN.x, TOP, SEAT_ORIGIN.z);
+    roomGroup.add(top);
+    var face = new THREE.Mesh(
+      new THREE.CylinderGeometry(R1, R1, TOP - FLOOR_Y, 64, 1, true, -EDGE, EDGE * 2), faceM);
+    face.position.set(SEAT_ORIGIN.x, (TOP + FLOOR_Y) / 2, SEAT_ORIGIN.z);
+    roomGroup.add(face);
+    /* a line along the top of the face, the way a barrier edge is always lit */
+    var lip = new THREE.Mesh(
+      new THREE.CylinderGeometry(R1 + .04, R1 + .04, .07, 64, 1, true, -EDGE, EDGE * 2),
+      glowMat(0x33445f));
+    lip.position.set(SEAT_ORIGIN.x, TOP - .05, SEAT_ORIGIN.z);
+    roomGroup.add(lip);
+  })();
+
   /* the house lights, in rings under the cone */
   var bulb = new THREE.MeshBasicMaterial({ color: SC(0x6f6248), toneMapped: false });
   [[22, 10], [38, 14]].forEach(function (r) {
@@ -2260,6 +2294,20 @@ scene.add(stageLamp);
 var drumLamp = new THREE.PointLight(SC(0xcfe0f6), 2.8, 40, 1.5);
 drumLamp.position.set(0, APEX_Y - 3, 0);
 scene.add(drumLamp);
+/* House light. Everything above aims at the platform and the drum, which left
+   the back half of the room on the hemisphere alone: the floor behind the last
+   row measured thirteen out of 255, so the lower third of the entry frame was
+   a void with lit silhouettes standing on it. Four lamps over the bowl, no
+   fixture drawn for them, warm against the blue of the stage so the house
+   separates from the platform. Parented to roomGroup, not the scene: three
+   skips an invisible group's children when it collects lights, so these cost
+   nothing on every exterior fragment for the whole of the approach. */
+[[0, 9.8, 12, 2.6], [-15, 9.2, 2, 1.9], [15, 9.2, 2, 1.9], [0, 10.2, 22, 1.2]]
+  .forEach(function (h) {
+    var L = new THREE.PointLight(SC(0xdcc9a8), h[3], 46, 1.5);
+    L.position.set(h[0], h[1], h[2]);
+    roomGroup.add(L);
+  });
 
 scene.fog = new THREE.FogExp2(0x0e1a31, 0.0072);
 window.__load.scene();
@@ -2780,9 +2828,28 @@ var PATH = [
      inside the doorway, or the camera comes to a stop in the dark of it. */
   { p: V(0, 2.9, 84),      l: V(0, 5.6, 54),   ch: 1 },
   { p: V(0, 1.95, 62),     l: V(0, 2.3, 42),   ch: 1 },
-  /* through in one move, and into the back of the fan */
-  { p: V(0, 6.4, 19),      l: V(0, 6.6, -14),  ch: 2 },
-  { p: V(0, 5.9, 3),       l: V(0, 5.4, -24),  ch: 2 },
+  /* Through the inner doors low. Their head is at 3.4m, and any climb that
+     starts before the opening puts the lens inside the wall. */
+  { p: V(0, 2.80, 46.2),   l: V(0, 4.4, 26),   ch: 1 },
+  /* Only then rise, over the back of the house. Carried through at rail
+     height the way this was, the lower third of every frame was the empty
+     floor behind the last row and the path flew through the heads of the
+     people standing at the back. Coming in above them fills the frame with
+     the bowl of the room, which is the thing worth showing. */
+  /* Off the centre line. Flown straight down the middle aisle the lens has a
+     three-metre strip of bare carpet running at it for the whole approach, so
+     the bottom third of every frame was empty floor and the congregation was
+     a thin band above it. Held over the seating instead, with the aisle to one
+     side, the frame fills with people and the walk stops being symmetrical,
+     which is also the better shot. It returns to the axis for the platform. */
+  /* No waypoint rests on the apron. The rake stops fourteen metres short of
+     the wall, and there is nothing on that floor to look at; a waypoint there
+     spends real time on it, because waypoints are evenly spaced in the curve
+     parameter however far apart they sit. Crossed in one move from the doors
+     to over the seating, it passes in a couple of frames as a dark foreground
+     with the room rising past it. */
+  { p: V(6, 8.4, 24),      l: V(1.5, 3.6, -12), ch: 2 },
+  { p: V(3, 7.0, 8),       l: V(0.5, 3.8, -22), ch: 2 },
   /* down among the seats */
   { p: V(0, 4.8, -9),      l: V(0, 4.4, -30),  ch: 3 },
   /* Rise looking down, not up. Pointing the lens at the ceiling on the way out
