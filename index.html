@@ -2023,9 +2023,31 @@ var screenUni = {
   var seatGrp = new THREE.Group();
   seatGrp.position.copy(SEAT_ORIGIN);
   roomGroup.add(seatGrp);
+  /* The step each row stands on, carried right across the fan. This was built
+     block by block with the aisles left out of it, and since the slab under
+     the whole room is one flat disc, that meant the aisles had no floor in
+     them at all: three trenches three and a half metres deep running down to
+     the platform, with the ends of the rows stepping away down their sides.
+     From the doors that is the shape that fills the bottom of the frame, and
+     it is what read as strange seating. A raked house is a flight of steps
+     with the chairs standing on it. */
+  var treadM = new THREE.MeshStandardMaterial({ color: SC(0x1f2534), map: TX.carpet,
+    roughness: 1, metalness: 0 });
   for (var ring = 0; ring < SEAT_ROWS; ring++) {
     var rr = SEAT_R0 + ring * SEAT_DR;
     var lift = FLOOR_Y + ring * ring * RAKE_K;
+    var rise = (2 * ring + 1) * RAKE_K;               /* to the next row up */
+    var tread = new THREE.Mesh(
+      new THREE.RingGeometry(rr - SEAT_DR * .5, rr + SEAT_DR * .5, 96, 1, -FAN, FAN * 2), treadM);
+    tread.rotation.x = -Math.PI / 2;
+    tread.rotation.z = -Math.PI / 2;
+    tread.position.y = lift + .015;                   /* clear of the slab at row zero */
+    seatGrp.add(tread);
+    var step = new THREE.Mesh(
+      new THREE.CylinderGeometry(rr + SEAT_DR * .5, rr + SEAT_DR * .5,
+        Math.max(.05, rise), 96, 1, true, -FAN, FAN * 2), M.dark);
+    step.position.y = lift + Math.max(.05, rise) * .5;
+    seatGrp.add(step);
     blocksFor(rr).forEach(function (bk) {
       var t0 = bk[0], len = bk[1] - bk[0];
       var seg = Math.max(3, Math.round(len * rr / 1.6));
@@ -2041,11 +2063,6 @@ var screenUni = {
       pan.rotation.z = -Math.PI / 2;      /* RingGeometry starts on +X, the fan on +Z */
       pan.position.y = lift + .45;
       seatGrp.add(pan);
-      /* the riser, so the rake reads as steps rather than a smooth ramp */
-      var riser = new THREE.Mesh(
-        new THREE.CylinderGeometry(rr + .62, rr + .62, .2, seg, 1, true, t0, len), M.dark);
-      riser.position.y = lift + .1;
-      seatGrp.add(riser);
     });
   }
 
@@ -2224,7 +2241,7 @@ var screenUni = {
      in front of it rather than the subject of the shot. The span stops where
      it would otherwise run out through the outer wall. */
   (function deck() {
-    var R0 = SEAT_R0 + SEAT_ROWS * SEAT_DR;              /* the head of the rake */
+    var R0 = SEAT_R0 + (SEAT_ROWS - .5) * SEAT_DR;       /* the head of the rake */
     var R1 = 63;                                         /* and the back of the deck */
     var TOP = FLOOR_Y + SEAT_ROWS * SEAT_ROWS * RAKE_K;
     var EDGE = Math.acos((R1 * R1 + SEAT_ORIGIN.z * SEAT_ORIGIN.z - (R_IN - 1) * (R_IN - 1))
@@ -2848,8 +2865,8 @@ var PATH = [
      parameter however far apart they sit. Crossed in one move from the doors
      to over the seating, it passes in a couple of frames as a dark foreground
      with the room rising past it. */
-  { p: V(6, 8.4, 24),      l: V(1.5, 3.6, -12), ch: 2 },
-  { p: V(3, 7.0, 8),       l: V(0.5, 3.8, -22), ch: 2 },
+  { p: V(11, 7.4, 22),     l: V(2.5, 3.4, -12), ch: 2 },
+  { p: V(6, 6.4, 6),       l: V(1.0, 3.6, -22), ch: 2 },
   /* down among the seats */
   { p: V(0, 4.8, -9),      l: V(0, 4.4, -30),  ch: 3 },
   /* Rise looking down, not up. Pointing the lens at the ceiling on the way out

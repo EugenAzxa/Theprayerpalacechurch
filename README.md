@@ -351,6 +351,14 @@ works against the night and fails completely against the screen wall. Each colum
 carries a feathered panel that deepens as the world brightens, driven by the same
 `--scrim` the scene sets.
 
+**A raked house is a flight of steps with chairs standing on it.** The rows were
+lifted row by row and the slab underneath was left flat, which is invisible under
+the seating and catastrophic in the aisles: three trenches three and a half metres
+deep ran down to the platform with the ends of the rows stepping away down their
+sides. From the doors that shape fills the bottom of the frame, and it is the thing
+that read as strange seating. Every step is now carried right across the fan, aisles
+included, and the chairs sit on it.
+
 **A rake needs a deck and a face.** Thirty-four rows rise three and a half metres and
 then the floor dropped straight back to grade, so the bank had no back to it: the
 people who stand behind the rail floated over a four-metre void, and past that a
