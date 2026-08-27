@@ -615,3 +615,16 @@ details.q p{margin:0 0 20px;font-size:15.5px;line-height:1.68;color:#4B5A73;max-
   font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;color:var(--steel-dim)}
 .wall-card .prayed svg{width:14px;height:16px;flex:0 0 auto;color:var(--gold);
   stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- season and hour, on the forecourt ---- */
+.env-pick{display:flex;gap:clamp(14px,2vw,30px);flex-wrap:wrap;margin-top:30px}
+.env-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.env-lbl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--steel-dim);margin-right:4px}
+.env-row button{min-height:34px;padding:0 12px;border-radius:2px;cursor:pointer;
+  border:1px solid var(--rule);background:rgba(10,16,28,.42);color:var(--steel);
+  font-size:13px;letter-spacing:.02em;transition:color .25s,border-color .25s,background .25s}
+.env-row button:hover{color:var(--bone);border-color:var(--rule-strong)}
+.env-row button[aria-pressed="true"]{background:rgba(220,227,236,.92);color:var(--ink);
+  border-color:rgba(220,227,236,.92)}
+@media (max-width:520px){ .env-pick{gap:12px} .env-row button{padding:0 10px;font-size:12.5px} }

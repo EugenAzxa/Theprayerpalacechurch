@@ -93,6 +93,23 @@ aerial and street photographs before writing any geometry. This one is round.
 - Let it creep toward the next milestone between milestones so it keeps moving,
   and cap that creep short of complete so it never lies.
 
+## Season and hour
+
+- Give the outside four seasons chosen from the current date and three times of day
+  chosen from the current hour, changing foliage, grass, snow, sky, fog, stars, the
+  lamps in the car park, the light behind the glass and the weather.
+- Leave the room alone. An auditorium with no windows in it is the same at every
+  hour of the year, and changing it would contradict the building.
+- Let nothing differ structurally between the states. Every value on either side is
+  a colour or a scalar, so a change is a lerp over a couple of seconds rather than a
+  rebuild, and the trees keep their leaves in January under snow.
+- One particle field serves all of it. Speed, size, colour and sway are the whole
+  difference between snow, rain and a summer night, and a negative fall speed is
+  what turns one into the other. Wrap it about the lens on all three axes, fade the
+  near band or a flake lands on the lens and fills a quarter of the frame, and fade
+  the whole thing out indoors.
+- Scrim the page in daylight, or bone-white type will not survive a bright sky.
+
 ## Layout
 
 - Structure the page as forecourt, threshold, sanctuary, the word, the ascent, and

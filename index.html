@@ -261,6 +261,24 @@
       <a class="btn btn-solid" href="#threshold">Plan your first visit</a>
       <a class="btn" href="contact.html">1111 Arrow Road, Toronto</a>
     </div>
+    <!-- The forecourt takes its light from the calendar and the clock. These
+         walk it somewhere else; the room does not change, because a hall with
+         no windows in it does not. -->
+    <div class="env-pick up">
+      <div class="env-row" role="group" aria-label="Season">
+        <span class="env-lbl">Season</span>
+        <button type="button" data-season="spring" aria-pressed="false">Spring</button>
+        <button type="button" data-season="summer" aria-pressed="false">Summer</button>
+        <button type="button" data-season="autumn" aria-pressed="false">Autumn</button>
+        <button type="button" data-season="winter" aria-pressed="false">Winter</button>
+      </div>
+      <div class="env-row" role="group" aria-label="Hour">
+        <span class="env-lbl">Hour</span>
+        <button type="button" data-time="day" aria-pressed="false">Day</button>
+        <button type="button" data-time="dusk" aria-pressed="false">Dusk</button>
+        <button type="button" data-time="night" aria-pressed="false">Night</button>
+      </div>
+    </div>
   </div></div>
 </section>
 
@@ -1279,6 +1297,18 @@ var TX = {
   glass: tex(glassTex(), 1, 1)
 };
 
+/* Anything lit from within, and anything that is a lamp in the car park, has
+   to come down in daylight and up at night. They are built in half a dozen
+   different closures, so they register themselves here rather than being hunted
+   down afterwards. */
+var GLOW_MATS = [], LOT_MATS = [];
+function glowMat(hex, lot) {
+  var m = new THREE.MeshBasicMaterial({ color: SC(hex), toneMapped: false });
+  m.userData.base = SC(hex).clone();
+  (lot ? LOT_MATS : GLOW_MATS).push(m);
+  return m;
+}
+
 /* ---------- materials ---------- */
 var M = {
   block: new THREE.MeshStandardMaterial({ color: SC(0xf2efe8), map: TX.block, roughness: .95, metalness: 0 }),
@@ -1409,6 +1439,84 @@ var ENTRY_Z = R_OUT;       /* the main doors face +Z, which is where the walk st
 var R_IN = R_OUT - 1.4;    /* the inside face, and the room's own wall */
 var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands */
 
+/* ============================================================
+   WEATHER
+   One particle field serves every season. Snow, rain and a summer
+   night's insects are the same four thousand points with different
+   speed, size, colour and sway: a negative fall speed is what turns
+   snow into insects drifting up. It wraps around the camera on all
+   three axes, so it is around you on the forecourt and still around
+   you a hundred and fifty metres above the roof.
+   ============================================================ */
+var WX_BOX = 240, WX_H = 140, WX_N = 2400;
+var weatherPts = null;
+var wxUni = {
+  t: { value: 0 },
+  cam: { value: new THREE.Vector3() },
+  fall: { value: 2.2 },
+  sway: { value: 1.4 },
+  psize: { value: .09 },
+  vpH: { value: 900 },
+  tint: { value: SC(0xdfe8f4) },
+  amt: { value: 0 },
+  streak: { value: 0 }
+};
+(function buildWeather() {
+  var pos = new Float32Array(WX_N * 3), seed = new Float32Array(WX_N);
+  for (var i = 0; i < WX_N; i++) {
+    pos[i * 3] = (Math.random() - .5) * WX_BOX;
+    pos[i * 3 + 1] = Math.random() * WX_H;
+    pos[i * 3 + 2] = (Math.random() - .5) * WX_BOX;
+    seed[i] = Math.random();
+  }
+  var g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
+  var m = new THREE.ShaderMaterial({
+    uniforms: wxUni, transparent: true, depthWrite: false, fog: false,
+    vertexShader: [
+      'uniform float t; uniform vec3 cam; uniform float fall; uniform float sway;',
+      'uniform float psize; uniform float streak; uniform float vpH;',
+      'attribute float seed; varying float vFade;',
+      'const float BOX = ' + WX_BOX.toFixed(1) + '; const float H = ' + WX_H.toFixed(1) + ';',
+      'void main(){',
+      '  vec3 p = position;',
+      '  p.y -= t * fall + seed * 91.0;',
+      '  p.x += sin(t * (0.5 + seed) + seed * 30.0) * sway;',
+      '  p.z += cos(t * (0.4 + seed) + seed * 21.0) * sway;',
+      /* wrap on all three axes about the lens, so the field travels with it */
+      '  vec3 rel = p - cam;',
+      '  rel.x = mod(rel.x + BOX * 0.5, BOX) - BOX * 0.5;',
+      '  rel.z = mod(rel.z + BOX * 0.5, BOX) - BOX * 0.5;',
+      '  rel.y = mod(rel.y + H * 0.5, H) - H * 0.5;',
+      '  vec4 mv = modelViewMatrix * vec4(cam + rel, 1.0);',
+      '  gl_Position = projectionMatrix * mv;',
+      '  float d = -mv.z;',
+      '  gl_PointSize = clamp(psize * (vpH / max(d, 1.4)), 1.0, 18.0);',
+      /* fade at the edge of the box so nothing pops in */
+      '  float edge = 1.0 - smoothstep(BOX * 0.30, BOX * 0.48, length(rel.xz));',
+      '  vFade = edge * smoothstep(2.0, 7.0, d) * (1.0 - smoothstep(80.0, 175.0, d));',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform vec3 tint; uniform float amt; uniform float streak; varying float vFade;',
+      'void main(){',
+      '  vec2 c = gl_PointCoord - 0.5;',
+      /* squeezing x turns a flake into a fallen line, which is what rain is */
+      '  c.x /= mix(1.0, 0.24, streak);',
+      '  float a = 1.0 - smoothstep(0.16, 0.5, length(c));',
+      '  if (a <= 0.01) discard;',
+      '  gl_FragColor = vec4(tint, a * vFade * amt);',
+      '}'
+    ].join('\n')
+  });
+  var pts = new THREE.Points(g, m);
+  pts.frustumCulled = false;
+  pts.renderOrder = 6;
+  skyGroup.add(pts);
+  weatherPts = pts;
+})();
+
 (function ground() {
   /* grass out to the horizon, then the asphalt apron on top of it */
   var g = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), M.grass);
@@ -1511,7 +1619,7 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
 
   /* rooflights and plant, scattered over the roof the way they are on the
      real one */
-  var rlMat = new THREE.MeshBasicMaterial({ color: SC(0x8fb0d8), toneMapped: false });
+  var rlMat = glowMat(0x8fb0d8);
   for (var k = 0; k < 14; k++) {
     var ra = (k / 14) * Math.PI * 2 + .3, rr = 18 + (k % 3) * 9;
     var t = (rr - LIGHT_R) / (R_OUT - LIGHT_R);
@@ -1615,20 +1723,19 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
       0, .09, lobZ, g);
     /* the inner doors, lit from the hall beyond. The lens goes through these,
        under the veil, and comes out inside. */
-    var innerLit = new THREE.MeshBasicMaterial({ color: SC(0x141c2b), toneMapped: false });
+    var innerLit = glowMat(0x141c2b);
     var inner2 = new THREE.Mesh(new THREE.PlaneGeometry(dw + 1.4, dh + .2), innerLit);
     inner2.position.set(0, (dh + .2) / 2, DOOR_PLANE);
     g.add(inner2);
     /* a little of the hall's own light spilling round the leaves */
-    var spill = new THREE.MeshBasicMaterial({ color: SC(0x3d5a7e), toneMapped: false });
+    var spill = glowMat(0x3d5a7e);
     box(dw + 1.5, .12, .1, spill, 0, dh + .28, DOOR_PLANE + .02, g);
     box(.12, dh + .2, .1, spill, -(dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
     box(.12, dh + .2, .1, spill, (dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
     box(.16, dh - .2, .1, M.dark, 0, (dh - .2) / 2, DOOR_PLANE + .03, g);
     /* warm downlights in the lobby ceiling, and a lamp that actually lights it */
     [lobZ - lobD * .3, lobZ, lobZ + lobD * .3].forEach(function (lz) {
-      var b2 = new THREE.Mesh(new THREE.SphereGeometry(.14, 10, 8),
-        new THREE.MeshBasicMaterial({ color: SC(0xffdda8), toneMapped: false }));
+      var b2 = new THREE.Mesh(new THREE.SphereGeometry(.14, 10, 8), glowMat(0xffdda8));
       b2.position.set(0, dh + .5, lz);
       g.add(b2);
     });
@@ -1755,7 +1862,7 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
   ci.instanceMatrix.needsUpdate = true;
   shellGroup.add(ci);
 
-  var headMat = new THREE.MeshBasicMaterial({ color: SC(0xffe0ab), toneMapped: false });
+  var headMat = glowMat(0xffe0ab, true);
   for (var L = 0; L < 16; L++) {
     var la = (L / 16) * Math.PI * 2 + .38, lr = 82 + (L % 3) * 28;
     var lx = Math.sin(la) * lr, lz = Math.cos(la) * lr;
@@ -2316,16 +2423,182 @@ function post() {
    rebuild, and the world can move continuously from the blue hour to the
    glory without anything popping.
    ============================================================ */
+/* ============================================================
+   SEASON AND HOUR
+   The forecourt takes its light from the calendar and the clock. The
+   room does not: an auditorium with no windows in it is the same at
+   every hour of the year, and pretending otherwise would be a lie the
+   building itself would contradict. So the outdoor chapters and the
+   ascent read from here, and chapters 03 and 04 keep their own values.
+
+   Nothing differs structurally between the states. Every value on
+   either side is a colour or a scalar, so a change is a lerp over a
+   couple of seconds rather than a rebuild, and the trees keep their
+   leaves in January under snow rather than losing them.
+   ============================================================ */
+var TIMES = {
+  day: {
+    skyTop: 0x3f74b4, skyBot: 0xa8c8e4, glow: 0xdce9f6, glowY: .04, glowAmt: .5,
+    fog: 0xbdd0e2, fogD: .0022, hemiS: 0xa8c6e8, hemiG: 0x6f7566, hemiI: 2.0,
+    keyC: 0xfff3dc, keyI: 2.6, fillC: 0xcfe0f4, fillI: .6,
+    exposure: .92, bloomT: .88, bloomI: .34, scrim: .74, star: 0,
+    moonC: 0xfff8e4, moonY: 240, lotI: 0, litI: .25
+  },
+  dusk: {
+    skyTop: 0x101a34, skyBot: 0x2b4c78, glow: 0xc98a52, glowY: .03, glowAmt: 1.1,
+    fog: 0x1a2947, fogD: .0060, hemiS: 0x5878a4, hemiG: 0x1a2030, hemiI: 1.25,
+    keyC: 0xdaa678, keyI: 1.05, fillC: 0x8fb0dc, fillI: .40,
+    exposure: 1.04, bloomT: .70, bloomI: .70, scrim: .26, star: .35,
+    moonC: 0xf6ecd6, moonY: 150, lotI: .7, litI: .8
+  },
+  night: {
+    skyTop: 0x05080f, skyBot: 0x101c33, glow: 0x24406a, glowY: .03, glowAmt: .45,
+    fog: 0x080d18, fogD: .0075, hemiS: 0x2c3f5e, hemiG: 0x0a0d15, hemiI: .78,
+    keyC: 0x7f9ecb, keyI: .62, fillC: 0xffd7a2, fillI: .16,
+    exposure: 1.08, bloomT: .66, bloomI: .74, scrim: 0, star: 1,
+    moonC: 0xf2f0e4, moonY: 150, lotI: 1, litI: 1
+  }
+};
+
+var SEASONS = {
+  spring: { leaf: 0x5c7a3e, grass: 0x6f8a52, snow: 0, skyTint: 0xbcd4e8, tintAmt: .10,
+            wx: 'rain', density: 1.0, fall: 17, sway: .4, size: .62, wxC: 0xbcd0e6, streak: 1 },
+  summer: { leaf: 0x3f5a2c, grass: 0x74804a, snow: 0, skyTint: 0xd8e4ec, tintAmt: .06,
+            wx: 'none', density: 0, fall: -0.8, sway: 2.2, size: .085, wxC: 0xffe6a8, streak: 0 },
+  autumn: { leaf: 0x8a5a22, grass: 0x7a6f44, snow: 0, skyTint: 0xd8b488, tintAmt: .14,
+            wx: 'rain', density: .82, fall: 15, sway: .6, size: .56, wxC: 0xb0c2d8, streak: 1 },
+  winter: { leaf: 0x8d9198, grass: 0xcdd6df, snow: 1, skyTint: 0xc4d4e4, tintAmt: .16,
+            wx: 'snow', density: 1.0, fall: 1.9, sway: 1.9, size: .28, wxC: 0xeef4fc, streak: 0 }
+};
+
+/* summer nights get insects rather than nothing at all */
+function seasonWeather(seasonKey, timeKey) {
+  var w = SEASONS[seasonKey];
+  if (seasonKey === 'summer' && timeKey !== 'day')
+    return { density: .55, fall: -0.7, sway: 2.4, size: .22, wxC: 0xffe0a0, streak: 0 };
+  return { density: w.density, fall: w.fall, sway: w.sway, size: w.size, wxC: w.wxC, streak: w.streak };
+}
+
+function seasonNow() {
+  var m = new Date().getMonth();
+  return m < 2 || m === 11 ? 'winter' : m < 5 ? 'spring' : m < 8 ? 'summer' : 'autumn';
+}
+function timeNow() {
+  var h = new Date().getHours();
+  return (h >= 8 && h < 17) ? 'day' : (h >= 17 && h < 21) || (h >= 6 && h < 8) ? 'dusk' : 'night';
+}
+
+var qs = new URLSearchParams(location.search);
+var envKey = {
+  season: SEASONS[qs.get('season')] ? qs.get('season') : seasonNow(),
+  time: TIMES[qs.get('time')] ? qs.get('time') : timeNow()
+};
+
+/* The live values, lerped toward the target so a change of season is a
+   two second dissolve rather than a jump. */
+var ENV = {}, ENV_T = {};
+var ENV_COLS = ['skyTop', 'skyBot', 'glow', 'fog', 'hemiS', 'hemiG', 'keyC', 'fillC', 'moonC',
+                'leaf', 'grass', 'wxC'];
+var ENV_NUMS = ['glowY', 'glowAmt', 'fogD', 'hemiI', 'keyI', 'fillI', 'exposure', 'bloomT',
+                'bloomI', 'scrim', 'star', 'moonY', 'lotI', 'litI', 'snow',
+                'density', 'fall', 'sway', 'size', 'streak', 'tintAmt'];
+
+function envTarget() {
+  var T = TIMES[envKey.time], S = SEASONS[envKey.season], W = seasonWeather(envKey.season, envKey.time);
+  var o = {};
+  ENV_COLS.forEach(function (k) { o[k] = null; });
+  ENV_NUMS.forEach(function (k) { o[k] = 0; });
+  Object.keys(T).forEach(function (k) { o[k] = T[k]; });
+  ['leaf', 'grass', 'snow', 'tintAmt'].forEach(function (k) { o[k] = S[k]; });
+  Object.keys(W).forEach(function (k) { o[k] = W[k]; });
+  /* the season tints the sky it is seen through */
+  o.skyTop = mixHex(T.skyTop, S.skyTint, S.tintAmt * .5);
+  o.skyBot = mixHex(T.skyBot, S.skyTint, S.tintAmt);
+  /* and snow on the ground bounces light back up */
+  o.hemiG = mixHex(T.hemiG, 0xd6e2ee, S.snow * .55);
+  return o;
+}
+function mixHex(a, b, t) {
+  var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+  var br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+  return (Math.round(ar + (br - ar) * t) << 16) |
+         (Math.round(ag + (bg - ag) * t) << 8) |
+          Math.round(ab + (bb - ab) * t);
+}
+
+var ENV_TC = {};                      /* the target, already in linear colour */
+function resolveTarget() {
+  ENV_T = envTarget();
+  ENV_COLS.forEach(function (k) {
+    if (!ENV_TC[k]) ENV_TC[k] = new THREE.Color();
+    ENV_TC[k].copy(SC(ENV_T[k]));
+  });
+}
+(function initEnv() {
+  resolveTarget();
+  ENV_COLS.forEach(function (k) { ENV[k] = ENV_TC[k].clone(); });
+  ENV_NUMS.forEach(function (k) { ENV[k] = ENV_T[k]; });
+})();
+
+/* the fixed ends of the two ramps the season drives, resolved once */
+var ASPHALT_DRY = SC(0x9aa1ab).clone(), ASPHALT_SNOW = SC(0xd8e2ee).clone();
+var ROOF_DRY = SC(0xb7bcc2).clone(), ROOF_SNOW = SC(0xdfe8f2).clone();
+
+var _envA = new THREE.Color();
+function stepEnv(dt) {
+  var k = 1 - Math.exp(-dt * 0.9), i;      /* about two seconds to settle */
+  for (i = 0; i < ENV_COLS.length; i++) ENV[ENV_COLS[i]].lerp(ENV_TC[ENV_COLS[i]], k);
+  for (i = 0; i < ENV_NUMS.length; i++) {
+    var key = ENV_NUMS[i];
+    ENV[key] += (ENV_T[key] - ENV[key]) * k;
+  }
+
+  /* everything the season owns rather than the look state */
+  M.leaf.color.copy(ENV.leaf);
+  M.grass.color.copy(ENV.grass);
+  M.asphalt.color.copy(ASPHALT_DRY).lerp(ASPHALT_SNOW, ENV.snow * .7);
+  M.roof.color.copy(ROOF_DRY).lerp(ROOF_SNOW, ENV.snow * .6);
+  for (var gi = 0; gi < GLOW_MATS.length; gi++)
+    GLOW_MATS[gi].color.copy(GLOW_MATS[gi].userData.base).multiplyScalar(ENV.litI);
+  for (var li = 0; li < LOT_MATS.length; li++)
+    LOT_MATS[li].color.copy(LOT_MATS[li].userData.base).multiplyScalar(ENV.lotI);
+  /* a window is a room seen through a hole: bright at night, a reflection by day */
+  M.glass.color.setScalar(.32 + ENV.litI * .68);
+
+  wxUni.fall.value = ENV.fall;
+  wxUni.sway.value = ENV.sway;
+  wxUni.psize.value = ENV.size;
+  wxUni.streak.value = ENV.streak;
+  wxUni.tint.value.copy(ENV.wxC);
+  wxUni.amt.value = ENV.density * wxOutside;
+  if (weatherPts) weatherPts.visible = wxUni.amt.value > 0.012;
+  moon.position.y = ENV.moonY;
+  halo.position.y = ENV.moonY;
+}
+
+function setEnv(season, time) {
+  if (season) envKey.season = season;
+  if (time) envKey.time = time;
+  resolveTarget();
+  document.querySelectorAll('[data-season]').forEach(function (b) {
+    b.setAttribute('aria-pressed', b.getAttribute('data-season') === envKey.season ? 'true' : 'false');
+  });
+  document.querySelectorAll('[data-time]').forEach(function (b) {
+    b.setAttribute('aria-pressed', b.getAttribute('data-time') === envKey.time ? 'true' : 'false');
+  });
+}
+
 function L(p, o) { o.p = p; return o; }
+var LOOK_COLS = ['skyTop', 'skyBot', 'glow', 'fog', 'hemiS', 'hemiG', 'keyC', 'fillC', 'moonC'];
+var LOOK_NUMS = ['glowY', 'glowAmt', 'fogD', 'hemiI', 'keyI', 'fillI', 'lampI', 'stageI',
+                 'exposure', 'bloomT', 'bloomI', 'scrim', 'star', 'screenA'];
+
+/* Outdoors and above the roof, the look is whatever the season and the hour
+   say. Inside chapters 03 and 04 it is fixed, because a hall with no windows in
+   it does not care what the weather is doing. */
 var LOOKS = [
-  L(0.00, { skyTop: 0x070c1a, skyBot: 0x1b3760, glow: 0x2d5182, glowY: .04, glowAmt: .62,
-    fog: 0x0e1a31, fogD: .0072, hemiS: 0x50719e, hemiG: 0x121b2c, hemiI: 1.15,
-    keyC: 0x8fb0dc, keyI: 1.15, fillC: 0xffd7a2, fillI: .45, lampI: 4.6, stageI: 4.0,
-    exposure: 1.06, bloomT: .70, bloomI: .66, scrim: 0, star: .9, moonC: 0xf2f0e4, screenA: .8 }),
-  L(0.32, { skyTop: 0x081025, skyBot: 0x21406c, glow: 0x38608f, glowY: .05, glowAmt: .70,
-    fog: 0x101d36, fogD: .0080, hemiS: 0x5878a4, hemiG: 0x141d30, hemiI: 1.3,
-    keyC: 0x9dbce6, keyI: 1.3, fillC: 0xffd39a, fillI: .7, lampI: 5.4, stageI: 4.6,
-    exposure: 1.06, bloomT: .70, bloomI: .70, scrim: 0, star: .8, moonC: 0xf2f0e4, screenA: .9 }),
+  L(0.00, { env: 1, lampI: 4.6, stageI: 4.0, screenA: .8 }),
+  L(0.32, { env: 1, lampI: 5.4, stageI: 4.6, screenA: .9 }),
   L(0.45, { skyTop: 0x0a1428, skyBot: 0x25456f, glow: 0x39608f, glowY: .05, glowAmt: .55,
     fog: 0x090f1c, fogD: .0130, hemiS: 0x22344c, hemiG: 0x090d15, hemiI: .8,
     keyC: 0x7e9cc6, keyI: .3, fillC: 0xffcf92, fillI: .4, lampI: 2.6, stageI: 5.2,
@@ -2334,44 +2607,65 @@ var LOOKS = [
     fog: 0x090f1c, fogD: .0125, hemiS: 0x22344c, hemiG: 0x090d15, hemiI: .88,
     keyC: 0x7e9cc6, keyI: .34, fillC: 0xffcf92, fillI: .45, lampI: 2.8, stageI: 5.6,
     exposure: .92, bloomT: .94, bloomI: .36, scrim: .36, star: .2, moonC: 0xf2f0e4, screenA: 1 }),
-  L(0.93, { skyTop: 0x6f9bd0, skyBot: 0xefdcb4, glow: 0xffe9b4, glowY: .16, glowAmt: 1.25,
-    fog: 0xbcccdd, fogD: .0011, hemiS: 0xa8c4e4, hemiG: 0x7d8378, hemiI: 1.45,
-    keyC: 0xffeec6, keyI: 2.2, fillC: 0xd8e4f2, fillI: .7, lampI: .6, stageI: .5,
-    exposure: .92, bloomT: .80, bloomI: .58, scrim: .62, star: 0, moonC: 0xfff6df, screenA: 1 }),
-  L(1.00, { skyTop: 0x7fa9da, skyBot: 0xf8ead0, glow: 0xfff2cf, glowY: .20, glowAmt: 1.5,
-    fog: 0xcadaea, fogD: .0008, hemiS: 0xb8d2ee, hemiG: 0x868b80, hemiI: 1.6,
-    keyC: 0xfff2d4, keyI: 2.5, fillC: 0xe2ecf8, fillI: .75, lampI: .4, stageI: .4,
-    exposure: .94, bloomT: .78, bloomI: .62, scrim: .70, star: 0, moonC: 0xfffbe8, screenA: 1 })
+  /* above the haze: the same sky, thinner air and a page ground to match */
+  L(0.93, { env: 1, open: 1, lampI: .6, stageI: .5, screenA: 1 }),
+  L(1.00, { env: 1, open: 1, lampI: .4, stageI: .4, screenA: 1 })
 ];
 
-var cA = new THREE.Color(), cB = new THREE.Color(), cT = new THREE.Color();
-function mixColor(target, a, b, t) {
-  cA.setHex(a).convertSRGBToLinear();
-  cB.setHex(b).convertSRGBToLinear();
-  target.copy(cA).lerp(cB, t);
+/* Resolving a keyframe means turning it into colours and numbers whichever kind
+   it is, so the lerp below never has to know where a value came from. */
+var _hexCache = {};
+function hexColor(h) {
+  var c = _hexCache[h];
+  if (!c) { c = _hexCache[h] = SC(h); }
+  return c;
 }
+var _resA = {}, _resB = {};
+function resolveLook(k, out) {
+  var i;
+  if (k.env) {
+    for (i = 0; i < LOOK_COLS.length; i++) out[LOOK_COLS[i]] = ENV[LOOK_COLS[i]];
+    for (i = 0; i < LOOK_NUMS.length; i++) {
+      var n = LOOK_NUMS[i];
+      out[n] = (n in ENV) ? ENV[n] : k[n];
+    }
+    if (k.open) {
+      out.fogD = out.fogD * 0.28;
+      out.hemiI = out.hemiI * 1.18;
+      out.scrim = Math.max(out.scrim, 0.30);
+      out.bloomI = out.bloomI * 1.1;
+    }
+  } else {
+    for (i = 0; i < LOOK_COLS.length; i++) out[LOOK_COLS[i]] = hexColor(k[LOOK_COLS[i]]);
+    for (i = 0; i < LOOK_NUMS.length; i++) out[LOOK_NUMS[i]] = k[LOOK_NUMS[i]];
+  }
+  return out;
+}
+
+var cT = new THREE.Color();
 function applyLook(p) {
   var i = 0;
   while (i < LOOKS.length - 2 && p > LOOKS[i + 1].p) i++;
-  var a = LOOKS[i], b = LOOKS[i + 1];
-  var t = smooth((p - a.p) / Math.max(1e-5, b.p - a.p));
+  var ka = LOOKS[i], kb = LOOKS[i + 1];
+  var t = smooth((p - ka.p) / Math.max(1e-5, kb.p - ka.p));
+  var a = resolveLook(ka, _resA), b = resolveLook(kb, _resB);
 
-  mixColor(skyUni.top.value, a.skyTop, b.skyTop, t);
-  mixColor(skyUni.bot.value, a.skyBot, b.skyBot, t);
-  mixColor(skyUni.glow.value, a.glow, b.glow, t);
+  skyUni.top.value.copy(a.skyTop).lerp(b.skyTop, t);
+  skyUni.bot.value.copy(a.skyBot).lerp(b.skyBot, t);
+  skyUni.glow.value.copy(a.glow).lerp(b.glow, t);
   skyUni.glowY.value = lerp(a.glowY, b.glowY, t);
   skyUni.glowAmt.value = lerp(a.glowAmt, b.glowAmt, t);
 
-  mixColor(scene.fog.color, a.fog, b.fog, t);
+  scene.fog.color.copy(a.fog).lerp(b.fog, t);
   scene.fog.density = lerp(a.fogD, b.fogD, t);
   renderer.setClearColor(cT.copy(scene.fog.color).convertLinearToSRGB(), 1);
 
-  mixColor(hemi.color, a.hemiS, b.hemiS, t);
-  mixColor(hemi.groundColor, a.hemiG, b.hemiG, t);
+  hemi.color.copy(a.hemiS).lerp(b.hemiS, t);
+  hemi.groundColor.copy(a.hemiG).lerp(b.hemiG, t);
   hemi.intensity = lerp(a.hemiI, b.hemiI, t);
-  mixColor(key.color, a.keyC, b.keyC, t);
+  key.color.copy(a.keyC).lerp(b.keyC, t);
   key.intensity = lerp(a.keyI, b.keyI, t);
-  mixColor(fill.color, a.fillC, b.fillC, t);
+  fill.color.copy(a.fillC).lerp(b.fillC, t);
   fill.intensity = lerp(a.fillI, b.fillI, t);
   roomLamp.intensity = lerp(a.lampI, b.lampI, t);
   stageLamp.intensity = lerp(a.stageI, b.stageI, t);
@@ -2381,9 +2675,8 @@ function applyLook(p) {
   matComp.uniforms.bloomI.value = lerp(a.bloomI, b.bloomI, t);
   starMat.opacity = lerp(a.star, b.star, t);
   screenUni.amt.value = lerp(a.screenA, b.screenA, t);
-  mixColor(cT, a.moonC, b.moonC, t);
-  moon.material.color.copy(cT);
-  halo.material.opacity = lerp(.16, .5, t * (i >= 3 ? 1 : 0));
+  moon.material.color.copy(a.moonC).lerp(b.moonC, t);
+  halo.material.opacity = .10 + starMat.opacity * .34;
 
   var scrim = lerp(a.scrim, b.scrim, t);
   document.documentElement.style.setProperty('--scrim', scrim.toFixed(3));
@@ -2456,6 +2749,9 @@ var camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
    portal on the way in and the oculus on the way out. Taking both from the
    same box would hold a veil up for the whole length of the hall. */
 var insideNow = false, blink = 0;
+/* Weather belongs to the car park. Fade it as the lens goes in, or it snows on
+   the congregation. */
+var wxOutside = 1;
 function surfaces(pos) {
   var v = 0;
   /* The doors are a passage, not a plane. The glazing stands nine metres proud
@@ -2481,6 +2777,7 @@ function updateWorld(pos) {
     blink = 1;                    /* the backstop for a scroll faster than the ramp */
   }
   blink *= 0.80;
+  wxOutside += ((inside ? 0 : 1) - wxOutside) * 0.12;
   return Math.max(surfaces(pos), blink > .02 ? blink : 0);
 }
 
@@ -2496,6 +2793,7 @@ function resize() {
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.fov = fovFor(camera.aspect);
+  wxUni.vpH.value = h;
   camera.updateProjectionMatrix();
   allocTargets();
   measureScroll();
@@ -2541,6 +2839,10 @@ function frame() {
   matComp.uniforms.t.value = el;
   screenUni.t.value = el;
 
+  stepEnv(dt);
+  wxUni.t.value = el;
+  wxUni.cam.value.copy(camPos);
+
   applyLook(clamp(scrollDrive.raw, 0, 1));
 
   renderer.setRenderTarget(rtScene);
@@ -2554,6 +2856,14 @@ function frame() {
     window.__load.finish();
   }
 }
+
+document.querySelectorAll('[data-season]').forEach(function (b) {
+  b.addEventListener('click', function () { setEnv(b.getAttribute('data-season'), null); });
+});
+document.querySelectorAll('[data-time]').forEach(function (b) {
+  b.addEventListener('click', function () { setEnv(null, b.getAttribute('data-time')); });
+});
+setEnv(null, null);                 /* mark whichever pair is showing */
 
 measureScroll();
 uCur = pathParam();

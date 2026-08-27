@@ -20,6 +20,19 @@ more than fifty nationalities in the congregation.
 
 ## What it does
 
+- Follows the calendar and the clock. The car park is in spring, summer, autumn or
+  winter by date and in day, dusk or night by hour, changing the foliage, the grass,
+  the snow on the ground, the sky, the fog, the stars, the lamps in the lot, the
+  light behind the glass and the weather falling through it. The room does not
+  change, because a hall with no windows in it is the same at every hour of the
+  year, and pretending otherwise is a lie the building itself would contradict.
+- Runs one particle field for every season: snow, rain and a summer night's insects
+  are the same points with different speed, size, colour and sway, and a negative
+  fall speed is what turns snow into insects drifting up. It wraps about the lens on
+  all three axes and fades out as the lens goes indoors.
+- Carries pickers for both in the hero, and `?season=` and `?time=` for a direct
+  link. A change is a two second dissolve, because nothing differs structurally
+  between the states: every value on either side is a colour or a scalar.
 - Opens on the main doors, from the point on the drive the street photographs are
   taken from: the canopy sweeping up over the glazed front, the block piers it
   stands on, the raised curve of roof behind it, the cross above that, and the
