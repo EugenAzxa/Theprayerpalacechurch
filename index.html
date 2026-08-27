@@ -2229,6 +2229,20 @@ var screenUni = {
       if (Math.random() > .55) continue;
       seatPerson(px, pz, deskTop, a + Math.PI + (Math.random() - .5) * .4, true, .95 + Math.random() * .16);
     }
+    /* and the overflow, standing in the cross aisle behind the deck. A packed
+       house does not stop at the last row: this apron is where the people who
+       came late are, and with it empty the back of the room read as a car park
+       with a congregation parked at one end of it. */
+    for (var q = 0; q < 190; q++) {
+      var qa = -1.16 + Math.random() * 2.32;
+      var qr = 64.5 + Math.random() * 10.5;
+      var qx = SEAT_ORIGIN.x + Math.sin(qa) * qr;
+      var qz = SEAT_ORIGIN.z + Math.cos(qa) * qr;
+      if (qx * qx + qz * qz > (R_IN - 2.5) * (R_IN - 2.5)) continue;
+      if (Math.abs(qx) < 4.2 && qz > 40) continue;     /* leave the doorway clear */
+      seatPerson(qx, qz, FLOOR_Y, qa + Math.PI + (Math.random() - .5) * .55,
+        true, .95 + Math.random() * .16);
+    }
   })();
 
   /* ---- the deck the rake stands on ----
@@ -2865,8 +2879,8 @@ var PATH = [
      parameter however far apart they sit. Crossed in one move from the doors
      to over the seating, it passes in a couple of frames as a dark foreground
      with the room rising past it. */
-  { p: V(11, 7.4, 22),     l: V(2.5, 3.4, -12), ch: 2 },
-  { p: V(6, 6.4, 6),       l: V(1.0, 3.6, -22), ch: 2 },
+  { p: V(11, 6.3, 22),     l: V(2.5, 3.0, -12), ch: 2 },
+  { p: V(6, 5.7, 6),       l: V(1.0, 3.2, -22), ch: 2 },
   /* down among the seats */
   { p: V(0, 4.8, -9),      l: V(0, 4.4, -30),  ch: 3 },
   /* Rise looking down, not up. Pointing the lens at the ceiling on the way out
@@ -2927,7 +2941,24 @@ function surfaces(pos) {
   if (Math.abs(pos.x) < 10 && pos.y < 8) {
     var r = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
     v = Math.max(v, plateau(Math.abs(r - DOOR_PLANE), .8, 2.0));
+    /* and hold it across the apron behind the doors. There is nothing on that
+       floor worth a shot, and easing the veil off at the wall meant the lens
+       came out of the dark still fourteen metres short of the seating with the
+       bare cross aisle filling the bottom of the frame. Held to the head of
+       the rake it plays as a cut: doors, dark, and the room already round you.
+       Anchored on z rather than radius, or the same band would black the lens
+       out again at the platform, which is the same distance from the middle. */
   }
+  /* the rooflight at the middle of the cone */
+  /* Hold it across the apron behind the doors. There is nothing on that floor
+     worth a shot, and easing the veil off at the wall meant the lens came out
+     of the dark still fourteen metres short of the seating with the bare cross
+     aisle filling the bottom of the frame. Carried to the head of the rake it
+     plays as a cut: doors, dark, and the room already round you. Anchored on z
+     and not on radius, or the same band would black the lens out again at the
+     platform, which is the same distance from the middle of the room. */
+  if (pos.z > 0 && Math.abs(pos.x) < 16 && pos.y < 12)
+    v = Math.max(v, plateau(Math.abs(pos.z - 39), 9, 4));
   /* the rooflight at the middle of the cone */
   if (pos.x * pos.x + pos.z * pos.z < LIGHT_R * LIGHT_R * 2.2)
     v = Math.max(v, plateau(Math.abs(pos.y - APEX_Y), .5, 3.2));

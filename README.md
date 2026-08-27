@@ -351,6 +351,14 @@ works against the night and fails completely against the screen wall. Each colum
 carries a feathered panel that deepens as the world brightens, driven by the same
 `--scrim` the scene sets.
 
+**When there is nothing worth showing, cut.** The apron between the doors and
+the head of the rake is fourteen metres of floor with nothing on it, and no camera
+height or angle makes that interesting. The veil that already covers the world
+swap at the doors now holds across it, so the entry plays as a cut: doors, dark,
+and the room already round you. It is anchored on z rather than on the radius the
+door veil uses, because the platform sits the same distance from the middle of the
+room and a radius band blacks the lens out there too.
+
 **A raked house is a flight of steps with chairs standing on it.** The rows were
 lifted row by row and the slab underneath was left flat, which is invisible under
 the seating and catastrophic in the aisles: three trenches three and a half metres
