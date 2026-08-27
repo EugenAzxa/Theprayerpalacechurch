@@ -967,7 +967,9 @@ function tex(c, rx, ry) {
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.repeat.set(rx || 1, ry || 1);
   t.encoding = THREE.sRGBEncoding;
-  t.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  t.generateMipmaps = true;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
   return t;
 }
 
@@ -1589,10 +1591,10 @@ var wxUni = {
   TX.block.repeat.set(46, 3.2);
   cyl(R_OUT + .06, R_OUT + .06, .52, 72, M.band, 0, 4.35, 0, shellGroup, true);
   cyl(R_OUT + .08, R_OUT + .08, .62, 72, M.check, 0, 5.5, 0, shellGroup, true);
-  TX.check.repeat.set(120, 1);
+  TX.check.repeat.set(64, 1);
   cyl(R_OUT + .06, R_OUT + .06, .22, 72, M.band, 0, 6.05, 0, shellGroup, true);
   cyl(R_OUT + .18, R_OUT + .18, FASCIA_Y - WALL_Y, 72, M.rib, 0, (WALL_Y + FASCIA_Y) / 2, 0, shellGroup, true);
-  TX.rib.repeat.set(160, 1);
+  TX.rib.repeat.set(96, 1);
   /* a plinth course at grade */
   cyl(R_OUT + .3, R_OUT + .3, .5, 72, M.band, 0, .2, 0, shellGroup, true);
 
@@ -1637,7 +1639,9 @@ var wxUni = {
     var d2 = ((wa * 180 / Math.PI) + 360) % 90;
     if (d2 < 16 || d2 > 74) continue;
     var g = new THREE.Mesh(new THREE.PlaneGeometry(4.0, 2.1), M.glass);
-    g.position.set(Math.sin(wa) * (R_OUT + .1), 3.9, Math.cos(wa) * (R_OUT + .1));
+    /* clear of the frame's front face, which sits at R_OUT + .10: coplanar
+       surfaces do not pick a winner, they alternate, and that is the flashing */
+    g.position.set(Math.sin(wa) * (R_OUT + .17), 3.9, Math.cos(wa) * (R_OUT + .17));
     g.rotation.y = wa;
     shellGroup.add(g);
     var fr = box(4.5, 2.5, .3, M.dark, Math.sin(wa) * (R_OUT - .05), 3.9, Math.cos(wa) * (R_OUT - .05), shellGroup);
@@ -1698,18 +1702,18 @@ var wxUni = {
       /* mullions on the panes only */
       var bays = main ? 3 : 2;
       for (var d = 0; d <= bays; d++) {
-        box(.2, gh, .2, M.dark, sgn * (dw / 2 + d * (sideW / bays)), gh / 2, gz + .06, g);
+        box(.2, gh, .2, M.dark, sgn * (dw / 2 + d * (sideW / bays)), gh / 2, gz + .16, g);
       }
     });
     /* the transom over the doors, and the frame round the lot */
     var trans = new THREE.Mesh(new THREE.PlaneGeometry(dw, gh - dh), M.glass);
     trans.position.set(0, dh + (gh - dh) / 2, gz);
     g.add(trans);
-    box(gw + .5, .26, .26, M.dark, 0, gh, gz + .06, g);
-    box(dw + .4, .22, .3, M.dark, 0, dh, gz + .07, g);
-    box(gw + .5, .3, .3, M.dark, 0, .15, gz + .06, g);
-    box(.24, dh, .3, M.dark, -dw / 2, dh / 2, gz + .07, g);
-    box(.24, dh, .3, M.dark, dw / 2, dh / 2, gz + .07, g);
+    box(gw + .5, .26, .26, M.dark, 0, gh, gz + .19, g);
+    box(dw + .4, .22, .3, M.dark, 0, dh, gz + .21, g);
+    box(gw + .5, .3, .3, M.dark, 0, .15, gz + .21, g);
+    box(.24, dh, .3, M.dark, -dw / 2, dh / 2, gz + .21, g);
+    box(.24, dh, .3, M.dark, dw / 2, dh / 2, gz + .21, g);
 
     /* The lobby, running from the glazing through the opening in the wall to
        the inner doors. It gives the doorway somewhere to lead, so the approach
@@ -1729,10 +1733,10 @@ var wxUni = {
     g.add(inner2);
     /* a little of the hall's own light spilling round the leaves */
     var spill = glowMat(0x3d5a7e);
-    box(dw + 1.5, .12, .1, spill, 0, dh + .28, DOOR_PLANE + .02, g);
-    box(.12, dh + .2, .1, spill, -(dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
-    box(.12, dh + .2, .1, spill, (dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .02, g);
-    box(.16, dh - .2, .1, M.dark, 0, (dh - .2) / 2, DOOR_PLANE + .03, g);
+    box(dw + 1.5, .12, .1, spill, 0, dh + .28, DOOR_PLANE + .12, g);
+    box(.12, dh + .2, .1, spill, -(dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .12, g);
+    box(.12, dh + .2, .1, spill, (dw + 1.4) / 2, (dh + .2) / 2, DOOR_PLANE + .12, g);
+    box(.16, dh - .2, .1, M.dark, 0, (dh - .2) / 2, DOOR_PLANE + .15, g);
     /* warm downlights in the lobby ceiling, and a lamp that actually lights it */
     [lobZ - lobD * .3, lobZ, lobZ + lobD * .3].forEach(function (lz) {
       var b2 = new THREE.Mesh(new THREE.SphereGeometry(.14, 10, 8), glowMat(0xffdda8));
@@ -2627,6 +2631,7 @@ function stepEnv(dt) {
   for (i = 0; i < ENV_NUMS.length; i++) {
     var key = ENV_NUMS[i];
     ENV[key] += (ENV_T[key] - ENV[key]) * k;
+    if (Math.abs(ENV_T[key] - ENV[key]) < 1e-4) ENV[key] = ENV_T[key];
   }
 
   /* everything the season owns rather than the look state */
@@ -2889,7 +2894,10 @@ function frame() {
      the lag is what turns it into a walk. */
   var target = pathParam();
   if (RM) uCur = target;
-  else uCur += (target - uCur) * (1 - Math.exp(-dt * 2.6));
+  else {
+    uCur += (target - uCur) * (1 - Math.exp(-dt * 2.6));
+    if (Math.abs(target - uCur) < 2e-6) uCur = target;
+  }
 
   posCurve.getPoint(clamp(uCur, 0, 1), camPos);
   lookCurve.getPoint(clamp(uCur, 0, 1), camLook);
@@ -2922,7 +2930,9 @@ function frame() {
   /* Pull focus onto whatever the shot is about. The camera already knows what
      it is looking at, so the focus plane is simply the distance to it. */
   var fd = camPos.distanceTo(camLook);
-  matComp.uniforms.focus.value += (fd - matComp.uniforms.focus.value) * (1 - Math.exp(-dt * 2.2));
+  var fu = matComp.uniforms.focus;
+  fu.value += (fd - fu.value) * (1 - Math.exp(-dt * 2.2));
+  if (Math.abs(fd - fu.value) < 0.02) fu.value = fd;
   matComp.uniforms.focusRange.value = Math.max(18, fd * 0.85);
   matComp.uniforms.camNear.value = camera.near;
   matComp.uniforms.camFar.value = camera.far;

@@ -166,6 +166,14 @@ aerial and street photographs before writing any geometry. This one is round.
   camera is rather than to scroll position, and cover the cut with a veil that
   reaches full black. Take the veil from the two surfaces the lens genuinely
   crosses, the doors and the rooflight, and from nothing else.
+- End the camera's approach rather than asymptoting toward it. A lerp toward a
+  target never closes the last fraction, so the camera keeps creeping by a fraction
+  of a pixel forever, and on a high contrast edge under bloom that reads as a
+  flicker for as long as the page is open.
+- Keep a box that frames a plane clear of it by more than half its own depth.
+  Surfaces that overlap in depth do not pick a winner, they alternate.
+- To find a flicker, hold the camera still and diff frames over time. Diffing while
+  the camera moves shows only motion and tells you nothing.
 - Clamp the camera above the floor while indoors, and if the floor rakes, clamp it
   against the rake at the camera's own position rather than against the lowest
   point. A waypoint set by eye will otherwise sit below the heads of the row it is

@@ -266,6 +266,20 @@ appeared again at the other end of the journey, where the glory blew both sky an
 stone to the same white. Both ends needed the lights pulled down until the
 building sat below the sky rather than beside it.
 
+**An exponential approach never arrives.** The camera lag is a lerp toward the
+scroll target, which halves the remaining distance forever and never closes it, so
+the camera was still creeping by fractions of a pixel long after it looked
+stationary. On the highest contrast edge in the frame, with bloom and a defocus
+over it, that reads as a flicker: the lit doorway flashed against its dark frame
+for as long as the page was open. It stops when the remainder is smaller than
+anyone could see. The same applies to the focus pull and the season dissolve.
+
+Worth saying how it was found, because the obvious test was the wrong one.
+Diffing consecutive frames while scrolling shows enormous change, all of it
+legitimate motion, and tells you nothing. Holding the camera still and diffing
+over time isolates what actually flickers, and the answer was a single hard-edged
+rectangle around the doors.
+
 **A wide lens holds almost everything.** The first depth of field pass ramped
 straight out of the focus plane, which put the whole congregation out of focus: that
 is a portrait lens in a ninety metre hall. There has to be a band either side of the
