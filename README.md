@@ -351,6 +351,29 @@ works against the night and fails completely against the screen wall. Each colum
 carries a feathered panel that deepens as the world brightens, driven by the same
 `--scrim` the scene sets.
 
+**The flag was a guess, and guesses about a national flag are visible.** What
+was there had a nine-pointed leaf, a pinkish red and an off-white. It now uses
+the real eleven-pointed outline, Pantone 032, and pure white, at the flag's own
+one-two-one division so the centre is a true square. The leaf is placed by
+filling it once on a scratch canvas and reading back its own bounding box rather
+than by trusting the coordinates in the path: drawn straight from the numbers it
+came out at half the height it should be and sat high in the square, which is
+the kind of error that looks deliberate.
+
+**Cloth is a vertex displacement, not a simulation.** Two harmonics travelling
+along the flag, damped to nothing at the hoist, free at the fly, with the
+amplitude coming off the same season state that drives the snow. It goes into
+`MeshStandardMaterial` through `onBeforeCompile` rather than into a
+`ShaderMaterial` of its own, because the flag has to keep the scene's lights,
+its fog and its tone mapping, and reimplementing all three to get a ripple is a
+poor trade. One phase offset per pole, taken from where the pole stands, so
+three flags sharing one material do not snap in lockstep.
+
+**Differentiate the normal from the same wave.** Displace a surface and leave
+its normals alone and it stays lit as a flat plane: the shape moves, the light
+does not follow, and it reads as a printed flag sliding about rather than cloth
+turning over. The derivative of the wave costs four lines and is the difference.
+
 **When there is nothing worth showing, cut.** The apron between the doors and
 the head of the rake is fourteen metres of floor with nothing on it, and no camera
 height or angle makes that interesting. The veil that already covers the world

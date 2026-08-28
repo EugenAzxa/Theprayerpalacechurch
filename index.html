@@ -1452,6 +1452,12 @@ var DOOR_PLANE = 47.2;     /* the inner doors, where the two worlds change hands
    ============================================================ */
 var WX_BOX = 240, WX_H = 140, WX_N = 2400;
 var weatherPts = null;
+/* The flags. Declared here rather than beside the poles, because the season
+   lerp writes to them and that runs long before the poles are built: a
+   uniform read before its declaration is hoisted as undefined, and the whole
+   thing goes quiet rather than loud. */
+var flagUni = { time: { value: 0 }, wind: { value: .9 } };
+
 var wxUni = {
   t: { value: 0 },
   cam: { value: new THREE.Vector3() },
@@ -1801,20 +1807,127 @@ var wxUni = {
   /* ---- the flags ----
      Five poles on the grass island at the door, which is the first thing in
      frame on the approach. */
-  var flagCanvas = cvs(96, 48), fx = flagCanvas.getContext('2d');
-  fx.fillStyle = '#f4f4f2'; fx.fillRect(0, 0, 96, 48);
-  fx.fillStyle = '#d8484a'; fx.fillRect(0, 0, 24, 48); fx.fillRect(72, 0, 24, 48);
-  fx.fillStyle = '#d8484a';
-  fx.beginPath(); fx.moveTo(48, 9); fx.lineTo(53, 20); fx.lineTo(60, 17);
-  fx.lineTo(56, 30); fx.lineTo(64, 29); fx.lineTo(48, 40); fx.lineTo(32, 29);
-  fx.lineTo(40, 30); fx.lineTo(36, 17); fx.lineTo(43, 20); fx.closePath(); fx.fill();
+  /* The National Flag of Canada, to its own specification: two by one, and
+     divided one-two-one, so the white is a true square with a red band a
+     quarter of the length at each end. The leaf is the real eleven-pointed
+     outline rather than a nine-pointed guess at it - drawn in the 1200 by 600
+     space the official artwork uses and scaled down from there, so the
+     proportions are not mine to get wrong. Red is Pantone 032, the colour the
+     flag is actually specified in.
+     Path2D takes SVG path data in every browser that can run this scene, but
+     if it ever throws, a flag that renders as a white sheet is worse than a
+     blunt one, so there is a plain fallback behind it. */
+  var FLAG_W = 1024, FLAG_H = 512, FS = FLAG_W / 1200;
+  var FLAG_RED = '#EF3340';
+  var LEAF = 'M600 81.6l-22.68 42.31c-2.577 4.6-7.194 4.172-11.81 1.595l-16.42-8.505'
+    + '12.24 65.02c2.577 11.89-5.737 11.89-9.812 6.766l-28.66-32.09-4.653 16.28'
+    + 'c-0.5355 2.144-2.909 4.4-6.464 3.86l-36.21-7.615 9.518 34.63c2.038 7.7 3.63 10.88'
+    + '-2.045 12.91l-12.9 6.06 62.31 50.6c2.466 1.914 3.714 5.353 2.836 8.505l-5.454 17.9'
+    + 'c21.46-2.474 40.69-6.196 62.16-8.505 1.896-0.204 5.07 2.916 5.06 5.109l-2.841 65.79'
+    + 'h10.41l-1.64-65.68c-0.011-2.193 2.914-5.42 4.81-5.216 21.47 2.309 40.7 6.03 62.16 8.505'
+    + 'l-5.454-17.9c-0.878-3.152 0.37-6.591 2.836-8.505l62.31-50.6-12.9-6.06'
+    + 'c-5.675-2.03-4.083-5.21-2.045-12.91l9.518-34.63-36.21 7.615c-3.555 0.54-5.929-1.716'
+    + '-6.464-3.86l-4.653-16.28-28.66 32.09c-4.075 5.124-12.39 5.124-9.812-6.766l12.24-65.02'
+    + 'l-16.42 8.505c-4.616 2.577-9.233 3.005-11.81-1.595z';
+  var flagCanvas = cvs(FLAG_W, FLAG_H), fx = flagCanvas.getContext('2d');
+  fx.fillStyle = '#ffffff'; fx.fillRect(0, 0, FLAG_W, FLAG_H);
+  fx.fillStyle = FLAG_RED;
+  fx.fillRect(0, 0, FLAG_W / 4, FLAG_H);
+  fx.fillRect(FLAG_W * 0.75, 0, FLAG_W / 4, FLAG_H);
+  /* Measure the leaf before placing it, rather than trusting the numbers in
+     the path to be the numbers I think they are. Drawn straight it came out
+     at about half the height it should be and sat high in the square, which
+     is exactly the kind of thing that looks deliberate and is not. Filling it
+     once on a scratch canvas and reading back its own bounding box costs a
+     few milliseconds at load and makes the placement self-correcting: on the
+     flag the leaf stands 72.8 per cent of the hoist, centred in the white. */
+  (function leaf() {
+    var probe = cvs(1200, 700), pc = probe.getContext('2d');
+    var path;
+    try { path = new Path2D(LEAF); } catch (e) { path = null; }
+    if (!path) {                       /* a blunt leaf beats a blank sheet */
+      fx.beginPath(); fx.moveTo(512, 90); fx.lineTo(566, 210); fx.lineTo(640, 178);
+      fx.lineTo(598, 318); fx.lineTo(683, 306); fx.lineTo(512, 424); fx.lineTo(341, 306);
+      fx.lineTo(426, 318); fx.lineTo(384, 178); fx.lineTo(458, 210); fx.closePath(); fx.fill();
+      return;
+    }
+    pc.fillStyle = '#000'; pc.fill(path);
+    var d = pc.getImageData(0, 0, 1200, 700).data;
+    var x0 = 1200, y0 = 700, x1 = -1, y1 = -1;
+    for (var y = 0; y < 700; y++) {
+      for (var x = 0; x < 1200; x++) {
+        if (d[(y * 1200 + x) * 4 + 3] > 8) {
+          if (x < x0) x0 = x; if (x > x1) x1 = x;
+          if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+      }
+    }
+    if (x1 < 0) return;
+    var scale = (FLAG_H * 0.728) / (y1 - y0 + 1);
+    fx.save();
+    fx.translate(FLAG_W / 2, FLAG_H / 2);
+    fx.scale(scale, scale);
+    fx.translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
+    fx.fill(path);
+    fx.restore();
+  })();
+
+  /* ---- the cloth ----
+     A flag that does not move is a signboard, and this one stands in the open
+     at the front of the building through four seasons of weather, so it moves.
+     The wave is a vertex displacement rather than a simulation: two harmonics
+     travelling along the flag, damped to nothing at the hoist and free at the
+     fly, with the amplitude coming off the same season state that drives the
+     snow. Written into MeshStandardMaterial through onBeforeCompile rather
+     than as a ShaderMaterial of its own, because the flag has to keep the
+     scene's lights, its fog and its tone mapping, and reimplementing those to
+     get a ripple would be a poor trade.
+     The normal is differentiated from the same wave rather than left alone.
+     Displace a surface and keep its old normals and it stays lit as a flat
+     plane: the shape moves and the light does not follow it, which reads as a
+     printed flag sliding about rather than cloth turning in the wind. */
   var flagMat = new THREE.MeshStandardMaterial({
-    map: tex(flagCanvas, 1, 1), color: SC(0xffffff), roughness: .9, side: THREE.DoubleSide
+    map: tex(flagCanvas, 1, 1), color: SC(0xffffff), roughness: .82, metalness: 0,
+    side: THREE.DoubleSide
   });
+  flagMat.onBeforeCompile = function (sh) {
+    sh.uniforms.uTime = flagUni.time;
+    sh.uniforms.uWind = flagUni.wind;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', [
+        '#include <common>',
+        'uniform float uTime; uniform float uWind;',
+        'const float FLAG_SPAN = 2.9;',
+        'float clothWave(float p){ return sin(p) * 0.62 + sin(p * 1.93 + 1.3) * 0.24; }',
+        'float clothWaveD(float p){ return cos(p) * 0.62 + cos(p * 1.93 + 1.3) * 0.4632; }'
+      ].join('\n'))
+      .replace('#include <beginnormal_vertex>', [
+        '#include <beginnormal_vertex>',
+        /* one phase offset per pole, taken from where the pole stands, so three
+           flags on one material do not snap in lockstep */
+        'float wPh = modelMatrix[3][0] * 0.8 + modelMatrix[3][2] * 0.5;',
+        'float amp = 0.055 + uWind * 0.30;',
+        'float u = clamp((position.x + FLAG_SPAN * 0.5) / FLAG_SPAN, 0.0, 1.0);',
+        'float env = pow(u, 1.55);',
+        'float ph = position.x * 3.2 + position.y * 0.8 - uTime * (1.9 + uWind * 2.6) + wPh;',
+        'float dEnv = 1.55 * pow(max(u, 1e-4), 0.55) / FLAG_SPAN;',
+        'float dzdx = amp * (dEnv * clothWave(ph) + env * clothWaveD(ph) * 3.2);',
+        'float dzdy = amp * env * clothWaveD(ph) * 0.8;',
+        'objectNormal = normalize(vec3(-dzdx, -dzdy, 1.0));'
+      ].join('\n'))
+      .replace('#include <begin_vertex>', [
+        '#include <begin_vertex>',
+        'transformed.z += amp * env * clothWave(ph);',
+        /* cloth does not stretch: what goes into the fold comes off the length,
+           or the fly end grows longer every time the wave deepens */
+        'transformed.x -= amp * amp * env * 2.4;',
+        'transformed.y -= env * amp * 0.16;'
+      ].join('\n'));
+  };
   for (var f = 0; f < 3; f++) {
     var fxp = -15.5 - f * 4.2, fzp = R_OUT + 13.5 + (f % 2) * 1.2;
     cyl(.1, .12, 11.5, 8, M.white, fxp, 5.75, fzp);
-    var fl = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 1.45, 6, 1), flagMat);
+    var fl = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 1.45, 28, 12), flagMat);
     fl.position.set(fxp + 1.55, 10.4, fzp);
     fl.rotation.y = -0.26;
     shellGroup.add(fl);
@@ -2621,21 +2734,26 @@ var TIMES = {
 
 var SEASONS = {
   spring: { leaf: 0x5c7a3e, grass: 0x6f8a52, snow: 0, skyTint: 0xbcd4e8, tintAmt: .10,
-            wx: 'rain', density: 1.0, fall: 17, sway: .4, size: .62, wxC: 0xbcd0e6, streak: 1 },
+            wx: 'rain', density: 1.0, fall: 17, sway: .4, size: .62, wxC: 0xbcd0e6, streak: 1,
+            wind: .95 },
   summer: { leaf: 0x3f5a2c, grass: 0x74804a, snow: 0, skyTint: 0xd8e4ec, tintAmt: .06,
-            wx: 'none', density: 0, fall: -0.8, sway: 2.2, size: .085, wxC: 0xffe6a8, streak: 0 },
+            wx: 'none', density: 0, fall: -0.8, sway: 2.2, size: .085, wxC: 0xffe6a8, streak: 0,
+            wind: .40 },
   autumn: { leaf: 0x8a5a22, grass: 0x7a6f44, snow: 0, skyTint: 0xd8b488, tintAmt: .14,
-            wx: 'rain', density: .82, fall: 15, sway: .6, size: .56, wxC: 0xb0c2d8, streak: 1 },
+            wx: 'rain', density: .82, fall: 15, sway: .6, size: .56, wxC: 0xb0c2d8, streak: 1,
+            wind: 1.25 },
   winter: { leaf: 0x8d9198, grass: 0xcdd6df, snow: 1, skyTint: 0xc4d4e4, tintAmt: .16,
-            wx: 'snow', density: 1.0, fall: 1.9, sway: 1.9, size: .28, wxC: 0xeef4fc, streak: 0 }
+            wx: 'snow', density: 1.0, fall: 1.9, sway: 1.9, size: .28, wxC: 0xeef4fc, streak: 0,
+            wind: 1.45 }
 };
 
 /* summer nights get insects rather than nothing at all */
 function seasonWeather(seasonKey, timeKey) {
   var w = SEASONS[seasonKey];
   if (seasonKey === 'summer' && timeKey !== 'day')
-    return { density: .55, fall: -0.7, sway: 2.4, size: .22, wxC: 0xffe0a0, streak: 0 };
-  return { density: w.density, fall: w.fall, sway: w.sway, size: w.size, wxC: w.wxC, streak: w.streak };
+    return { density: .55, fall: -0.7, sway: 2.4, size: .22, wxC: 0xffe0a0, streak: 0, wind: .28 };
+  return { density: w.density, fall: w.fall, sway: w.sway, size: w.size, wxC: w.wxC,
+           streak: w.streak, wind: w.wind };
 }
 
 function seasonNow() {
@@ -2660,7 +2778,7 @@ var ENV_COLS = ['skyTop', 'skyBot', 'glow', 'fog', 'hemiS', 'hemiG', 'keyC', 'fi
                 'leaf', 'grass', 'wxC'];
 var ENV_NUMS = ['glowY', 'glowAmt', 'fogD', 'hemiI', 'keyI', 'fillI', 'exposure', 'bloomT',
                 'bloomI', 'scrim', 'star', 'moonY', 'lotI', 'litI', 'snow',
-                'density', 'fall', 'sway', 'size', 'streak', 'tintAmt'];
+                'density', 'fall', 'sway', 'size', 'streak', 'tintAmt', 'wind'];
 
 function envTarget() {
   var T = TIMES[envKey.time], S = SEASONS[envKey.season], W = seasonWeather(envKey.season, envKey.time);
@@ -2731,6 +2849,7 @@ function stepEnv(dt) {
   wxUni.streak.value = ENV.streak;
   wxUni.tint.value.copy(ENV.wxC);
   wxUni.amt.value = ENV.density * wxOutside;
+  flagUni.wind.value = ENV.wind;
   if (weatherPts) weatherPts.visible = wxUni.amt.value > 0.012;
   moon.position.y = ENV.moonY;
   halo.position.y = ENV.moonY;
@@ -3041,6 +3160,9 @@ function frame() {
   stepEnv(dt);
   wxUni.t.value = el;
   wxUni.cam.value.copy(camPos);
+  /* A flag frozen mid-snap reads as a mistake, so with reduced motion asked
+     for it holds one shallow fold rather than a flat plane. */
+  if (!RM) flagUni.time.value = el;
 
   /* Pull focus onto whatever the shot is about. The camera already knows what
      it is looking at, so the focus plane is simply the distance to it. */
